@@ -1,38 +1,26 @@
 import { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback, type ReactNode } from 'react';
 import { type Team, initializeSeason, type Driver } from '../engine/grid';
 import { type Track, generateTrack } from '../engine/track';
-import { calculateQualifyingPace, simulateLap, type LapAnalysis } from '../engine/race';
+import { calculateQualifyingPace, runFullRaceSimulation, type LapAnalysis, type LapSnapshot, type RaceResultSnapshot } from '../engine/race';
 import { STAT_NAMES, CAR_STAT_NAMES, ECONOMY } from '../engine/data';
 import { calculateStatCost } from '../engine/mathUtils';
 import { processTeamEvolution } from '../engine/evolution';
 
 export type GameState = 'START' | 'HQ' | 'QUALIFYING' | 'RACE' | 'RESULTS';
 
-export interface FeedMessage {
+// Use types from race engine
+export type FeedMessage = {
   id: string;
   lap: number;
   driverId: string;
   driverName: string;
   type: 'positive' | 'negative' | 'neutral';
   message: string;
-  color: string; // Additional accent color hint
-}
+  color: string;
+};
 
-interface RaceResult {
-  driverId: string;
-  driverName: string;
-  flag: string;
-  teamName: string;
-  totalTime: number;
-  gapToLeader: number;
-  gapToAhead: number; // For UI and future calculations
-  lapsCompleted: number;
-  lastLapTime: number;
-  bestLapTime: number;
-  rank: number;
-  penalty: boolean; // Just for visual feedback
-  status: 'Running' | 'Finished';
-}
+// Alias locally for compatibility
+type RaceResult = RaceResultSnapshot;
 
 interface GameContextType {
   gameState: GameState;
@@ -73,8 +61,8 @@ interface GameContextType {
     startNewGame: (teamName: string, driver1Name: string, driver2Name: string) => void;
     startQualifying: () => void;
     startRace: () => void;
-    simulateTick: () => void; // Simulates one lap for everyone
-    completeRace: () => void; // Instantly finish (Simulate Now)
+    simulateTick: () => void; // Advances playback
+    completeRace: () => void; // Instantly finish (Skip to end)
     nextRace: () => void;
     togglePause: () => void;
     setRaceSpeed: (speed: number) => void;
@@ -128,6 +116,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [turnReport, setTurnReport] = useState<string[]>([]);
   const [teamRadio, setTeamRadio] = useState<FeedMessage[]>([]);
 
+  // Race History & Playback State
+  const [raceHistory, setRaceHistory] = useState<LapSnapshot[]>(initialData.raceHistory || []);
+  const [currentPlaybackLap, setCurrentPlaybackLap] = useState<number>(initialData.currentPlaybackLap || 0);
+
   const [raceData, setRaceData] = useState<{
     currentLap: number;
     results: RaceResult[];
@@ -161,6 +153,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const currentTrackRef = useRef(currentTrack);
   const standingsRef = useRef(standings);
   const raceDataRef = useRef(raceData);
+  const raceHistoryRef = useRef(raceHistory);
+  const currentPlaybackLapRef = useRef(currentPlaybackLap);
 
   // Sync refs
   useEffect(() => { gridRef.current = grid; }, [grid]);
@@ -169,15 +163,18 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => { currentTrackRef.current = currentTrack; }, [currentTrack]);
   useEffect(() => { standingsRef.current = standings; }, [standings]);
   useEffect(() => { raceDataRef.current = raceData; }, [raceData]);
+  useEffect(() => { raceHistoryRef.current = raceHistory; }, [raceHistory]);
+  useEffect(() => { currentPlaybackLapRef.current = currentPlaybackLap; }, [currentPlaybackLap]);
 
   // Persistence: Save on change (debounced or on key events)
   useEffect(() => {
     if (gameState === 'START') return;
     const data = {
-      gameState, grid, playerTeamId, currentTrack, raceNumber, raceData, standings
+      gameState, grid, playerTeamId, currentTrack, raceNumber, raceData, standings,
+      raceHistory, currentPlaybackLap
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [gameState, grid, playerTeamId, currentTrack, raceNumber, raceData, standings]);
+  }, [gameState, grid, playerTeamId, currentTrack, raceNumber, raceData, standings, raceHistory, currentPlaybackLap]);
 
   const getPlayerTeam = useCallback(() => {
     return grid.find(t => t.id === playerTeamId) || null;
@@ -359,9 +356,31 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
     startRace: () => {
       setTeamRadio([]); // Clear feed
+      const track = currentTrackRef.current;
+      const grid = gridRef.current;
+      const playerTeamId = playerTeamIdRef.current;
+      const raceData = raceDataRef.current;
+
+      if (!track) return;
+
+      // Extract Qualifying Order (Driver IDs sorted by Qualy Time)
+      // raceData.qualifyingResults is already sorted by time in startQualifying
+      const qualifyingOrder = raceData.qualifyingResults.map(q => q.driverId);
+
+      // 1. Run Full Simulation
+      const history = runFullRaceSimulation(grid, track, playerTeamId, qualifyingOrder);
+
+      setRaceHistory(history);
+      setCurrentPlaybackLap(0);
+
+      // Initialize UI with starting grid (staggered)
+      // This logic was previously in startRace.
+      // We can replicate the Stagger here for the visual start.
+      // Or we can rely on the simulation's initial state if we had it.
+      // Let's keep the existing stagger logic for the "Start Line" visual.
+
       setRaceData(prev => {
         const staggeredResults = prev.results.map(r => {
-           // We use the qualifying result order to determine the grid slot
            const qualyIndex = prev.qualifyingResults.findIndex(q => q.driverId === r.driverId);
            const startRank = qualyIndex + 1;
            const stagger = (startRank - 1) * 0.5;
@@ -370,266 +389,79 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
               ...r,
               totalTime: stagger,
               gapToLeader: stagger,
-              gapToAhead: startRank === 1 ? 0 : 0.5
+              gapToAhead: startRank === 1 ? 0 : 0.5,
+              lapsCompleted: 0
            };
         });
 
         return {
            ...prev,
-           results: staggeredResults.sort((a, b) => a.rank - b.rank)
+           results: staggeredResults.sort((a, b) => a.rank - b.rank),
+           currentLap: 0,
+           isRaceFinished: false
         };
       });
+
       setGameState('RACE');
     },
 
     simulateTick: () => {
+      // Advances playback by one lap
+      const history = raceHistoryRef.current;
+      const currentLapIndex = currentPlaybackLapRef.current;
       const track = currentTrackRef.current;
-      const raceData = raceDataRef.current;
-      const driverMap = driverMapRef.current;
-      const playerTeamId = playerTeamIdRef.current;
 
-      if (!track || raceData.isRaceFinished) return;
-
-      const prev = raceData;
-      const nextLap = prev.currentLap + 1;
-      const isLastLap = nextLap > track.laps;
-
-      const currentStandings = [...prev.results].sort((a, b) => {
-          if (prev.currentLap === 0) return a.rank - b.rank;
-          return a.totalTime - b.totalTime;
-      });
-
-      // OPTIMIZATION: O(N) lookup maps for the loop
-      const qualifyingLookup = new Map<string, { time: number, rank: number }>();
-      prev.qualifyingResults.forEach((q, index) => {
-         qualifyingLookup.set(q.driverId, { time: q.time, rank: index + 1 });
-      });
-
-      const standingsIndexMap = new Map<string, number>();
-      currentStandings.forEach((s, index) => {
-         standingsIndexMap.set(s.driverId, index);
-      });
-
-      const newDebugData: Record<string, LapAnalysis> = {};
-
-      const newResults = prev.results.map(r => {
-         if (r.status === 'Finished') return r;
-
-         const driver = driverMap.get(r.driverId);
-         if (!driver) return r;
-
-         const qData = qualifyingLookup.get(r.driverId);
-         const qTime = qData?.time || 300;
-
-         const myIndex = standingsIndexMap.get(r.driverId);
-         const carAhead = (myIndex !== undefined && myIndex > 0) ? currentStandings[myIndex - 1] : null;
-
-         // Get Car
-         const team = gridRef.current.find(t => t.id === driver.teamId);
-         if (!team) return r; // Should not happen
-
-         let conditions = null;
-         if (carAhead) {
-            const carAheadDriver = driverMap.get(carAhead.driverId);
-            const carAheadTeam = gridRef.current.find(t => t.id === carAheadDriver?.teamId);
-
-            // Need effective instincts for car ahead
-            let effectiveInstincts = carAheadDriver?.stats.Instincts || 0;
-            if (carAheadTeam?.car) {
-              effectiveInstincts += carAheadTeam.car.stats.Engineering;
-            }
-
-            const gap = r.totalTime - carAhead.totalTime;
-            const currentRank = (myIndex ?? 0) + 1;
-            const expectedRank = qData?.rank || 0;
-
-            conditions = {
-              gapToAhead: gap < 0 ? 0 : gap,
-              carAheadInstincts: effectiveInstincts,
-              currentRank,
-              expectedRank
-            };
+      if (!track) return;
+      if (currentLapIndex >= history.length) {
+         // Already finished?
+         if (!raceDataRef.current.isRaceFinished) {
+            handleRaceFinish(raceDataRef.current.results);
          }
-
-         const lapResult = simulateLap(driver, team.car, track, qTime, conditions);
-
-         // Store Debug Data
-         newDebugData[driver.id] = lapResult.analysis;
-
-         const lapTime = lapResult.lapTime;
-
-         const actualLapTime = lapResult.lapTime;
-
-         return {
-           ...r,
-           totalTime: r.totalTime + lapTime,
-           lastLapTime: actualLapTime,
-           bestLapTime: (actualLapTime < r.bestLapTime) ? actualLapTime : r.bestLapTime,
-           lapsCompleted: nextLap,
-           penalty: !lapResult.overtakeSuccess && (conditions?.gapToAhead || 10) < 3.0 && (conditions?.currentRank || 0) > (conditions?.expectedRank || 0)
-         };
-      });
-
-      setDebugData(newDebugData);
-
-      const finishedResults = newResults.map(r => {
-         if (r.lapsCompleted >= track.laps) {
-            return { ...r, status: 'Finished' as const };
-         }
-         return r;
-      });
-
-      const sortedResults = [...finishedResults].sort((a, b) => a.totalTime - b.totalTime);
-
-      const leader = sortedResults[0];
-      const finalResults = sortedResults.map((r, idx) => {
-         const carAhead = idx > 0 ? sortedResults[idx - 1] : null;
-         const gapToAhead = carAhead ? r.totalTime - carAhead.totalTime : 0;
-
-         return {
-            ...r,
-            rank: idx + 1,
-            gapToLeader: r.totalTime - leader.totalTime,
-            gapToAhead
-         };
-      });
-
-      const allFinished = finalResults.every(r => r.status === 'Finished');
-
-      setRaceData({
-         ...prev,
-         results: finalResults,
-         currentLap: isLastLap ? track.laps : nextLap,
-         isRaceFinished: allFinished
-      });
-
-      // --- NARRATIVE FEED GENERATION ---
-      if (nextLap > 1) { // Skip Lap 1
-        const playerDrivers = gridRef.current.find(t => t.id === playerTeamId)?.drivers || [];
-        const newMessages: FeedMessage[] = [];
-
-        playerDrivers.forEach(pDriver => {
-           // 1. Get Start Pos
-           const startIdx = currentStandings.findIndex(r => r.driverId === pDriver.id);
-           const startPos = startIdx + 1;
-
-           // 2. Get End Pos
-           const endIdx = finalResults.findIndex(r => r.driverId === pDriver.id);
-           const endPos = endIdx + 1;
-
-           // 3. Get Lap Data
-           const newResult = finalResults[endIdx]; // Contains updated times
-           const prevResult = prev.results.find(r => r.driverId === pDriver.id);
-           const lapTime = newResult.lastLapTime;
-           const prevBest = prevResult?.bestLapTime || Infinity;
-
-           if (!prevResult) return;
-
-           const gapToAhead = newResult.gapToAhead;
-
-           // LOGIC (Priority Order)
-           let msg: FeedMessage | null = null;
-           const msgId = `${nextLap}-${pDriver.id}`;
-
-           // 1. Mover
-           if (endPos < startPos) {
-              msg = {
-                 id: msgId,
-                 lap: nextLap,
-                 driverId: pDriver.id,
-                 driverName: pDriver.name,
-                 type: 'positive',
-                 message: `Started P${startPos}, finished P${endPos}. Great overtake!`,
-                 color: 'text-green-400'
-              };
-           }
-           // 2. Slider
-           else if (endPos > startPos) {
-              msg = {
-                 id: msgId,
-                 lap: nextLap,
-                 driverId: pDriver.id,
-                 driverName: pDriver.name,
-                 type: 'negative',
-                 message: `Dropped from P${startPos} to P${endPos}. Struggling for grip.`,
-                 color: 'text-red-400'
-              };
-           }
-           // 3. Flyer (New PB)
-           else if (lapTime < prevBest) {
-              msg = {
-                 id: msgId,
-                 lap: nextLap,
-                 driverId: pDriver.id,
-                 driverName: pDriver.name,
-                 type: 'positive',
-                 message: `Purple Sectors! ${pDriver.name} just set their fastest lap.`,
-                 color: 'text-green-400'
-              };
-           }
-           // 4. Consistent (Within 1% of PB)
-           else if (prevBest !== Infinity && lapTime <= prevBest * 1.01) {
-              msg = {
-                 id: msgId,
-                 lap: nextLap,
-                 driverId: pDriver.id,
-                 driverName: pDriver.name,
-                 type: 'neutral',
-                 message: `${pDriver.name} is locked in. Solid pace.`,
-                 color: 'text-gray-300'
-              };
-           }
-           // 5. Traffic / Slow (> 105% PB)
-           else if (prevBest !== Infinity && lapTime > prevBest * 1.05) {
-              if (gapToAhead < 3.0) {
-                 // Calculate diff
-                 const diff = (lapTime - prevBest).toFixed(1);
-                 msg = {
-                    id: msgId,
-                    lap: nextLap,
-                    driverId: pDriver.id,
-                    driverName: pDriver.name,
-                    type: 'negative',
-                    message: `Lap time +${diff}s off pace. Reporting dirty air.`,
-                    color: 'text-red-400'
-                 };
-              } else {
-                 msg = {
-                    id: msgId,
-                    lap: nextLap,
-                    driverId: pDriver.id,
-                    driverName: pDriver.name,
-                    type: 'negative',
-                    message: `Losing time in Sector 2.`,
-                    color: 'text-red-400'
-                 };
-              }
-           }
-
-           if (msg) {
-              newMessages.push(msg);
-           }
-        });
-
-        if (newMessages.length > 0) {
-           setTeamRadio(prevFeed => [...newMessages, ...prevFeed].slice(0, 20));
-        }
+         return;
       }
 
-      setRaceData({
-         ...prev,
-         results: finalResults,
-         currentLap: isLastLap ? track.laps : nextLap,
-         isRaceFinished: allFinished
-      });
+      const nextLapIndex = currentLapIndex + 1; // 1-based lap number effectively
+      // history[0] is Lap 1 results. history[currentLapIndex] is the NEXT result to show.
 
-      if (allFinished) {
-        handleRaceFinish(finalResults);
+      const snapshot = history[currentLapIndex]; // Get next snapshot
+
+      if (!snapshot) return;
+
+      // Update Data
+      setRaceData(prev => ({
+        ...prev,
+        currentLap: snapshot.lapNumber,
+        results: snapshot.results,
+        isRaceFinished: snapshot.lapNumber >= track.laps
+      }));
+
+      // Append Messages
+      if (snapshot.messages && snapshot.messages.length > 0) {
+        setTeamRadio(prev => [...snapshot.messages, ...prev].slice(0, 20));
+      }
+
+      setCurrentPlaybackLap(nextLapIndex);
+
+      if (snapshot.lapNumber >= track.laps) {
+         handleRaceFinish(snapshot.results);
       }
     },
 
     completeRace: () => {
-       handleRaceFinish(raceDataRef.current.results);
+       const history = raceHistoryRef.current;
+       if (history.length === 0) return;
+
+       const lastSnapshot = history[history.length - 1];
+
+       setRaceData(prev => ({
+           ...prev,
+           currentLap: lastSnapshot.lapNumber,
+           results: lastSnapshot.results,
+           isRaceFinished: true
+       }));
+
+       setCurrentPlaybackLap(history.length);
+       handleRaceFinish(lastSnapshot.results);
     },
 
     nextRace: () => {
@@ -638,6 +470,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       setGameState('HQ');
       setIsRacePaused(false); // Reset pause state
       setRaceSpeed(1); // Reset speed
+      setRaceHistory([]);
+      setCurrentPlaybackLap(0);
     },
 
     togglePause: () => {
@@ -683,12 +517,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         if (!team.car) return team;
 
         const currentVal = (team.car.stats as any)[statName];
-        // Cost uses specific CAR constants
-        // Formula in mathUtils uses Base and Exponent.
-        // I should probably export a specific calculateCarStatCost or just inline it/use existing with params.
-        // calculateStatCost uses ECONOMY.BASE_COST.
-        // I will copy the logic here or update mathUtils.
-        // Let's inline for now to avoid breaking mathUtils signature if it's strict.
 
         // ECONOMY.CAR_BASE_COST = 10, CAR_COST_EXPONENT = 1.15
         const cost = Math.floor(ECONOMY.CAR_BASE_COST * Math.pow(ECONOMY.CAR_COST_EXPONENT, currentVal - 1));
@@ -738,7 +566,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       actions.simulateTick();
     };
 
-    const intervalMs = 30000 / raceSpeed;
+    // User requested 15 seconds
+    const intervalMs = 15000 / raceSpeed;
     const timer = setInterval(tick, intervalMs);
 
     return () => clearInterval(timer);
