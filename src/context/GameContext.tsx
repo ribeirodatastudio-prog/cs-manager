@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback, type ReactNode } from 'react';
 import { type Team, initializeSeason, type Driver } from '../engine/grid';
 import { type Track, generateTrack } from '../engine/track';
 import { calculateQualifyingPace, simulateLap, type LapAnalysis } from '../engine/race';
@@ -74,15 +74,29 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 const STORAGE_KEY = 'formula-idle-save-v2';
 
 export const GameProvider = ({ children }: { children: ReactNode }) => {
+  // Load saved data once on mount
+  const [initialData] = useState(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+           return JSON.parse(saved);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load save", e);
+    }
+    return {};
+  });
+
   // State
-  const [gameState, setGameState] = useState<GameState>('START');
-  const [grid, setGrid] = useState<Team[]>([]);
-  const [driverMap, setDriverMap] = useState<Map<string, Driver>>(new Map());
-  const [playerTeamId, setPlayerTeamId] = useState<string | null>(null);
-  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
-  const [points, setPoints] = useState(0);
-  const [raceNumber, setRaceNumber] = useState(1);
-  const [standings, setStandings] = useState<{ drivers: Record<string, number>; teams: Record<string, number> }>({ drivers: {}, teams: {} });
+  const [gameState, setGameState] = useState<GameState>(initialData.gameState || 'START');
+  const [grid, setGrid] = useState<Team[]>(initialData.grid || []);
+  const [playerTeamId, setPlayerTeamId] = useState<string | null>(initialData.playerTeamId || null);
+  const [currentTrack, setCurrentTrack] = useState<Track | null>(initialData.currentTrack || null);
+  const [points, setPoints] = useState(initialData.points || 0);
+  const [raceNumber, setRaceNumber] = useState(initialData.raceNumber || 1);
+  const [standings, setStandings] = useState<{ drivers: Record<string, number>; teams: Record<string, number> }>(initialData.standings || { drivers: {}, teams: {} });
   const [debugData, setDebugData] = useState<Record<string, LapAnalysis>>({});
   const [turnReport, setTurnReport] = useState<string[]>([]);
 
@@ -91,33 +105,41 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     results: RaceResult[];
     qualifyingResults: { driverId: string; time: number; sectors: [number, number, number] }[];
     isRaceFinished: boolean;
-  }>({
+  }>(initialData.raceData || {
     currentLap: 0,
     results: [],
     qualifyingResults: [],
     isRaceFinished: false,
   });
 
-  // Persistence: Load on mount
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        setGameState(data.gameState || 'START');
-        setGrid(data.grid || []);
-        setPlayerTeamId(data.playerTeamId || null);
-        setCurrentTrack(data.currentTrack || null);
-        setPoints(data.points || 0);
-        setRaceNumber(data.raceNumber || 1);
-        setStandings(data.standings || { drivers: {}, teams: {} });
-        setRaceData(data.raceData || { currentLap: 0, results: [], qualifyingResults: [], isRaceFinished: false });
-        // debugData is transient, no need to save/load heavily, but maybe useful. Ignoring for now to save space.
-      } catch (e) {
-        console.error("Failed to load save", e);
-      }
-    }
-  }, []);
+  // Derived State (Memoized instead of Effect)
+  const driverMap = useMemo(() => {
+    const newMap = new Map<string, Driver>();
+    grid.forEach(team => {
+      team.drivers.forEach(driver => {
+        newMap.set(driver.id, driver);
+      });
+    });
+    return newMap;
+  }, [grid]);
+
+  // Refs for stable access in actions
+  const gridRef = useRef(grid);
+  const driverMapRef = useRef(driverMap);
+  const playerTeamIdRef = useRef(playerTeamId);
+  const currentTrackRef = useRef(currentTrack);
+  const pointsRef = useRef(points);
+  const standingsRef = useRef(standings);
+  const raceDataRef = useRef(raceData);
+
+  // Sync refs
+  useEffect(() => { gridRef.current = grid; }, [grid]);
+  useEffect(() => { driverMapRef.current = driverMap; }, [driverMap]);
+  useEffect(() => { playerTeamIdRef.current = playerTeamId; }, [playerTeamId]);
+  useEffect(() => { currentTrackRef.current = currentTrack; }, [currentTrack]);
+  useEffect(() => { pointsRef.current = points; }, [points]);
+  useEffect(() => { standingsRef.current = standings; }, [standings]);
+  useEffect(() => { raceDataRef.current = raceData; }, [raceData]);
 
   // Persistence: Save on change (debounced or on key events)
   useEffect(() => {
@@ -128,25 +150,21 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, [gameState, grid, playerTeamId, currentTrack, points, raceNumber, raceData, standings]);
 
-  // DERIVED STATE: Keep a map of drivers for efficient lookups
-  useEffect(() => {
-    const newMap = new Map<string, Driver>();
-    grid.forEach(team => {
-      team.drivers.forEach(driver => {
-        newMap.set(driver.id, driver);
-      });
-    });
-    setDriverMap(newMap);
-  }, [grid]);
+  const getPlayerTeam = useCallback(() => {
+    return grid.find(t => t.id === playerTeamId) || null;
+  }, [grid, playerTeamId]);
 
-  const getPlayerTeam = () => grid.find(t => t.id === playerTeamId) || null;
+  // Stable helper using refs
+  const handleRaceFinish = useCallback((results: RaceResult[]) => {
+      const currentGrid = gridRef.current;
+      const currentPlayerTeamId = playerTeamIdRef.current;
+      const currentStandings = standingsRef.current;
 
-  const handleRaceFinish = (results: RaceResult[]) => {
-      const playerTeam = grid.find(t => t.id === playerTeamId);
+      const playerTeam = currentGrid.find(t => t.id === currentPlayerTeamId);
       let earnedPoints = 0;
 
-      const newDriverStandings = { ...standings.drivers };
-      const newTeamStandings = { ...standings.teams };
+      const newDriverStandings = { ...currentStandings.drivers };
+      const newTeamStandings = { ...currentStandings.teams };
 
       // Find fastest lap
       let fastestLapTime = Infinity;
@@ -184,7 +202,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
             newDriverStandings[r.driverId] = champPts;
          }
 
-         const driver = grid.flatMap(t => t.drivers).find(d => d.id === r.driverId);
+         const driver = currentGrid.flatMap(t => t.drivers).find(d => d.id === r.driverId);
          if (driver) {
              if (newTeamStandings[driver.teamId] !== undefined) {
                  newTeamStandings[driver.teamId] += champPts;
@@ -195,16 +213,16 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       });
 
       // Team Evolution
-      const evolution = processTeamEvolution(grid);
+      const evolution = processTeamEvolution(currentGrid);
       setGrid(evolution.newGrid);
       setTurnReport(evolution.logs);
 
       setStandings({ drivers: newDriverStandings, teams: newTeamStandings });
       setPoints(p => p + earnedPoints);
       setGameState('RESULTS');
-  };
+  }, []);
 
-  const actions = {
+  const actions = useMemo(() => ({
     startNewGame: (teamName: string, driver1Name: string, driver2Name: string) => {
       const newGrid = initializeSeason();
       // Replace Rank 20 with Player
@@ -246,10 +264,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     },
 
     startQualifying: () => {
-      if (!currentTrack) return;
+      const track = currentTrackRef.current;
+      const grid = gridRef.current;
+      if (!track) return;
 
       const qResults = grid.flatMap(team => team.drivers).map(driver => {
-        const result = calculateQualifyingPace(driver, currentTrack!);
+        const result = calculateQualifyingPace(driver, track);
         return { driverId: driver.id, time: result.totalTime, sectors: result.sectors };
       });
 
@@ -305,16 +325,15 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     },
 
     simulateTick: () => {
-      if (!currentTrack || raceData.isRaceFinished) return;
+      const track = currentTrackRef.current;
+      const raceData = raceDataRef.current;
+      const driverMap = driverMapRef.current;
 
-      // We need to capture debug data, so we can't just use setRaceData functional update directly
-      // if we want to extract the analysis. But we can use a temp variable if we do it outside.
-      // However, to keep it clean in React, we'll update debugData separately or use a slightly different pattern.
-      // We will perform the logic first, then update both states.
+      if (!track || raceData.isRaceFinished) return;
 
       const prev = raceData;
       const nextLap = prev.currentLap + 1;
-      const isLastLap = nextLap > currentTrack.laps;
+      const isLastLap = nextLap > track.laps;
 
       const currentStandings = [...prev.results].sort((a, b) => {
           if (prev.currentLap === 0) return a.rank - b.rank;
@@ -349,12 +368,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
             };
          }
 
-         const lapResult = simulateLap(driver, currentTrack!, qTime, conditions);
+         const lapResult = simulateLap(driver, track, qTime, conditions);
 
          // Store Debug Data
          newDebugData[driver.id] = lapResult.analysis;
 
-         let lapTime = lapResult.lapTime;
+         const lapTime = lapResult.lapTime;
 
          const actualLapTime = lapResult.lapTime;
 
@@ -371,7 +390,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       setDebugData(newDebugData);
 
       const finishedResults = newResults.map(r => {
-         if (r.lapsCompleted >= currentTrack.laps) {
+         if (r.lapsCompleted >= track.laps) {
             return { ...r, status: 'Finished' as const };
          }
          return r;
@@ -397,7 +416,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       setRaceData({
          ...prev,
          results: finalResults,
-         currentLap: isLastLap ? currentTrack.laps : nextLap,
+         currentLap: isLastLap ? track.laps : nextLap,
          isRaceFinished: allFinished
       });
 
@@ -407,7 +426,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     },
 
     completeRace: () => {
-       handleRaceFinish(raceData.results);
+       handleRaceFinish(raceDataRef.current.results);
     },
 
     nextRace: () => {
@@ -417,6 +436,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     },
 
     upgradeStat: (driverId: string, statName: string) => {
+       const currentPoints = pointsRef.current;
        setGrid(prevGrid => prevGrid.map(team => ({
           ...team,
           drivers: team.drivers.map(d => {
@@ -428,7 +448,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
              const cost = calculateStatCost(currentVal);
 
-             if (points >= cost) {
+             if (currentPoints >= cost) {
                 setPoints(p => p - cost);
                 return {
                    ...d,
@@ -448,18 +468,20 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem(STORAGE_KEY);
       window.location.reload();
     }
-  };
+  }), [handleRaceFinish]);
+
+  const value = useMemo(() => ({
+    gameState, setGameState, grid, playerTeamId, getPlayerTeam, currentTrack,
+    economy: { points },
+    season: { raceNumber, totalRaces: 40, standings },
+    raceData,
+    debugData,
+    turnReport,
+    actions
+  }), [gameState, grid, playerTeamId, getPlayerTeam, currentTrack, points, raceNumber, standings, raceData, debugData, turnReport, actions]);
 
   return (
-    <GameContext.Provider value={{
-      gameState, setGameState, grid, playerTeamId, getPlayerTeam, currentTrack,
-      economy: { points },
-      season: { raceNumber, totalRaces: 40, standings },
-      raceData,
-      debugData,
-      turnReport,
-      actions
-    }}>
+    <GameContext.Provider value={value}>
       {children}
     </GameContext.Provider>
   );
