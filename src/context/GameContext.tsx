@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from '
 import { type Team, initializeSeason, type Driver } from '../engine/grid';
 import { type Track, generateTrack } from '../engine/track';
 import { calculateQualifyingPace, simulateLap, type LapAnalysis } from '../engine/race';
+import { STAT_NAMES } from '../engine/data';
 import { calculateStatCost } from '../engine/mathUtils';
 import { processTeamEvolution } from '../engine/evolution';
 
@@ -210,6 +211,15 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       const playerTeam = newGrid[newGrid.length - 1];
       playerTeam.name = teamName;
       playerTeam.id = 'player-team';
+
+      // Override stats to Level 1 for Player
+      playerTeam.drivers.forEach(driver => {
+        const newStats: any = {};
+        STAT_NAMES.forEach(stat => newStats[stat] = 1);
+        driver.stats = newStats;
+        driver.totalStats = STAT_NAMES.length;
+      });
+      playerTeam.totalStats = STAT_NAMES.length * playerTeam.drivers.length;
 
       if (playerTeam.drivers.length > 0) playerTeam.drivers[0].name = driver1Name;
       if (playerTeam.drivers.length > 1) playerTeam.drivers[1].name = driver2Name;
