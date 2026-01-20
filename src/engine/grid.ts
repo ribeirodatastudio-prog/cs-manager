@@ -38,10 +38,14 @@ const LAST_NAMES = [
   "Schumacher", "Vettel", "Raikkonen", "Senna", "Prost", "Lauda", "Hunt", "Button", "Hill", "Mansell"
 ];
 
-const generateName = () => {
+export const generateDriverName = () => {
   const first = FIRST_NAMES[randomInt(0, FIRST_NAMES.length - 1)];
   const last = LAST_NAMES[randomInt(0, LAST_NAMES.length - 1)];
   return `${first} ${last}`;
+};
+
+export const generateRandomTeamName = () => {
+  return TEAM_NAMES[randomInt(0, TEAM_NAMES.length - 1)];
 };
 
 const distributePointsToStats = (totalPoints: number): Record<StatName, number> => {
@@ -109,7 +113,7 @@ export const generateGrid = (): Team[] => {
 
       drivers.push({
         id: `driver-${rank}-${d}`,
-        name: generateName(),
+        name: generateDriverName(),
         teamId,
         stats: driverStats,
         totalStats: budget,

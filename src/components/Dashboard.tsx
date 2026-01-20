@@ -7,6 +7,7 @@ import TrackMap from './TrackMap';
 import { QualifyingView } from './QualifyingView';
 import { RaceControlView } from './RaceControlView';
 import { DebugInspector } from './DebugInspector';
+import { PostRaceSummary } from './PostRaceSummary';
 
 const Dashboard = () => {
   const { gameState, actions, season, economy, getPlayerTeam } = useGame();
@@ -82,6 +83,8 @@ const Dashboard = () => {
            )}
         </section>
       </main>
+
+      {gameState === 'RESULTS' && <PostRaceSummary />}
     </div>
   );
 };
