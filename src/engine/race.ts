@@ -3,6 +3,12 @@ import type { Track } from './track';
 import { BASE_SEGMENT_TIMES, SEGMENT_WEIGHTS, SEGMENT_TYPES, type SegmentType } from './data';
 import { randomFloat, getChaosWindow } from './mathUtils';
 
+// Cache segment weights as entries to avoid repeated Object.entries calls in hot loops
+const SEGMENT_WEIGHT_ENTRIES = Object.entries(SEGMENT_WEIGHTS).reduce((acc, [key, value]) => {
+  acc[key as SegmentType] = Object.entries(value);
+  return acc;
+}, {} as Record<SegmentType, [string, number][]>);
+
 // Helper to get stats safely
 const getStat = (driver: Driver, statName: string): number => {
   // @ts-ignore
@@ -11,10 +17,10 @@ const getStat = (driver: Driver, statName: string): number => {
 
 // Calculate the Score for a driver on a specific segment type
 const calculateSegmentScore = (driver: Driver, segmentType: SegmentType): number => {
-  const weights = SEGMENT_WEIGHTS[segmentType];
+  const weightEntries = SEGMENT_WEIGHT_ENTRIES[segmentType];
   let rawScore = 0;
 
-  for (const [stat, weight] of Object.entries(weights)) {
+  for (const [stat, weight] of weightEntries) {
     rawScore += getStat(driver, stat) * weight;
   }
 
