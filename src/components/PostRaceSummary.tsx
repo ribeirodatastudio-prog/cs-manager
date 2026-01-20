@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { formatTime } from '../engine/mathUtils';
-import { Trophy, ChevronRight, Play } from 'lucide-react';
+import { Trophy, ChevronRight, Play, TrendingUp, Activity, FileText } from 'lucide-react';
 
 export const PostRaceSummary = () => {
-  const { raceData, season, grid, actions } = useGame();
-  const [activeTab, setActiveTab] = useState<'results' | 'standings'>('results');
+  const { raceData, season, grid, actions, turnReport, playerTeamId } = useGame();
+  const [activeTab, setActiveTab] = useState<'results' | 'standings' | 'report'>('results');
 
   const { results } = raceData;
 
   // Calculate Fastest Lap
   let fastestLapTime = Infinity;
-  let fastestDriverId = null;
+  let fastestDriverId: string | null = null;
   results.forEach(r => {
     if (r.bestLapTime > 0 && r.bestLapTime < fastestLapTime) {
       fastestLapTime = r.bestLapTime;
@@ -24,6 +24,72 @@ export const PostRaceSummary = () => {
      const driver = grid.flatMap(t => t.drivers).find(d => d.id === driverId);
      const team = grid.find(t => t.id === driver?.teamId);
      return { driver, team };
+  };
+
+  const ReportView = () => {
+      const playerTeam = grid.find(t => t.id === playerTeamId);
+
+      let totalEarnings = 0;
+      results.forEach(r => {
+          let pts = (41 - r.rank) / 10;
+          if (pts < 0.1) pts = 0.1;
+          if (r.driverId === fastestDriverId) pts += 0.1;
+
+          if (playerTeam?.drivers.some(d => d.id === r.driverId)) {
+              totalEarnings += pts;
+          }
+      });
+      // Round for display
+      totalEarnings = Math.round(totalEarnings * 100) / 100;
+
+      return (
+         <div className="flex gap-4 h-full overflow-hidden">
+             {/* Financials */}
+             <div className="flex-1 flex flex-col bg-slate-900/50 rounded border border-slate-800 p-6">
+                 <div className="flex items-center gap-3 mb-6">
+                    <TrendingUp className="text-emerald-400" size={28} />
+                    <h3 className="text-xl font-bold text-slate-200">FINANCIAL REPORT</h3>
+                 </div>
+
+                 <div className="space-y-4">
+                     <div className="p-4 bg-slate-950/50 rounded border border-slate-800 flex justify-between items-center">
+                         <span className="text-slate-400 font-mono">RACE EARNINGS</span>
+                         <span className="text-2xl font-bold text-emerald-400 font-mono">+{totalEarnings.toFixed(2)} pts</span>
+                     </div>
+                     <p className="text-sm text-slate-500 italic">
+                        Earnings are calculated based on driver finishing positions. Higher ranks yield significantly more R&D points.
+                     </p>
+                 </div>
+             </div>
+
+             {/* Rumors */}
+             <div className="flex-[2] flex flex-col bg-slate-900/50 rounded border border-slate-800 overflow-hidden">
+                 <div className="p-4 border-b border-slate-800 flex items-center gap-3">
+                    <Activity className="text-race-gold" size={24} />
+                    <h3 className="font-bold text-slate-200">PADDOCK RUMORS</h3>
+                 </div>
+                 <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                     {turnReport.length === 0 ? (
+                         <div className="text-slate-500 text-center italic mt-10">The paddock is quiet...</div>
+                     ) : (
+                         turnReport.map((log, i) => {
+                             // Simple coloring based on content
+                             let colorClass = "text-slate-300";
+                             if (log.includes("Breakthrough") || log.includes("Game Changer")) colorClass = "text-purple-400 font-bold";
+                             if (log.includes("Failure")) colorClass = "text-red-400";
+                             if (log.includes("Minor Upgrade")) colorClass = "text-emerald-400/80";
+
+                             return (
+                                 <div key={i} className={`p-3 bg-slate-950/30 rounded border border-slate-800/50 font-mono text-sm ${colorClass}`}>
+                                     {log}
+                                 </div>
+                             );
+                         })
+                     )}
+                 </div>
+             </div>
+         </div>
+      );
   };
 
   const StandingsView = () => {
@@ -122,6 +188,12 @@ export const PostRaceSummary = () => {
                 >
                    STANDINGS
                 </button>
+                <button
+                   onClick={() => setActiveTab('report')}
+                   className={`px-4 py-1 rounded text-sm font-bold transition-colors ${activeTab === 'report' ? 'bg-race-purple text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                   REPORT
+                </button>
              </div>
           </div>
 
@@ -140,11 +212,11 @@ export const PostRaceSummary = () => {
                          </tr>
                       </thead>
                       <tbody>
-                         {results.map((r, idx) => {
+                         {results.map((r) => {
                             const isFastest = r.driverId === fastestDriverId;
-                            let pts = 41 - r.rank;
-                            if (pts < 1) pts = 1;
-                            const totalPts = pts + (isFastest ? 1 : 0);
+                            let pts = (41 - r.rank) / 10;
+                            if (pts < 0.1) pts = 0.1;
+                            const totalPts = pts + (isFastest ? 0.1 : 0);
                             const leader = results[0];
                             const gap = r.totalTime - leader.totalTime;
 
@@ -164,7 +236,7 @@ export const PostRaceSummary = () => {
                                      {formatTime(r.bestLapTime)}
                                   </td>
                                   <td className="p-3 text-right font-mono font-bold text-emerald-400">
-                                     +{totalPts}
+                                     +{totalPts.toFixed(1)}
                                   </td>
                                </tr>
                             );
@@ -172,14 +244,16 @@ export const PostRaceSummary = () => {
                       </tbody>
                    </table>
                 </div>
-             ) : (
+             ) : activeTab === 'standings' ? (
                 <StandingsView />
+             ) : (
+                <ReportView />
              )}
           </div>
 
           {/* Footer */}
           <div className="bg-slate-950 p-4 border-t border-slate-800 flex justify-end shrink-0">
-             {activeTab === 'results' ? (
+             {activeTab === 'results' && (
                  <button
                     onClick={() => setActiveTab('standings')}
                     className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded transition-colors uppercase tracking-widest"
@@ -187,12 +261,24 @@ export const PostRaceSummary = () => {
                     View Standings
                     <ChevronRight size={20} />
                  </button>
-             ) : (
+             )}
+
+             {activeTab === 'standings' && (
+                 <button
+                    onClick={() => setActiveTab('report')}
+                    className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded transition-colors uppercase tracking-widest"
+                 >
+                    Season Report
+                    <FileText size={20} />
+                 </button>
+             )}
+
+             {activeTab === 'report' && (
                  <button
                     onClick={actions.nextRace}
                     className="flex items-center gap-2 px-6 py-3 bg-race-purple hover:bg-purple-600 text-white font-bold rounded transition-colors uppercase tracking-widest shadow-lg shadow-purple-900/20"
                  >
-                    Next Race
+                    Go to Garage
                     <Play size={20} />
                  </button>
              )}

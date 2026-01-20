@@ -13,8 +13,8 @@ export const STAT_NAMES = [
 export type StatName = typeof STAT_NAMES[number];
 
 export const ECONOMY = {
-  BASE_COST: 1,
-  COST_EXPONENT: 1.05,
+  BASE_COST: 10,
+  COST_EXPONENT: 1.10,
 };
 
 export const GRID = {

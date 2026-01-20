@@ -3,6 +3,7 @@ import { type Team, initializeSeason, type Driver } from '../engine/grid';
 import { type Track, generateTrack } from '../engine/track';
 import { calculateQualifyingPace, simulateLap, type LapAnalysis } from '../engine/race';
 import { calculateStatCost } from '../engine/mathUtils';
+import { processTeamEvolution } from '../engine/evolution';
 
 export type GameState = 'START' | 'HQ' | 'QUALIFYING' | 'RACE' | 'RESULTS';
 
@@ -53,6 +54,8 @@ interface GameContextType {
 
   debugData: Record<string, LapAnalysis>;
 
+  turnReport: string[];
+
   actions: {
     startNewGame: (teamName: string, driver1Name: string, driver2Name: string) => void;
     startQualifying: () => void;
@@ -79,6 +82,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [raceNumber, setRaceNumber] = useState(1);
   const [standings, setStandings] = useState<{ drivers: Record<string, number>; teams: Record<string, number> }>({ drivers: {}, teams: {} });
   const [debugData, setDebugData] = useState<Record<string, LapAnalysis>>({});
+  const [turnReport, setTurnReport] = useState<string[]>([]);
 
   const [raceData, setRaceData] = useState<{
     currentLap: number;
@@ -144,7 +148,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
       // Find fastest lap
       let fastestLapTime = Infinity;
-      let fastestDriverId = null;
+      let fastestDriverId: string | null = null;
 
       results.forEach(r => {
         if (r.bestLapTime > 0 && r.bestLapTime < fastestLapTime) {
@@ -154,11 +158,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       });
 
       results.forEach(r => {
-         let pts = 41 - r.rank;
-         if (pts < 1) pts = 1;
+         let pts = (41 - r.rank) / 10;
+         if (pts < 0.1) pts = 0.1;
 
          if (r.driverId === fastestDriverId) {
-            pts += 1;
+            pts += 0.1;
          }
 
          if (playerTeam?.drivers.some(d => d.id === r.driverId)) {
@@ -180,6 +184,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
              }
          }
       });
+
+      // Team Evolution
+      const evolution = processTeamEvolution(grid);
+      setGrid(evolution.newGrid);
+      setTurnReport(evolution.logs);
 
       setStandings({ drivers: newDriverStandings, teams: newTeamStandings });
       setPoints(p => p + earnedPoints);
@@ -384,40 +393,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     },
 
     nextRace: () => {
-      const playerTeam = grid.find(t => t.id === playerTeamId);
-      let earnedPoints = 0;
-
-      // Update Standings
-      const newDriverStandings = { ...standings.drivers };
-      const newTeamStandings = { ...standings.teams };
-
-      raceData.results.forEach(r => {
-         const pts = 41 - r.rank;
-
-         // Update Player Currency (Driver Points)
-         if (playerTeam?.drivers.some(d => d.id === r.driverId)) {
-            earnedPoints += pts;
-         }
-
-         // Update Championship Standings
-         if (newDriverStandings[r.driverId] !== undefined) {
-            newDriverStandings[r.driverId] += pts;
-         }
-
-         const driver = driverMap.get(r.driverId);
-         if (driver) {
-             // Also update the Driver object in the grid?
-             // Actually, grid state is separate. But for persistence we might want to.
-             // But we have 'standings' state now.
-
-             if (newTeamStandings[driver.teamId] !== undefined) {
-                 newTeamStandings[driver.teamId] += pts;
-             }
-         }
-      });
-
-      setStandings({ drivers: newDriverStandings, teams: newTeamStandings });
-      setPoints(p => p + earnedPoints);
       setRaceNumber(n => n + 1);
       setCurrentTrack(generateTrack());
       setGameState('HQ');
@@ -459,6 +434,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       season: { raceNumber, totalRaces: 40, standings },
       raceData,
       debugData,
+      turnReport,
       actions
     }}>
       {children}
