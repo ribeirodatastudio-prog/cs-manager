@@ -1,38 +1,60 @@
-import type { Driver } from './grid';
+import type { Driver, Car } from './grid';
 import type { Track } from './track';
 import { BASE_SEGMENT_TIMES, SEGMENT_WEIGHTS, SEGMENT_TYPES, type SegmentType } from './data';
 import { randomFloat, getChaosWindow } from './mathUtils';
 
-// Helper to get stats safely
-const getStat = (driver: Driver, statName: string): number => {
+// Helper to get effective stats (Driver + Car)
+const getEffectiveStat = (driver: Driver, car: Car, statName: string): number => {
   // @ts-ignore
-  return driver.stats[statName] || 0;
+  let val = driver.stats[statName] || 0;
+
+  if (!car) return val; // Fallback for tests if car is missing
+
+  switch (statName) {
+    case 'Cornering':
+    case 'Braking':
+    case 'Pace':
+      val += car.stats.Aero;
+      break;
+    case 'Overtaking':
+    case 'Acceleration':
+      val += car.stats.Engine;
+      break;
+    case 'Instincts':
+      val += car.stats.Engineering;
+      break;
+    case 'Consistency':
+      val += car.stats.Engineering;
+      if (val > 100) val = 100;
+      break;
+  }
+  return val;
 };
 
 // Calculate the Score for a driver on a specific segment type
-const calculateSegmentScore = (driver: Driver, segmentType: SegmentType): number => {
+const calculateSegmentScore = (driver: Driver, car: Car, segmentType: SegmentType): number => {
   const weights = SEGMENT_WEIGHTS[segmentType];
   let rawScore = 0;
 
   for (const [stat, weight] of Object.entries(weights)) {
-    rawScore += getStat(driver, stat) * weight;
+    rawScore += getEffectiveStat(driver, car, stat) * weight;
   }
 
   // Apply Instincts Multiplier
-  const instincts = getStat(driver, 'Instincts');
+  const instincts = getEffectiveStat(driver, car, 'Instincts');
   const multiplier = 1 + Math.pow(instincts, 0.6) / 50;
 
   return rawScore * multiplier;
 };
 
-export const calculateQualifyingPace = (driver: Driver, track: Track): { totalTime: number; sectors: [number, number, number] } => {
+export const calculateQualifyingPace = (driver: Driver, car: Car, track: Track): { totalTime: number; sectors: [number, number, number] } => {
   let s1 = 0;
   let s2 = 0;
   let s3 = 0;
 
   track.segments.forEach((segmentType, idx) => {
     const baseTime = BASE_SEGMENT_TIMES[segmentType];
-    const score = calculateSegmentScore(driver, segmentType);
+    const score = calculateSegmentScore(driver, car, segmentType);
 
     const safeScore = Math.max(score, 1);
     const ratio = track.difficulty / safeScore;
@@ -87,6 +109,7 @@ export interface LapAnalysis {
 
 export const simulateLap = (
   driver: Driver,
+  car: Car,
   track: Track,
   _qualyTime: number, // Unused but kept for signature compatibility
   conditions: RaceConditions | null
@@ -112,7 +135,7 @@ export const simulateLap = (
   track.segments.forEach((currentSegment, idx) => {
     // A. Base Calculation
     const baseSegTime = BASE_SEGMENT_TIMES[currentSegment];
-    const score = calculateSegmentScore(driver, currentSegment);
+    const score = calculateSegmentScore(driver, car, currentSegment);
     const safeScore = Math.max(score, 1);
     const ratio = track.difficulty / safeScore;
     let resultTime = baseSegTime * Math.pow(ratio, 0.2);
@@ -139,7 +162,7 @@ export const simulateLap = (
       }
 
       // Roll for Overtake
-      const overtakingStat = getStat(driver, 'Overtaking');
+      const overtakingStat = getEffectiveStat(driver, car, 'Overtaking');
       const opponentInstincts = conditions?.carAheadInstincts || 50; // Fallback
 
       const attackRoll = randomFloat(0.8, 1.2);
@@ -189,7 +212,7 @@ export const simulateLap = (
   let lapTime = rawLapTime;
 
   // 3. Apply Consistency Variance
-  const consistency = getStat(driver, 'Consistency');
+  const consistency = getEffectiveStat(driver, car, 'Consistency');
   const effectiveChaos = getChaosWindow(consistency);
   const varianceMultiplier = 1 + randomFloat(-effectiveChaos, effectiveChaos);
 
@@ -200,7 +223,7 @@ export const simulateLap = (
     baseTime: rawLapTime, // This is the sum of segments (including traffic penalties before variance)
     segments: segmentAnalysis,
     modifiers: {
-      instincts: getStat(driver, 'Instincts'),
+      instincts: getEffectiveStat(driver, car, 'Instincts'),
       traffic: initialStuckState, // Was the driver initially stuck?
       overtakeAttempts
     },

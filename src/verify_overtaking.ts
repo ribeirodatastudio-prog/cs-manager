@@ -1,5 +1,5 @@
 import { simulateLap } from './engine/race';
-import type { Driver } from './engine/grid';
+import type { Driver, Car } from './engine/grid';
 import type { Track } from './engine/track';
 import { SEGMENT_TYPES } from './engine/data';
 
@@ -7,7 +7,13 @@ import { SEGMENT_TYPES } from './engine/data';
 const driver: Driver = {
     id: 'test', name: 'Test Driver', teamId: 't1',
     stats: { Overtaking: 80, Cornering: 50, Braking: 50, Acceleration: 50, Instincts: 50, Consistency: 100, Pace: 50 },
-    totalStats: 400, championshipPoints: 0
+    totalStats: 400, championshipPoints: 0,
+    nationality: 'Test', flag: '🏳️'
+};
+
+const car: Car = {
+    stats: { Engine: 0, Aero: 0, Engineering: 0 },
+    totalStats: 0
 };
 
 const track: Track = {
@@ -33,7 +39,7 @@ console.log("--- Testing Overtake Mechanics ---");
 console.log("Initial State: Gap 1.0s (< 3.0), Behind Schedule -> Should be STUCK");
 
 // Run simulation
-const result = simulateLap(driver, track, 0, conditions);
+const result = simulateLap(driver, car, track, 0, conditions);
 
 console.log(`Lap Time: ${result.lapTime.toFixed(3)}s`);
 console.log(`Overtake Success: ${result.overtakeSuccess}`);

@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef, useMemo, useCal
 import { type Team, initializeSeason, type Driver } from '../engine/grid';
 import { type Track, generateTrack } from '../engine/track';
 import { calculateQualifyingPace, simulateLap, type LapAnalysis } from '../engine/race';
-import { STAT_NAMES } from '../engine/data';
+import { STAT_NAMES, CAR_STAT_NAMES, ECONOMY } from '../engine/data';
 import { calculateStatCost } from '../engine/mathUtils';
 import { processTeamEvolution } from '../engine/evolution';
 
@@ -36,6 +36,7 @@ interface GameContextType {
 
   economy: {
     points: number;
+    rdPoints: number;
   };
 
   season: {
@@ -66,6 +67,7 @@ interface GameContextType {
     completeRace: () => void; // Instantly finish (Simulate Now)
     nextRace: () => void;
     upgradeStat: (driverId: string, statName: string) => void;
+    upgradeCarStat: (statName: string) => void;
     hardReset: () => void;
   };
 }
@@ -96,6 +98,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [playerTeamId, setPlayerTeamId] = useState<string | null>(initialData.playerTeamId || null);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(initialData.currentTrack || null);
   const [points, setPoints] = useState(initialData.points || 0);
+  const [rdPoints, setRdPoints] = useState(initialData.rdPoints || 0);
   const [raceNumber, setRaceNumber] = useState(initialData.raceNumber || 1);
   const [standings, setStandings] = useState<{ drivers: Record<string, number>; teams: Record<string, number> }>(initialData.standings || { drivers: {}, teams: {} });
   const [debugData, setDebugData] = useState<Record<string, LapAnalysis>>({});
@@ -130,6 +133,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const playerTeamIdRef = useRef(playerTeamId);
   const currentTrackRef = useRef(currentTrack);
   const pointsRef = useRef(points);
+  const rdPointsRef = useRef(rdPoints);
   const standingsRef = useRef(standings);
   const raceDataRef = useRef(raceData);
 
@@ -139,6 +143,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => { playerTeamIdRef.current = playerTeamId; }, [playerTeamId]);
   useEffect(() => { currentTrackRef.current = currentTrack; }, [currentTrack]);
   useEffect(() => { pointsRef.current = points; }, [points]);
+  useEffect(() => { rdPointsRef.current = rdPoints; }, [rdPoints]);
   useEffect(() => { standingsRef.current = standings; }, [standings]);
   useEffect(() => { raceDataRef.current = raceData; }, [raceData]);
 
@@ -146,10 +151,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (gameState === 'START') return;
     const data = {
-      gameState, grid, playerTeamId, currentTrack, points, raceNumber, raceData, standings
+      gameState, grid, playerTeamId, currentTrack, points, rdPoints, raceNumber, raceData, standings
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [gameState, grid, playerTeamId, currentTrack, points, raceNumber, raceData, standings]);
+  }, [gameState, grid, playerTeamId, currentTrack, points, rdPoints, raceNumber, raceData, standings]);
 
   const getPlayerTeam = useCallback(() => {
     return grid.find(t => t.id === playerTeamId) || null;
@@ -163,6 +168,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
       const playerTeam = currentGrid.find(t => t.id === currentPlayerTeamId);
       let earnedPoints = 0;
+      let earnedRdPoints = 0;
 
       const newDriverStandings = { ...currentStandings.drivers };
       const newTeamStandings = { ...currentStandings.teams };
@@ -194,6 +200,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
          if (playerTeam?.drivers.some(d => d.id === r.driverId)) {
             earnedPoints += moneyPts;
+            earnedRdPoints += moneyPts; // Drivers earn R&D for the team
          }
 
          // Update Standings (Championship Points)
@@ -220,6 +227,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
       setStandings({ drivers: newDriverStandings, teams: newTeamStandings });
       setPoints((p: number) => p + earnedPoints);
+      setRdPoints((p: number) => p + earnedRdPoints);
       setGameState('RESULTS');
   }, []);
 
@@ -231,14 +239,23 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       playerTeam.name = teamName;
       playerTeam.id = 'player-team';
 
-      // Override stats to Level 1 for Player
+      // Override stats to Level 1 for Player Drivers
       playerTeam.drivers.forEach(driver => {
         const newStats: any = {};
         STAT_NAMES.forEach(stat => newStats[stat] = 1);
         driver.stats = newStats;
         driver.totalStats = STAT_NAMES.length;
       });
-      playerTeam.totalStats = STAT_NAMES.length * playerTeam.drivers.length;
+
+      // Override stats to Level 1 for Player Car
+      if (playerTeam.car) {
+        const newCarStats: any = {};
+        CAR_STAT_NAMES.forEach(stat => newCarStats[stat] = 1);
+        playerTeam.car.stats = newCarStats;
+        playerTeam.car.totalStats = CAR_STAT_NAMES.length;
+      }
+
+      playerTeam.totalStats = (STAT_NAMES.length * playerTeam.drivers.length) + (playerTeam.car ? playerTeam.car.totalStats : 0);
 
       if (playerTeam.drivers.length > 0) playerTeam.drivers[0].name = driver1Name;
       if (playerTeam.drivers.length > 1) playerTeam.drivers[1].name = driver2Name;
@@ -247,6 +264,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       setGrid(newGrid);
       setPlayerTeamId(playerTeam.id);
       setPoints(0);
+      setRdPoints(0);
       setRaceNumber(1);
 
       // Init standings
@@ -270,7 +288,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       if (!track) return;
 
       const qResults = grid.flatMap(team => team.drivers).map(driver => {
-        const result = calculateQualifyingPace(driver, track);
+        const team = grid.find(t => t.id === driver.teamId);
+        // @ts-ignore
+        const result = calculateQualifyingPace(driver, team?.car, track);
         return { driverId: driver.id, time: result.totalTime, sectors: result.sectors };
       });
 
@@ -367,22 +387,34 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
          const myIndex = standingsIndexMap.get(r.driverId);
          const carAhead = (myIndex !== undefined && myIndex > 0) ? currentStandings[myIndex - 1] : null;
 
+         // Get Car
+         const team = gridRef.current.find(t => t.id === driver.teamId);
+         if (!team) return r; // Should not happen
+
          let conditions = null;
          if (carAhead) {
             const carAheadDriver = driverMap.get(carAhead.driverId);
+            const carAheadTeam = gridRef.current.find(t => t.id === carAheadDriver?.teamId);
+
+            // Need effective instincts for car ahead
+            let effectiveInstincts = carAheadDriver?.stats.Instincts || 0;
+            if (carAheadTeam?.car) {
+              effectiveInstincts += carAheadTeam.car.stats.Engineering;
+            }
+
             const gap = r.totalTime - carAhead.totalTime;
             const currentRank = (myIndex ?? 0) + 1;
             const expectedRank = qData?.rank || 0;
 
             conditions = {
               gapToAhead: gap < 0 ? 0 : gap,
-              carAheadInstincts: carAheadDriver?.stats.Instincts || 0,
+              carAheadInstincts: effectiveInstincts,
               currentRank,
               expectedRank
             };
          }
 
-         const lapResult = simulateLap(driver, track, qTime, conditions);
+         const lapResult = simulateLap(driver, team.car, track, qTime, conditions);
 
          // Store Debug Data
          newDebugData[driver.id] = lapResult.analysis;
@@ -478,6 +510,41 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
        })));
     },
 
+    upgradeCarStat: (statName: string) => {
+      const currentRdPoints = rdPointsRef.current;
+      setGrid(prevGrid => prevGrid.map(team => {
+        if (team.id !== playerTeamIdRef.current) return team;
+        if (!team.car) return team;
+
+        const currentVal = (team.car.stats as any)[statName];
+        // Cost uses specific CAR constants
+        // Formula in mathUtils uses Base and Exponent.
+        // I should probably export a specific calculateCarStatCost or just inline it/use existing with params.
+        // calculateStatCost uses ECONOMY.BASE_COST.
+        // I will copy the logic here or update mathUtils.
+        // Let's inline for now to avoid breaking mathUtils signature if it's strict.
+
+        // ECONOMY.CAR_BASE_COST = 10, CAR_COST_EXPONENT = 1.15
+        const cost = Math.floor(ECONOMY.CAR_BASE_COST * Math.pow(ECONOMY.CAR_COST_EXPONENT, currentVal - 1));
+
+        if (currentRdPoints >= cost) {
+          setRdPoints((p: number) => p - cost);
+          return {
+            ...team,
+            car: {
+              ...team.car,
+              stats: {
+                ...team.car.stats,
+                [statName]: currentVal + 1
+              },
+              totalStats: team.car.totalStats + 1
+            }
+          };
+        }
+        return team;
+      }));
+    },
+
     hardReset: () => {
       localStorage.removeItem(STORAGE_KEY);
       window.location.reload();
@@ -486,13 +553,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   const value = useMemo(() => ({
     gameState, setGameState, grid, playerTeamId, getPlayerTeam, currentTrack,
-    economy: { points },
+    economy: { points, rdPoints },
     season: { raceNumber, totalRaces: 40, standings },
     raceData,
     debugData,
     turnReport,
     actions
-  }), [gameState, grid, playerTeamId, getPlayerTeam, currentTrack, points, raceNumber, standings, raceData, debugData, turnReport, actions]);
+  }), [gameState, grid, playerTeamId, getPlayerTeam, currentTrack, points, rdPoints, raceNumber, standings, raceData, debugData, turnReport, actions]);
 
   return (
     <GameContext.Provider value={value}>

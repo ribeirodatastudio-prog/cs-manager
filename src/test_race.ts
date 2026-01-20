@@ -6,7 +6,8 @@ const grid = generateGrid();
 const track = generateTrack();
 
 const driver1 = grid[0].drivers[0];
-const q1Result = calculateQualifyingPace(driver1, track);
+const car = grid[0].car;
+const q1Result = calculateQualifyingPace(driver1, car, track);
 const q1 = q1Result.totalTime;
 
 console.log(`Track: ${track.name} (Segments: ${track.segments.length})`);
@@ -26,7 +27,7 @@ if (!hasStraight) {
     console.log("Track has no straights, cannot overtake properly anyway.");
 }
 
-const lapStuck = simulateLap(driver1, track, q1, conditionsWall);
+const lapStuck = simulateLap(driver1, car, track, q1, conditionsWall);
 console.log(`Time: ${lapStuck.lapTime.toFixed(3)}s, Overtake Success: ${lapStuck.overtakeSuccess}`);
 
 if (lapStuck.lapTime > q1 * 1.1) {

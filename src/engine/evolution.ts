@@ -1,5 +1,5 @@
 import { type Team } from './grid';
-import { STAT_NAMES } from './data';
+import { CAR_STAT_NAMES } from './data';
 import { randomInt } from './mathUtils';
 
 export interface EvolutionReport {
@@ -14,7 +14,11 @@ export const processTeamEvolution = (currentGrid: Team[]): EvolutionReport => {
     drivers: team.drivers.map(d => ({
         ...d,
         stats: { ...d.stats }
-    }))
+    })),
+    car: {
+        ...team.car,
+        stats: { ...team.car.stats }
+    }
   }));
 
   const logs: string[] = [];
@@ -61,6 +65,10 @@ export const processTeamEvolution = (currentGrid: Team[]): EvolutionReport => {
     team.drivers.forEach(d => {
        teamTotalStats += d.totalStats;
     });
+    // Add Car Stats
+    if (team.car) {
+        teamTotalStats += team.car.totalStats;
+    }
 
     // 3. Calculate Pool
     let pool = Math.floor(teamTotalStats * percent);
@@ -78,7 +86,7 @@ export const processTeamEvolution = (currentGrid: Team[]): EvolutionReport => {
     const pointsToDistribute = pool;
     if (pointsToDistribute === 0) return;
 
-    // 4. Distribute
+    // 4. Distribute to CAR
     const isNegative = pointsToDistribute < 0;
     const absPoints = Math.abs(pointsToDistribute);
     let distributed = 0;
@@ -87,21 +95,21 @@ export const processTeamEvolution = (currentGrid: Team[]): EvolutionReport => {
     // Prevent infinite loops if stats are maxed or minned out
     while (distributed < absPoints && attempts < absPoints * 10 + 20) {
        attempts++;
-       const driver = team.drivers[randomInt(0, team.drivers.length - 1)];
-       const statName = STAT_NAMES[randomInt(0, STAT_NAMES.length - 1)];
-       const currentVal = (driver.stats as any)[statName];
+
+       const statName = CAR_STAT_NAMES[randomInt(0, CAR_STAT_NAMES.length - 1)];
+       const currentVal = (team.car.stats as any)[statName];
 
        if (isNegative) {
           if (currentVal > 1) {
-             (driver.stats as any)[statName]--;
-             driver.totalStats--;
+             (team.car.stats as any)[statName]--;
+             team.car.totalStats--;
              distributed++;
           }
        } else {
           // Positive
-          if (statName === 'Consistency' && currentVal >= 100) continue;
-          (driver.stats as any)[statName]++;
-          driver.totalStats++;
+          // No cap for car stats currently
+          (team.car.stats as any)[statName]++;
+          team.car.totalStats++;
           distributed++;
        }
     }
@@ -110,7 +118,7 @@ export const processTeamEvolution = (currentGrid: Team[]): EvolutionReport => {
     if (distributed > 0) {
         const finalChange = isNegative ? -distributed : distributed;
         const sign = finalChange > 0 ? '+' : '';
-        logs.push(`${team.name}: ${type} (${sign}${finalChange} pts)`);
+        logs.push(`${team.name} Car: ${type} (${sign}${finalChange} pts)`);
     }
   });
 

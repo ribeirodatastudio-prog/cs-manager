@@ -1,5 +1,10 @@
 import { calculateTeamStatsBudget, randomFloat, randomInt } from './mathUtils';
-import { GRID, STAT_NAMES, type StatName } from './data';
+import { GRID, STAT_NAMES, CAR_STAT_NAMES, type StatName, type CarStatName } from './data';
+
+export interface Car {
+  stats: Record<CarStatName, number>;
+  totalStats: number;
+}
 
 export interface Driver {
   id: string;
@@ -17,6 +22,7 @@ export interface Team {
   name: string;
   rank: number;
   drivers: Driver[];
+  car: Car;
   totalStats: number; // Baseline for generation
   championshipPoints: number;
 }
@@ -143,11 +149,39 @@ const distributePointsToStats = (totalPoints: number): Record<StatName, number> 
   return stats as Record<StatName, number>;
 };
 
+const distributePointsToCarStats = (totalPoints: number): Record<CarStatName, number> => {
+  const stats: Record<string, number> = {};
+  CAR_STAT_NAMES.forEach(stat => stats[stat] = 0);
+
+  let remaining = totalPoints;
+  const numStats = CAR_STAT_NAMES.length;
+
+  if (remaining < numStats) {
+      for (let i = 0; i < remaining; i++) {
+          stats[CAR_STAT_NAMES[i]]++;
+      }
+      return stats as Record<CarStatName, number>;
+  }
+
+  CAR_STAT_NAMES.forEach(stat => {
+      stats[stat] = 1;
+      remaining--;
+  });
+
+  while (remaining > 0) {
+      const stat = CAR_STAT_NAMES[randomInt(0, numStats - 1)];
+      stats[stat]++;
+      remaining--;
+  }
+
+  return stats as Record<CarStatName, number>;
+};
+
 export const generateGrid = (): Team[] => {
   const teams: Team[] = [];
 
   for (let rank = 1; rank <= GRID.TOTAL_TEAMS; rank++) {
-    const baselineBudget = calculateTeamStatsBudget(
+    const totalPower = calculateTeamStatsBudget(
       rank,
       GRID.TOTAL_TEAMS,
       GRID.TIER_1_MIN_STATS,
@@ -155,20 +189,31 @@ export const generateGrid = (): Team[] => {
       GRID.DISTRIBUTION_FACTOR
     );
 
+    // Split 60% Car, 40% Driver
+    const carBudget = Math.floor(totalPower * 0.6);
+    const driverBaseBudget = Math.floor(totalPower * 0.4);
+
     const teamId = `team-${rank}`;
     const teamName = TEAM_NAMES[rank - 1] || `Team ${rank}`;
+
+    // Generate Car
+    const carStats = distributePointsToCarStats(carBudget);
+    const car: Car = {
+      stats: carStats,
+      totalStats: carBudget
+    };
 
     const drivers: Driver[] = [];
 
     // Generate 2 drivers
     for (let d = 0; d < GRID.DRIVERS_PER_TEAM; d++) {
       // Driver 1 is roughly the baseline. Driver 2 is slightly worse/different.
-      let budget = baselineBudget;
+      let budget = driverBaseBudget;
       if (d === 1) {
          const variance = randomFloat(1.01, 1.10);
-         budget = Math.floor(baselineBudget / variance);
+         budget = Math.floor(driverBaseBudget / variance);
       } else {
-         budget = Math.floor(baselineBudget);
+         budget = Math.floor(driverBaseBudget);
       }
 
       const driverStats = distributePointsToStats(budget);
@@ -191,7 +236,8 @@ export const generateGrid = (): Team[] => {
       name: teamName,
       rank,
       drivers,
-      totalStats: baselineBudget,
+      car,
+      totalStats: totalPower,
       championshipPoints: 0
     });
   }
