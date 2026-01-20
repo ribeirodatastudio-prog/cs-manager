@@ -97,14 +97,14 @@ export const PostRaceSummary = () => {
         .sort(([, a], [, b]) => b - a)
         .map(([id, pts], idx) => {
              const { driver, team } = getDriverInfo(id);
-             return { rank: idx + 1, name: driver?.name || id, flag: driver?.flag || '', team: team?.name || '', points: pts };
+             return { rank: idx + 1, name: driver?.name || id, flag: driver?.flag || '', team: team?.name || '', points: pts, teamId: team?.id };
         });
 
      const teamStandings = Object.entries(season.standings.teams)
         .sort(([, a], [, b]) => b - a)
         .map(([id, pts], idx) => {
              const team = grid.find(t => t.id === id);
-             return { rank: idx + 1, name: team?.name || id, points: pts };
+             return { rank: idx + 1, name: team?.name || id, points: pts, id };
         });
 
      return (
@@ -121,21 +121,27 @@ export const PostRaceSummary = () => {
                        </tr>
                     </thead>
                     <tbody>
-                       {driverStandings.map(d => (
-                          <tr key={d.rank} className="border-b border-slate-800/50">
-                             <td className="p-2 text-center font-mono text-slate-500">{d.rank}</td>
-                             <td className="p-2">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-lg">{d.flag}</span>
-                                  <div>
-                                     <div className="font-bold text-slate-200">{d.name}</div>
-                                     <div className="text-xs text-slate-500">{d.team}</div>
-                                  </div>
-                                </div>
-                             </td>
-                             <td className="p-2 text-right font-mono font-bold text-race-gold">{d.points}</td>
-                          </tr>
-                       ))}
+                       {driverStandings.map(d => {
+                          const isPlayer = d.teamId === playerTeamId;
+                          let rowClass = "border-b border-slate-800/50 ";
+                          if (isPlayer) rowClass += "bg-yellow-900/20 text-yellow-400 border-l-4 border-yellow-500 ";
+
+                          return (
+                              <tr key={d.rank} className={rowClass}>
+                                 <td className={`p-2 text-center font-mono ${isPlayer ? 'text-yellow-400' : 'text-slate-500'}`}>{d.rank}</td>
+                                 <td className="p-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-lg">{d.flag}</span>
+                                      <div>
+                                         <div className={`font-bold ${isPlayer ? 'text-yellow-400' : 'text-slate-200'}`}>{d.name}</div>
+                                         <div className={`text-xs ${isPlayer ? 'text-yellow-400/70' : 'text-slate-500'}`}>{d.team}</div>
+                                      </div>
+                                    </div>
+                                 </td>
+                                 <td className={`p-2 text-right font-mono font-bold ${isPlayer ? 'text-yellow-400' : 'text-race-gold'}`}>{d.points.toFixed(1)}</td>
+                              </tr>
+                          );
+                       })}
                     </tbody>
                  </table>
               </div>
@@ -153,13 +159,19 @@ export const PostRaceSummary = () => {
                        </tr>
                     </thead>
                     <tbody>
-                       {teamStandings.map(t => (
-                          <tr key={t.rank} className="border-b border-slate-800/50">
-                             <td className="p-2 text-center font-mono text-slate-500">{t.rank}</td>
-                             <td className="p-2 font-bold text-slate-200">{t.name}</td>
-                             <td className="p-2 text-right font-mono font-bold text-race-gold">{t.points}</td>
-                          </tr>
-                       ))}
+                       {teamStandings.map(t => {
+                          const isPlayer = t.id === playerTeamId;
+                          let rowClass = "border-b border-slate-800/50 ";
+                          if (isPlayer) rowClass += "bg-yellow-900/20 text-yellow-400 border-l-4 border-yellow-500 ";
+
+                          return (
+                              <tr key={t.rank} className={rowClass}>
+                                 <td className={`p-2 text-center font-mono ${isPlayer ? 'text-yellow-400' : 'text-slate-500'}`}>{t.rank}</td>
+                                 <td className={`p-2 font-bold ${isPlayer ? 'text-yellow-400' : 'text-slate-200'}`}>{t.name}</td>
+                                 <td className={`p-2 text-right font-mono font-bold ${isPlayer ? 'text-yellow-400' : 'text-race-gold'}`}>{t.points.toFixed(1)}</td>
+                              </tr>
+                          );
+                       })}
                     </tbody>
                  </table>
               </div>
@@ -218,30 +230,36 @@ export const PostRaceSummary = () => {
                       </thead>
                       <tbody>
                          {results.map((r) => {
+                            const driver = grid.flatMap(t => t.drivers).find(d => d.id === r.driverId);
+                            const isPlayer = driver?.teamId === playerTeamId;
+
                             const isFastest = r.driverId === fastestDriverId;
                             // Display Championship Points
-                            const champPts = (41 - r.rank) + (isFastest ? 0.1 : 0);
+                            const champPts = (41 - r.rank) + (isFastest ? 1.0 : 0);
 
                             const leader = results[0];
                             const gap = r.totalTime - leader.totalTime;
 
+                            let rowClass = "border-b border-slate-800/50 hover:bg-slate-800/30 ";
+                            if (isPlayer) rowClass += "bg-yellow-900/20 text-yellow-400 border-l-4 border-yellow-500 ";
+
                             return (
-                               <tr key={r.driverId} className="border-b border-slate-800/50 hover:bg-slate-800/30">
-                                  <td className={`p-3 text-center font-mono font-bold ${r.rank === 1 ? 'text-race-gold' : 'text-slate-500'}`}>{r.rank}</td>
+                               <tr key={r.driverId} className={rowClass}>
+                                  <td className={`p-3 text-center font-mono font-bold ${r.rank === 1 ? 'text-race-gold' : isPlayer ? 'text-yellow-400' : 'text-slate-500'}`}>{r.rank}</td>
                                   <td className="p-3">
                                      <div className="flex items-center gap-2">
                                         <span className="text-lg">{r.flag}</span>
-                                        <span className="font-bold text-slate-200">{r.driverName}</span>
-                                        <span className="text-xs text-slate-500 bg-slate-900 px-1 rounded border border-slate-800">{r.teamName}</span>
+                                        <span className={`font-bold ${isPlayer ? 'text-yellow-400' : 'text-slate-200'}`}>{r.driverName}</span>
+                                        <span className={`text-xs ${isPlayer ? 'text-yellow-400/70 border-yellow-500/50' : 'text-slate-500 border-slate-800'} bg-slate-900 px-1 rounded border`}>{r.teamName}</span>
                                      </div>
                                   </td>
-                                  <td className="p-3 text-right font-mono text-slate-400">
+                                  <td className={`p-3 text-right font-mono ${isPlayer ? 'text-yellow-400' : 'text-slate-400'}`}>
                                      {r.rank === 1 ? formatTime(r.totalTime) : `+${formatTime(gap)}`}
                                   </td>
-                                  <td className={`p-3 text-right font-mono ${isFastest ? 'text-purple-400 font-bold' : 'text-slate-500'}`}>
+                                  <td className={`p-3 text-right font-mono ${isFastest ? 'text-purple-400 font-bold' : isPlayer ? 'text-yellow-400' : 'text-slate-500'}`}>
                                      {formatTime(r.bestLapTime)}
                                   </td>
-                                  <td className="p-3 text-right font-mono font-bold text-race-gold">
+                                  <td className={`p-3 text-right font-mono font-bold ${isPlayer ? 'text-yellow-400' : 'text-race-gold'}`}>
                                      +{champPts.toFixed(1)}
                                   </td>
                                </tr>

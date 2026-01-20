@@ -7,7 +7,7 @@ interface Props {
 }
 
 export const RaceControlView = ({ onSelectDriver, selectedDriverId }: Props) => {
-  const { raceData, grid, currentTrack, actions } = useGame();
+  const { raceData, grid, currentTrack, actions, playerTeamId } = useGame();
 
   const isFinished = raceData.isRaceFinished;
 
@@ -18,14 +18,6 @@ export const RaceControlView = ({ onSelectDriver, selectedDriverId }: Props) => 
              RACE - LAP {raceData.currentLap} / {currentTrack?.laps}
           </h2>
           <div className="space-x-4">
-             {!isFinished && (
-                <button
-                  onClick={actions.simulateTick}
-                  className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded uppercase font-bold shadow-lg active:transform active:scale-95 transition-all"
-                >
-                  Next Lap
-                </button>
-             )}
              {isFinished && (
                 <button
                   onClick={actions.nextRace}
@@ -55,15 +47,27 @@ export const RaceControlView = ({ onSelectDriver, selectedDriverId }: Props) => 
                {raceData.results.map((res) => {
                    const driver = grid.flatMap(t => t.drivers).find(d => d.id === res.driverId);
                    const isSelected = selectedDriverId === res.driverId;
+                   const isPlayer = driver?.teamId === playerTeamId;
+
+                   let rowClass = "border-b border-gray-800 cursor-pointer transition-colors ";
+                   if (isSelected) {
+                       rowClass += "bg-cyan-900 text-white ";
+                       if (isPlayer) rowClass += "border-l-4 border-yellow-500 ";
+                   } else if (isPlayer) {
+                       rowClass += "bg-yellow-900/20 text-yellow-400 border-l-4 border-yellow-500 hover:bg-yellow-900/30 ";
+                   } else {
+                       rowClass += "hover:bg-gray-800 ";
+                   }
+
                    return (
                      <tr
                        key={res.driverId}
-                       className={`border-b border-gray-800 cursor-pointer hover:bg-gray-800 ${isSelected ? 'bg-cyan-900 text-white' : ''}`}
+                       className={rowClass}
                        onClick={() => onSelectDriver(res.driverId)}
                      >
                        <td className="p-2">{res.rank}</td>
-                       <td className={`p-2 font-bold ${isSelected ? 'text-white' : 'text-gray-200'}`}>{driver?.name}</td>
-                       <td className="p-2 text-gray-500">{res.teamName}</td>
+                       <td className={`p-2 font-bold ${isSelected ? 'text-white' : isPlayer ? 'text-yellow-400' : 'text-gray-200'}`}>{driver?.name}</td>
+                       <td className={`p-2 ${isSelected ? 'text-gray-300' : isPlayer ? 'text-yellow-400/70' : 'text-gray-500'}`}>{res.teamName}</td>
                        <td className="p-2 text-right font-mono text-yellow-500">{formatTime(res.lastLapTime)}</td>
                        <td className="p-2 text-right font-mono text-cyan-300">{res.gapToLeader > 0 ? `+${formatTime(res.gapToLeader)}` : 'LEADER'}</td>
                        <td className="p-2 text-right font-mono text-cyan-300">{res.rank === 1 ? 'INTERVAL' : `+${formatTime(res.gapToAhead)}`}</td>

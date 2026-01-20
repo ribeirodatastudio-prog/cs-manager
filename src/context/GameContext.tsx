@@ -55,6 +55,10 @@ interface GameContextType {
     isRaceFinished: boolean;
   };
 
+  // Automation State
+  isRacePaused: boolean;
+  raceSpeed: number;
+
   debugData: Record<string, LapAnalysis>;
 
   turnReport: string[];
@@ -66,6 +70,8 @@ interface GameContextType {
     simulateTick: () => void; // Simulates one lap for everyone
     completeRace: () => void; // Instantly finish (Simulate Now)
     nextRace: () => void;
+    togglePause: () => void;
+    setRaceSpeed: (speed: number) => void;
     upgradeStat: (driverId: string, statName: string) => void;
     upgradeCarStat: (statName: string) => void;
     hardReset: () => void;
@@ -115,6 +121,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     qualifyingResults: [],
     isRaceFinished: false,
   });
+
+  const [isRacePaused, setIsRacePaused] = useState(false);
+  const [raceSpeed, setRaceSpeed] = useState(1);
 
   // Derived State (Memoized instead of Effect)
   const driverMap = useMemo(() => {
@@ -194,7 +203,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
          // Bonus for fastest lap
          if (r.driverId === fastestDriverId) {
-            champPts += 0.1;
+            champPts += 1.0;
             moneyPts += 0.1;
          }
 
@@ -479,6 +488,16 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       setRaceNumber((n: number) => n + 1);
       setCurrentTrack(generateTrack());
       setGameState('HQ');
+      setIsRacePaused(false); // Reset pause state
+      setRaceSpeed(1); // Reset speed
+    },
+
+    togglePause: () => {
+      setIsRacePaused(prev => !prev);
+    },
+
+    setRaceSpeed: (speed: number) => {
+      setRaceSpeed(speed);
     },
 
     upgradeStat: (driverId: string, statName: string) => {
@@ -556,10 +575,26 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     economy: { points, rdPoints },
     season: { raceNumber, totalRaces: 40, standings },
     raceData,
+    isRacePaused,
+    raceSpeed,
     debugData,
     turnReport,
     actions
-  }), [gameState, grid, playerTeamId, getPlayerTeam, currentTrack, points, rdPoints, raceNumber, standings, raceData, debugData, turnReport, actions]);
+  }), [gameState, grid, playerTeamId, getPlayerTeam, currentTrack, points, rdPoints, raceNumber, standings, raceData, isRacePaused, raceSpeed, debugData, turnReport, actions]);
+
+  // Race Timer Automation
+  useEffect(() => {
+    if (gameState !== 'RACE' || raceData.isRaceFinished || isRacePaused) return;
+
+    const tick = () => {
+      actions.simulateTick();
+    };
+
+    const intervalMs = 30000 / raceSpeed;
+    const timer = setInterval(tick, intervalMs);
+
+    return () => clearInterval(timer);
+  }, [gameState, raceData.isRaceFinished, isRacePaused, raceSpeed, actions]);
 
   return (
     <GameContext.Provider value={value}>
