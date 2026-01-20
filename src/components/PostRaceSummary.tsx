@@ -29,18 +29,22 @@ export const PostRaceSummary = () => {
   const ReportView = () => {
       const playerTeam = grid.find(t => t.id === playerTeamId);
 
-      let totalEarnings = 0;
-      results.forEach(r => {
-          let pts = (41 - r.rank) / 10;
-          if (pts < 0.1) pts = 0.1;
-          if (r.driverId === fastestDriverId) pts += 0.1;
+      const driverEarnings: { name: string; earnings: number }[] = [];
+      let totalTeamEarnings = 0;
 
-          if (playerTeam?.drivers.some(d => d.id === r.driverId)) {
-              totalEarnings += pts;
-          }
-      });
-      // Round for display
-      totalEarnings = Math.round(totalEarnings * 100) / 100;
+      if (playerTeam) {
+        playerTeam.drivers.forEach(driver => {
+           const result = results.find(r => r.driverId === driver.id);
+           if (result) {
+              let pts = (41 - result.rank) / 10;
+              if (pts < 0.1) pts = 0.1;
+              if (result.driverId === fastestDriverId) pts += 0.1;
+
+              driverEarnings.push({ name: driver.name, earnings: pts });
+              totalTeamEarnings += pts;
+           }
+        });
+      }
 
       return (
          <div className="flex gap-4 h-full overflow-hidden">
@@ -52,12 +56,20 @@ export const PostRaceSummary = () => {
                  </div>
 
                  <div className="space-y-4">
-                     <div className="p-4 bg-slate-950/50 rounded border border-slate-800 flex justify-between items-center">
-                         <span className="text-slate-400 font-mono">RACE EARNINGS</span>
-                         <span className="text-2xl font-bold text-emerald-400 font-mono">+{totalEarnings.toFixed(2)} pts</span>
+                     {driverEarnings.map((d, i) => (
+                        <div key={i} className="p-4 bg-slate-950/50 rounded border border-slate-800 flex justify-between items-center">
+                            <span className="text-slate-400 font-mono">{d.name}</span>
+                            <span className="text-xl font-bold text-emerald-400 font-mono">+{d.earnings.toFixed(2)} XP</span>
+                        </div>
+                     ))}
+
+                     <div className="p-4 bg-slate-800/50 rounded border border-slate-700 flex justify-between items-center mt-2">
+                         <span className="text-slate-300 font-mono">TEAM R&D</span>
+                         <span className="text-xl font-bold text-race-gold font-mono">+{totalTeamEarnings.toFixed(2)} pts</span>
                      </div>
-                     <p className="text-sm text-slate-500 italic">
-                        Earnings are calculated based on driver finishing positions. Higher ranks yield significantly more R&D points.
+
+                     <p className="text-sm text-slate-500 italic mt-4">
+                        Earnings are calculated based on driver finishing positions. Higher ranks yield significantly more points.
                      </p>
                  </div>
              </div>

@@ -8,7 +8,7 @@ import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } fro
 type ViewMode = 'driver' | 'car';
 
 const GaragePanel = () => {
-  const { getPlayerTeam, economy, actions } = useGame();
+  const { getPlayerTeam, actions } = useGame();
   const playerTeam = getPlayerTeam();
   const [viewMode, setViewMode] = useState<ViewMode>('driver');
   const [selectedDriverIndex, setSelectedDriverIndex] = useState(0);
@@ -56,7 +56,7 @@ const GaragePanel = () => {
                    <h3 className="text-slate-400 text-xs uppercase tracking-wider">Car Development</h3>
                    <div className="flex flex-col items-end">
                        <span className="text-xs text-slate-600">Total: {car.totalStats}</span>
-                       <span className="text-xs text-race-gold font-mono">R&D Funds: {economy.rdPoints.toFixed(1)}</span>
+                       <span className="text-xs text-race-gold font-mono">R&D Funds: {(playerTeam.rdPoints || 0).toFixed(1)}</span>
                    </div>
                 </div>
 
@@ -65,7 +65,7 @@ const GaragePanel = () => {
                     const val = car.stats[stat];
                     // Cost formula: Base * (Exponent ^ (Level - 1))
                     const cost = Math.floor(ECONOMY.CAR_BASE_COST * Math.pow(ECONOMY.CAR_COST_EXPONENT, val - 1));
-                    const canAfford = economy.rdPoints >= cost;
+                    const canAfford = (playerTeam.rdPoints || 0) >= cost;
 
                     return (
                         <div key={stat} className="bg-slate-950 p-3 rounded border border-slate-800 flex items-center justify-between group hover:border-slate-700 transition-colors">
@@ -108,7 +108,10 @@ const GaragePanel = () => {
         <>
             <div className="flex items-center justify-between mb-2">
                <h3 className="text-slate-400 text-xs uppercase tracking-wider">Driver Stats</h3>
-               <span className="text-xs text-slate-600">Total: {currentDriver.totalStats}</span>
+               <div className="flex flex-col items-end">
+                   <span className="text-xs text-slate-600">Total: {currentDriver.totalStats}</span>
+                   <span className="text-xs text-emerald-400 font-mono">XP: {(currentDriver.experiencePoints || 0).toFixed(1)}</span>
+               </div>
             </div>
 
             {STAT_NAMES.map(stat => {
@@ -142,7 +145,7 @@ const GaragePanel = () => {
               }
 
               const cost = calculateStatCost(val);
-              const canAfford = !isMaxed && economy.points >= cost;
+              const canAfford = !isMaxed && (currentDriver.experiencePoints || 0) >= cost;
 
               return (
                 <div key={stat} className="bg-slate-950 p-3 rounded border border-slate-800 flex items-center justify-between group hover:border-slate-700 transition-colors">
@@ -159,7 +162,7 @@ const GaragePanel = () => {
                      {!isMaxed ? (
                          <div className="text-right">
                             <div className={`text-xs font-mono ${canAfford ? 'text-emerald-400' : 'text-rose-900'}`}>
-                               {Math.round(cost).toLocaleString()} PTS
+                               {Math.round(cost).toLocaleString()} XP
                             </div>
                             <div className="text-[10px] text-slate-600">
                                Next: {val + 1}
