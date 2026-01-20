@@ -6,7 +6,8 @@ const grid = generateGrid();
 const track = generateTrack();
 
 const driver1 = grid[0].drivers[0];
-const q1 = calculateQualifyingPace(driver1, track);
+const q1Result = calculateQualifyingPace(driver1, track);
+const q1 = q1Result.totalTime;
 
 console.log(`Track: ${track.name} (Segments: ${track.segments.length})`);
 console.log(`Base Qualy Time: ${q1.toFixed(3)}s`);

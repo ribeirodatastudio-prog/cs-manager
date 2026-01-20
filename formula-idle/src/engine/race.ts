@@ -25,23 +25,32 @@ const calculateSegmentScore = (driver: Driver, segmentType: SegmentType): number
   return rawScore * multiplier;
 };
 
-export const calculateQualifyingPace = (driver: Driver, track: Track): number => {
-  let totalTime = 0;
+export const calculateQualifyingPace = (driver: Driver, track: Track): { totalTime: number; sectors: [number, number, number] } => {
+  let s1 = 0;
+  let s2 = 0;
+  let s3 = 0;
 
-  track.segments.forEach(segmentType => {
+  track.segments.forEach((segmentType, idx) => {
     const baseTime = BASE_SEGMENT_TIMES[segmentType];
     const score = calculateSegmentScore(driver, segmentType);
 
-    // Avoid division by zero
     const safeScore = Math.max(score, 1);
-
     const ratio = track.difficulty / safeScore;
-
     const segmentTime = baseTime * Math.pow(ratio, 0.8);
-    totalTime += segmentTime;
+
+    if (idx < track.sector1) {
+      s1 += segmentTime;
+    } else if (idx < track.sector2) {
+      s2 += segmentTime;
+    } else {
+      s3 += segmentTime;
+    }
   });
 
-  return totalTime;
+  return {
+    totalTime: s1 + s2 + s3,
+    sectors: [s1, s2, s3]
+  };
 };
 
 export interface RaceConditions {
@@ -51,26 +60,65 @@ export interface RaceConditions {
   expectedRank: number;
 }
 
+export interface LapAnalysis {
+  baseTime: number;
+  segments: {
+    type: string;
+    base: number;
+    score: number;
+    result: number;
+  }[];
+  modifiers: {
+    instincts: number;
+    traffic: boolean;
+    overtake: string | null;
+  };
+  variance: number;
+  finalTime: number;
+}
+
 export const simulateLap = (
   driver: Driver,
   track: Track,
-  qualyTime: number,
+  _qualyTime: number, // Unused but kept for signature compatibility if needed, though we recalc for debug
   conditions: RaceConditions | null
-): { lapTime: number; overtakeSuccess: boolean } => {
+): { lapTime: number; overtakeSuccess: boolean; analysis: LapAnalysis } => {
 
-  // 1. Base Time (Qualy Time)
-  let lapTime = qualyTime;
+  // 1. Re-calculate Base Time (Segment by Segment) for Debugging
+  let baseTime = 0;
+  const segmentAnalysis: LapAnalysis['segments'] = [];
+
+  track.segments.forEach(segmentType => {
+    const baseSegTime = BASE_SEGMENT_TIMES[segmentType];
+    const score = calculateSegmentScore(driver, segmentType);
+    const safeScore = Math.max(score, 1);
+    const ratio = track.difficulty / safeScore;
+    const resultTime = baseSegTime * Math.pow(ratio, 0.8);
+
+    baseTime += resultTime;
+
+    segmentAnalysis.push({
+      type: segmentType,
+      base: baseSegTime,
+      score: safeScore,
+      result: resultTime
+    });
+  });
+
+  let lapTime = baseTime;
 
   // 2. Apply Consistency Variance
   const consistency = getStat(driver, 'Consistency');
   const variancePercent = 200 / (consistency + 50);
+  const varianceMultiplier = randomFloat(1 - variancePercent / 100, 1 + variancePercent / 100);
 
-  const varianceMultiplier = randomFloat(1 - variancePercent/100, 1 + variancePercent/100);
+  const varianceDelta = lapTime * (varianceMultiplier - 1);
   lapTime *= varianceMultiplier;
 
   // 3. Overtaking Logic
   let overtakeSuccess = false;
   let isStuck = false;
+  let overtakeRoll = null;
 
   if (conditions) {
     const isBehindSchedule = conditions.currentRank > conditions.expectedRank;
@@ -91,12 +139,18 @@ export const simulateLap = (
         if (segment === SEGMENT_TYPES.SHORT_STRAIGHT) weight = 1.0;
 
         if (weight > 0) {
-           const attackScore = overtakingStat * weight * randomFloat(0.8, 1.2);
-           const defendScore = opponentInstincts * randomFloat(0.8, 1.2);
+          const attackRoll = randomFloat(0.8, 1.2);
+          const defendRoll = randomFloat(0.8, 1.2);
+          const attackScore = overtakingStat * weight * attackRoll;
+          const defendScore = opponentInstincts * defendRoll;
 
-           if (attackScore > defendScore) {
-             successfulPass = true;
-           }
+          if (attackScore > defendScore) {
+            successfulPass = true;
+            overtakeRoll = `Success (Att: ${attackScore.toFixed(0)} vs Def: ${defendScore.toFixed(0)})`;
+          } else {
+             // Keep recording the last attempt?
+             overtakeRoll = `Failed (Att: ${attackScore.toFixed(0)} vs Def: ${defendScore.toFixed(0)})`;
+          }
         }
       }
 
@@ -113,5 +167,17 @@ export const simulateLap = (
     lapTime *= 1.15;
   }
 
-  return { lapTime, overtakeSuccess };
+  const analysis: LapAnalysis = {
+    baseTime,
+    segments: segmentAnalysis,
+    modifiers: {
+      instincts: getStat(driver, 'Instincts'),
+      traffic: isStuck,
+      overtake: overtakeRoll
+    },
+    variance: varianceDelta,
+    finalTime: lapTime
+  };
+
+  return { lapTime, overtakeSuccess, analysis };
 };

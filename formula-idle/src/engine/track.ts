@@ -7,6 +7,8 @@ export interface Track {
   segments: SegmentType[];
   laps: number;
   difficulty: number; // 0.5 to 1.5
+  sector1: number; // Index where sector 1 ends (exclusive)
+  sector2: number; // Index where sector 2 ends (exclusive)
 }
 
 const TRACK_NAMES = [
@@ -44,11 +46,16 @@ export const generateTrack = (): Track => {
 
   const name = TRACK_NAMES[randomInt(0, TRACK_NAMES.length - 1)];
 
+  const sector1 = Math.floor(segments.length / 3);
+  const sector2 = Math.floor((segments.length * 2) / 3);
+
   return {
     id: `track-${Date.now()}`,
     name,
     segments,
     laps,
-    difficulty
+    difficulty,
+    sector1,
+    sector2
   };
 };

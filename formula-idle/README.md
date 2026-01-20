@@ -25,20 +25,35 @@ A text-based, math-heavy incremental idle game managing a Racing Team.
 - **Constraints:** Must have 1 Long Straight.
 - **Laps:** `Clamp(Round(1000 / Segments), 50, 80)`.
 - **Difficulty:** Random 0.5x - 1.5x of highest tier stats.
+- **Sectors:** Track is divided into 3 equal sectors for timing.
 
-#### Race Logic
-- **Base Segment Times:**
-  - Corners: Low(6s), Med(4.5s), High(3s).
-  - Straights: Short(2s), Med(5s), Long(12s).
-- **Segment Weights:**
-  - Low Corner: 40% Brake, 40% Accel, 20% Corn.
-  - High Corner: 80% Corn, 10% Accel, 10% Brake.
-  - Straight: 80% Pace, 20% Accel.
-- **Modifiers:**
-  - **Instincts:** `Multiplier = 1 + (Instincts ^ 0.6) / 50`.
-  - **Dirty Air:** +15% Lap Time Penalty if stuck behind a car (<3s gap).
-  - **Overtaking:** Checked on straights. Success removes Dirty Air penalty.
-- **Qualifying:** `Time = BaseTime * (Difficulty / DriverScore)^0.8`.
+#### Math & Logic
+
+**1. Segment Time Calculation**
+For each segment of the track:
+- **Base Time:** Fixed per type (e.g., Long Straight = 12s, High Speed Corner = 3s).
+- **Driver Score:** `Sum(Stat * Weight) * InstinctsMultiplier`.
+  - Weights depend on segment type (e.g., Corners need Cornering/Braking, Straights need Pace/Acceleration).
+  - `InstinctsMultiplier = 1 + (Instincts ^ 0.6) / 50`.
+- **Result:** `SegmentTime = BaseTime * (TrackDifficulty / DriverScore) ^ 0.8`.
+
+**2. Qualifying**
+- Sum of all Segment Times.
+- Broken down into 3 Sectors.
+
+**3. Race Lap Simulation**
+- **Base Pace:** Recalculated from segments (matches Qualifying).
+- **Consistency Variance:**
+  - `VariancePercent = 200 / (Consistency + 50)`.
+  - `Multiplier = Random(1 - Variance%, 1 + Variance%)`.
+  - `LapTime = BasePace * Multiplier`.
+- **Traffic & Overtaking:**
+  - **Trigger:** Gap to car ahead < 3.0s AND CurrentRank > ExpectedRank (Qualy Pace).
+  - **Overtaking Check:** Performed on Straights (Short/Med/Long).
+    - `AttackScore = OvertakingStat * SegmentWeight * Random(0.8, 1.2)`.
+    - `DefendScore = OpponentInstincts * Random(0.8, 1.2)`.
+    - **Success:** `Attack > Defend`.
+  - **Dirty Air Penalty:** If overtake fails (Stuck), `LapTime *= 1.15` (+15% penalty).
 
 ## Tech Stack
 - React (Vite)
