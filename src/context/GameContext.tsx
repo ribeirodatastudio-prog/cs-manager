@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { type Team, initializeSeason } from '../engine/grid';
+import { type Team, initializeSeason, type Driver } from '../engine/grid';
 import { type Track, generateTrack } from '../engine/track';
 import { calculateQualifyingPace, simulateLap, type LapAnalysis } from '../engine/race';
 import { calculateStatCost } from '../engine/mathUtils';
@@ -71,6 +71,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   // State
   const [gameState, setGameState] = useState<GameState>('START');
   const [grid, setGrid] = useState<Team[]>([]);
+  const [driverMap, setDriverMap] = useState<Map<string, Driver>>(new Map());
   const [playerTeamId, setPlayerTeamId] = useState<string | null>(null);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [points, setPoints] = useState(0);
@@ -119,6 +120,17 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, [gameState, grid, playerTeamId, currentTrack, points, raceNumber, raceData, standings]);
+
+  // DERIVED STATE: Keep a map of drivers for efficient lookups
+  useEffect(() => {
+    const newMap = new Map<string, Driver>();
+    grid.forEach(team => {
+      team.drivers.forEach(driver => {
+        newMap.set(driver.id, driver);
+      });
+    });
+    setDriverMap(newMap);
+  }, [grid]);
 
   const getPlayerTeam = () => grid.find(t => t.id === playerTeamId) || null;
 
@@ -210,7 +222,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       const newResults = prev.results.map(r => {
          if (r.status === 'Finished') return r;
 
-         const driver = grid.flatMap(t => t.drivers).find(d => d.id === r.driverId);
+         const driver = driverMap.get(r.driverId);
          if (!driver) return r;
 
          const qTime = prev.qualifyingResults.find(q => q.driverId === r.driverId)?.time || 300;
@@ -220,7 +232,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
          let conditions = null;
          if (carAhead) {
-            const carAheadDriver = grid.flatMap(t => t.drivers).find(d => d.id === carAhead.driverId);
+            const carAheadDriver = driverMap.get(carAhead.driverId);
             const gap = r.totalTime - carAhead.totalTime;
             const currentRank = myIndex + 1;
             const expectedRank = prev.qualifyingResults.findIndex(q => q.driverId === r.driverId) + 1;
@@ -312,7 +324,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
             newDriverStandings[r.driverId] += pts;
          }
 
-         const driver = grid.flatMap(t => t.drivers).find(d => d.id === r.driverId);
+         const driver = driverMap.get(r.driverId);
          if (driver) {
              // Also update the Driver object in the grid?
              // Actually, grid state is separate. But for persistence we might want to.
