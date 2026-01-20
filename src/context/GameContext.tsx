@@ -219,7 +219,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       setTurnReport(evolution.logs);
 
       setStandings({ drivers: newDriverStandings, teams: newTeamStandings });
-      setPoints(p => p + earnedPoints);
+      setPoints((p: number) => p + earnedPoints);
       setGameState('RESULTS');
   }, []);
 
@@ -444,7 +444,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     },
 
     nextRace: () => {
-      setRaceNumber(n => n + 1);
+      setRaceNumber((n: number) => n + 1);
       setCurrentTrack(generateTrack());
       setGameState('HQ');
     },
@@ -463,7 +463,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
              const cost = calculateStatCost(currentVal);
 
              if (currentPoints >= cost) {
-                setPoints(p => p - cost);
+                setPoints((p: number) => p - cost);
                 return {
                    ...d,
                    stats: {
