@@ -214,9 +214,9 @@ export const PostRaceSummary = () => {
                       <tbody>
                          {results.map((r) => {
                             const isFastest = r.driverId === fastestDriverId;
-                            let pts = (41 - r.rank) / 10;
-                            if (pts < 0.1) pts = 0.1;
-                            const totalPts = pts + (isFastest ? 0.1 : 0);
+                            // Display Championship Points
+                            const champPts = (41 - r.rank) + (isFastest ? 0.1 : 0);
+
                             const leader = results[0];
                             const gap = r.totalTime - leader.totalTime;
 
@@ -235,8 +235,8 @@ export const PostRaceSummary = () => {
                                   <td className={`p-3 text-right font-mono ${isFastest ? 'text-purple-400 font-bold' : 'text-slate-500'}`}>
                                      {formatTime(r.bestLapTime)}
                                   </td>
-                                  <td className="p-3 text-right font-mono font-bold text-emerald-400">
-                                     +{totalPts.toFixed(1)}
+                                  <td className="p-3 text-right font-mono font-bold text-race-gold">
+                                     +{champPts.toFixed(1)}
                                   </td>
                                </tr>
                             );

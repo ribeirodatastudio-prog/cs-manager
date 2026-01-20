@@ -64,6 +64,7 @@ interface GameContextType {
     completeRace: () => void; // Instantly finish (Simulate Now)
     nextRace: () => void;
     upgradeStat: (driverId: string, statName: string) => void;
+    hardReset: () => void;
   };
 }
 
@@ -158,29 +159,36 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       });
 
       results.forEach(r => {
-         let pts = (41 - r.rank) / 10;
-         if (pts < 0.1) pts = 0.1;
+         // Championship Points: 41 - Rank
+         let champPts = 41 - r.rank;
 
+         // Currency Points: (41 - Rank) / 10
+         let moneyPts = (41 - r.rank) / 10;
+         if (moneyPts < 0.1) moneyPts = 0.1;
+
+         // Bonus for fastest lap
          if (r.driverId === fastestDriverId) {
-            pts += 0.1;
+            champPts += 0.1;
+            moneyPts += 0.1;
          }
 
          if (playerTeam?.drivers.some(d => d.id === r.driverId)) {
-            earnedPoints += pts;
+            earnedPoints += moneyPts;
          }
 
+         // Update Standings (Championship Points)
          if (newDriverStandings[r.driverId] !== undefined) {
-            newDriverStandings[r.driverId] += pts;
+            newDriverStandings[r.driverId] += champPts;
          } else {
-            newDriverStandings[r.driverId] = pts;
+            newDriverStandings[r.driverId] = champPts;
          }
 
          const driver = grid.flatMap(t => t.drivers).find(d => d.id === r.driverId);
          if (driver) {
              if (newTeamStandings[driver.teamId] !== undefined) {
-                 newTeamStandings[driver.teamId] += pts;
+                 newTeamStandings[driver.teamId] += champPts;
              } else {
-                 newTeamStandings[driver.teamId] = pts;
+                 newTeamStandings[driver.teamId] = champPts;
              }
          }
       });
@@ -250,7 +258,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
           gapToAhead: 0,
           lapsCompleted: 0,
           lastLapTime: 0,
-          bestLapTime: 0,
+          bestLapTime: Infinity,
           rank: qResults.findIndex(q => q.driverId === d.id) + 1, // Start rank based on qualy
           penalty: false,
           status: 'Running'
@@ -344,7 +352,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
            ...r,
            totalTime: r.totalTime + lapTime,
            lastLapTime: actualLapTime,
-           bestLapTime: (r.bestLapTime === 0 || actualLapTime < r.bestLapTime) ? actualLapTime : r.bestLapTime,
+           bestLapTime: (actualLapTime < r.bestLapTime) ? actualLapTime : r.bestLapTime,
            lapsCompleted: nextLap,
            penalty: !lapResult.overtakeSuccess && (conditions?.gapToAhead || 10) < 3.0 && (conditions?.currentRank || 0) > (conditions?.expectedRank || 0)
          };
@@ -424,6 +432,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
              return d;
           })
        })));
+    },
+
+    hardReset: () => {
+      localStorage.removeItem(STORAGE_KEY);
+      window.location.reload();
     }
   };
 

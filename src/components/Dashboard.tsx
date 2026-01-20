@@ -53,6 +53,12 @@ const Dashboard = () => {
                  MANUAL DEBUG MODE
               </div>
            )}
+           <button
+              onClick={actions.hardReset}
+              className="px-4 py-2 rounded transition-colors text-white bg-red-600 hover:bg-red-500 shadow-lg font-bold text-xs"
+           >
+              HARD RESET
+           </button>
         </div>
       </header>
 

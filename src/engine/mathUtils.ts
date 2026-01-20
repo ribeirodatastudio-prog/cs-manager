@@ -60,6 +60,8 @@ export const calculateTeamStatsBudget = (
 };
 
 export const formatTime = (seconds: number): string => {
+  if (seconds === Infinity) return "--:--:--";
+
   if (seconds < 60) {
     return seconds.toFixed(3);
   }
