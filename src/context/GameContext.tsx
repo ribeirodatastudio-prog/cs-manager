@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { type Team, initializeSeason } from '../engine/grid';
+import { type Team, initializeSeason, type Driver } from '../engine/grid';
 import { type Track, generateTrack } from '../engine/track';
 import { calculateQualifyingPace, simulateLap, type LapAnalysis } from '../engine/race';
 import { calculateStatCost } from '../engine/mathUtils';
@@ -72,6 +72,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   // State
   const [gameState, setGameState] = useState<GameState>('START');
   const [grid, setGrid] = useState<Team[]>([]);
+  const [driverMap, setDriverMap] = useState<Map<string, Driver>>(new Map());
   const [playerTeamId, setPlayerTeamId] = useState<string | null>(null);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [points, setPoints] = useState(0);
@@ -120,6 +121,17 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, [gameState, grid, playerTeamId, currentTrack, points, raceNumber, raceData, standings]);
+
+  // DERIVED STATE: Keep a map of drivers for efficient lookups
+  useEffect(() => {
+    const newMap = new Map<string, Driver>();
+    grid.forEach(team => {
+      team.drivers.forEach(driver => {
+        newMap.set(driver.id, driver);
+      });
+    });
+    setDriverMap(newMap);
+  }, [grid]);
 
   const getPlayerTeam = () => grid.find(t => t.id === playerTeamId) || null;
 
@@ -242,6 +254,26 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     },
 
     startRace: () => {
+      setRaceData(prev => {
+        const staggeredResults = prev.results.map(r => {
+           // We use the qualifying result order to determine the grid slot
+           const qualyIndex = prev.qualifyingResults.findIndex(q => q.driverId === r.driverId);
+           const startRank = qualyIndex + 1;
+           const stagger = (startRank - 1) * 0.5;
+
+           return {
+              ...r,
+              totalTime: stagger,
+              gapToLeader: stagger,
+              gapToAhead: startRank === 1 ? 0 : 0.5
+           };
+        });
+
+        return {
+           ...prev,
+           results: staggeredResults.sort((a, b) => a.rank - b.rank)
+        };
+      });
       setGameState('RACE');
     },
 
@@ -267,7 +299,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       const newResults = prev.results.map(r => {
          if (r.status === 'Finished') return r;
 
-         const driver = grid.flatMap(t => t.drivers).find(d => d.id === r.driverId);
+         const driver = driverMap.get(r.driverId);
          if (!driver) return r;
 
          const qTime = prev.qualifyingResults.find(q => q.driverId === r.driverId)?.time || 300;
@@ -277,7 +309,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
          let conditions = null;
          if (carAhead) {
-            const carAheadDriver = grid.flatMap(t => t.drivers).find(d => d.id === carAhead.driverId);
+            const carAheadDriver = driverMap.get(carAhead.driverId);
             const gap = r.totalTime - carAhead.totalTime;
             const currentRank = myIndex + 1;
             const expectedRank = prev.qualifyingResults.findIndex(q => q.driverId === r.driverId) + 1;
@@ -296,10 +328,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
          newDebugData[driver.id] = lapResult.analysis;
 
          let lapTime = lapResult.lapTime;
-         if (prev.currentLap === 0) {
-            const startRank = prev.qualifyingResults.findIndex(q => q.driverId === r.driverId);
-            lapTime += startRank * 0.2;
-         }
 
          const actualLapTime = lapResult.lapTime;
 
@@ -356,6 +384,40 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     },
 
     nextRace: () => {
+      const playerTeam = grid.find(t => t.id === playerTeamId);
+      let earnedPoints = 0;
+
+      // Update Standings
+      const newDriverStandings = { ...standings.drivers };
+      const newTeamStandings = { ...standings.teams };
+
+      raceData.results.forEach(r => {
+         const pts = 41 - r.rank;
+
+         // Update Player Currency (Driver Points)
+         if (playerTeam?.drivers.some(d => d.id === r.driverId)) {
+            earnedPoints += pts;
+         }
+
+         // Update Championship Standings
+         if (newDriverStandings[r.driverId] !== undefined) {
+            newDriverStandings[r.driverId] += pts;
+         }
+
+         const driver = driverMap.get(r.driverId);
+         if (driver) {
+             // Also update the Driver object in the grid?
+             // Actually, grid state is separate. But for persistence we might want to.
+             // But we have 'standings' state now.
+
+             if (newTeamStandings[driver.teamId] !== undefined) {
+                 newTeamStandings[driver.teamId] += pts;
+             }
+         }
+      });
+
+      setStandings({ drivers: newDriverStandings, teams: newTeamStandings });
+      setPoints(p => p + earnedPoints);
       setRaceNumber(n => n + 1);
       setCurrentTrack(generateTrack());
       setGameState('HQ');
