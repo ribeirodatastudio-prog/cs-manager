@@ -323,6 +323,17 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
           return a.totalTime - b.totalTime;
       });
 
+      // OPTIMIZATION: O(N) lookup maps for the loop
+      const qualifyingLookup = new Map<string, { time: number, rank: number }>();
+      prev.qualifyingResults.forEach((q, index) => {
+         qualifyingLookup.set(q.driverId, { time: q.time, rank: index + 1 });
+      });
+
+      const standingsIndexMap = new Map<string, number>();
+      currentStandings.forEach((s, index) => {
+         standingsIndexMap.set(s.driverId, index);
+      });
+
       const newDebugData: Record<string, LapAnalysis> = {};
 
       const newResults = prev.results.map(r => {
@@ -331,17 +342,18 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
          const driver = driverMap.get(r.driverId);
          if (!driver) return r;
 
-         const qTime = prev.qualifyingResults.find(q => q.driverId === r.driverId)?.time || 300;
+         const qData = qualifyingLookup.get(r.driverId);
+         const qTime = qData?.time || 300;
 
-         const myIndex = currentStandings.findIndex(s => s.driverId === r.driverId);
-         const carAhead = myIndex > 0 ? currentStandings[myIndex - 1] : null;
+         const myIndex = standingsIndexMap.get(r.driverId);
+         const carAhead = (myIndex !== undefined && myIndex > 0) ? currentStandings[myIndex - 1] : null;
 
          let conditions = null;
          if (carAhead) {
             const carAheadDriver = driverMap.get(carAhead.driverId);
             const gap = r.totalTime - carAhead.totalTime;
-            const currentRank = myIndex + 1;
-            const expectedRank = prev.qualifyingResults.findIndex(q => q.driverId === r.driverId) + 1;
+            const currentRank = (myIndex ?? 0) + 1;
+            const expectedRank = qData?.rank || 0;
 
             conditions = {
               gapToAhead: gap < 0 ? 0 : gap,
