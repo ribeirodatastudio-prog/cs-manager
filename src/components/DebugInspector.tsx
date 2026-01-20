@@ -1,4 +1,5 @@
 import { useGame } from '../context/GameContext';
+import { formatTime } from '../engine/mathUtils';
 
 interface Props {
   driverId: string | null;
@@ -37,9 +38,9 @@ export const DebugInspector = ({ driverId }: Props) => {
        <div className="mb-6 bg-gray-900 p-3 rounded border border-gray-800">
          <h4 className="text-white font-bold mb-2 border-b border-gray-700 pb-1">LAP SUMMARY</h4>
          <div className="grid grid-cols-2 gap-y-1">
-           <div className="text-gray-400">Raw Pace:</div><div className="text-right text-green-300">{analysis.baseTime.toFixed(3)}s</div>
+           <div className="text-gray-400">Raw Pace:</div><div className="text-right text-green-300">{formatTime(analysis.baseTime)}</div>
            <div className="text-gray-400">Variance:</div><div className="text-right text-blue-300">{analysis.variance > 0 ? "+" : ""}{analysis.variance.toFixed(3)}s</div>
-           <div className="text-gray-100 font-bold border-t border-gray-700 mt-1 pt-1">FINAL TIME:</div><div className="text-right text-yellow-400 font-bold border-t border-gray-700 mt-1 pt-1 text-lg">{analysis.finalTime.toFixed(3)}s</div>
+           <div className="text-gray-100 font-bold border-t border-gray-700 mt-1 pt-1">FINAL TIME:</div><div className="text-right text-yellow-400 font-bold border-t border-gray-700 mt-1 pt-1 text-lg">{formatTime(analysis.finalTime)}</div>
          </div>
        </div>
 
@@ -72,7 +73,7 @@ export const DebugInspector = ({ driverId }: Props) => {
                <div key={idx} className="bg-gray-900 p-2 rounded border border-gray-800 hover:border-gray-600 transition-colors">
                   <div className="flex justify-between text-white font-bold mb-1">
                      <span className="text-gray-300">{idx+1}. {seg.type.replace(/([A-Z])/g, ' $1').trim()}</span>
-                     <span className="text-green-400">{seg.result.toFixed(3)}s</span>
+                     <span className="text-green-400">{formatTime(seg.result)}</span>
                   </div>
                   <div className="text-gray-500 text-[10px] flex justify-between">
                      <span>Base: {seg.base}s</span>

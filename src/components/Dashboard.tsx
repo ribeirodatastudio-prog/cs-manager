@@ -57,13 +57,13 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 grid grid-cols-12 gap-1 p-1 overflow-hidden">
-        {/* Left: Garage (3 cols) */}
-        <section className="col-span-3 bg-slate-900/50 border border-slate-800 rounded overflow-hidden flex flex-col">
+        {/* Left: Garage (2 cols) */}
+        <section className="col-span-2 bg-slate-900/50 border border-slate-800 rounded overflow-hidden flex flex-col">
           <GaragePanel />
         </section>
 
-        {/* Center: View Switcher (5 cols) */}
-        <section className="col-span-5 bg-slate-900/50 border border-slate-800 rounded overflow-hidden flex flex-col relative">
+        {/* Center: View Switcher (6 cols) */}
+        <section className="col-span-6 bg-slate-900/50 border border-slate-800 rounded overflow-hidden flex flex-col relative">
            {gameState === 'QUALIFYING' ? (
               <QualifyingView />
            ) : gameState === 'RACE' ? (

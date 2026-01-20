@@ -1,4 +1,5 @@
 import { useGame } from '../context/GameContext';
+import { formatTime } from '../engine/mathUtils';
 
 interface Props {
   onSelectDriver: (driverId: string) => void;
@@ -62,8 +63,8 @@ export const RaceControlView = ({ onSelectDriver, selectedDriverId }: Props) => 
                        <td className="p-2">{res.rank}</td>
                        <td className={`p-2 font-bold ${isSelected ? 'text-white' : 'text-gray-200'}`}>{driver?.name}</td>
                        <td className="p-2 text-gray-500">{res.teamName}</td>
-                       <td className="p-2 text-right font-mono text-yellow-500">{res.lastLapTime.toFixed(3)}</td>
-                       <td className="p-2 text-right font-mono text-cyan-300">{res.gapToLeader > 0 ? `+${res.gapToLeader.toFixed(3)}` : 'LEADER'}</td>
+                       <td className="p-2 text-right font-mono text-yellow-500">{formatTime(res.lastLapTime)}</td>
+                       <td className="p-2 text-right font-mono text-cyan-300">{res.gapToLeader > 0 ? `+${formatTime(res.gapToLeader)}` : 'LEADER'}</td>
                        <td className="p-2 text-center">{res.status === 'Finished' ? '🏁' : '🟢'}</td>
                      </tr>
                    );

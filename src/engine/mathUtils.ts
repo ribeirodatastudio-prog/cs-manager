@@ -45,3 +45,24 @@ export const calculateTeamStatsBudget = (
   // Map back to range
   return minStats + (maxStats - minStats) * curvedPos;
 };
+
+export const formatTime = (seconds: number): string => {
+  if (seconds < 60) {
+    return seconds.toFixed(3);
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  if (minutes < 60) {
+    const secStr = remainingSeconds.toFixed(3).padStart(6, '0');
+    return `${minutes}:${secStr}`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  const secStr = remainingSeconds.toFixed(3).padStart(6, '0');
+  const minStr = remainingMinutes.toString().padStart(2, '0');
+
+  return `${hours}:${minStr}:${secStr}`;
+};

@@ -1,5 +1,6 @@
 import { useGame } from '../context/GameContext';
 import { Trophy, AlertTriangle } from 'lucide-react';
+import { formatTime } from '../engine/mathUtils';
 
 const TimingTower = () => {
   const { raceData, gameState } = useGame();
@@ -82,7 +83,7 @@ const TimingTower = () => {
                    // Let's render `qualifyingResults` instead if Qualy.
                    gapText = '-';
                } else {
-                   gapText = isLeader ? 'LEADER' : `+${row.gapToLeader.toFixed(3)}`;
+                   gapText = isLeader ? 'LEADER' : `+${formatTime(row.gapToLeader)}`;
                }
 
                return (
@@ -107,7 +108,7 @@ const TimingTower = () => {
                      {gapText}
                    </td>
                    <td className="p-2 text-right font-mono text-slate-500 hidden sm:table-cell">
-                     {row.lastLapTime > 0 ? row.lastLapTime.toFixed(3) : '-'}
+                     {row.lastLapTime > 0 ? formatTime(row.lastLapTime) : '-'}
                    </td>
                  </tr>
                );

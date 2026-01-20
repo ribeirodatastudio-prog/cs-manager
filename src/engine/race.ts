@@ -36,7 +36,7 @@ export const calculateQualifyingPace = (driver: Driver, track: Track): { totalTi
 
     const safeScore = Math.max(score, 1);
     const ratio = track.difficulty / safeScore;
-    const segmentTime = baseTime * Math.pow(ratio, 0.8);
+    const segmentTime = baseTime * Math.pow(ratio, 0.2);
 
     if (idx < track.sector1) {
       s1 += segmentTime;
@@ -93,7 +93,7 @@ export const simulateLap = (
     const score = calculateSegmentScore(driver, segmentType);
     const safeScore = Math.max(score, 1);
     const ratio = track.difficulty / safeScore;
-    const resultTime = baseSegTime * Math.pow(ratio, 0.8);
+    const resultTime = baseSegTime * Math.pow(ratio, 0.2);
 
     baseTime += resultTime;
 

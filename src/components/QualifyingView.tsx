@@ -1,9 +1,8 @@
 import { useGame } from '../context/GameContext';
+import { formatTime } from '../engine/mathUtils';
 
 export const QualifyingView = () => {
   const { raceData, grid, actions } = useGame();
-
-  const fmt = (n: number) => n.toFixed(3);
 
   return (
     <div className="flex flex-col h-full bg-gray-900 text-cyan-400 p-4 font-mono overflow-auto">
@@ -39,10 +38,10 @@ export const QualifyingView = () => {
                  <td className="p-2">{idx + 1}</td>
                  <td className="p-2 text-white">{driver?.name}</td>
                  <td className="p-2 text-gray-500">{team?.name}</td>
-                 <td className="p-2 text-right text-yellow-500">{fmt(res.sectors[0])}</td>
-                 <td className="p-2 text-right text-blue-500">{fmt(res.sectors[1])}</td>
-                 <td className="p-2 text-right text-red-500">{fmt(res.sectors[2])}</td>
-                 <td className="p-2 text-right font-bold text-cyan-300">{fmt(res.time)}</td>
+                 <td className="p-2 text-right text-yellow-500 whitespace-nowrap">{formatTime(res.sectors[0])}</td>
+                 <td className="p-2 text-right text-blue-500 whitespace-nowrap">{formatTime(res.sectors[1])}</td>
+                 <td className="p-2 text-right text-red-500 whitespace-nowrap">{formatTime(res.sectors[2])}</td>
+                 <td className="p-2 text-right font-bold text-cyan-300 whitespace-nowrap">{formatTime(res.time)}</td>
                </tr>
              );
           })}
