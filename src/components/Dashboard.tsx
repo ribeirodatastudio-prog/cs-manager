@@ -11,7 +11,7 @@ import { PostRaceSummary } from './PostRaceSummary';
 import { TeamRadioFeed } from './TeamRadioFeed';
 
 const Dashboard = () => {
-  const { gameState, actions, season, economy, getPlayerTeam, isRacePaused, raceSpeed } = useGame();
+  const { gameState, actions, season, getPlayerTeam, isRacePaused, raceSpeed } = useGame();
   const playerTeam = getPlayerTeam();
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
 
@@ -32,10 +32,6 @@ const Dashboard = () => {
           <div className="flex flex-col">
              <span className="text-xs text-slate-500 uppercase">Season Race</span>
              <span className="font-bold">{season.raceNumber} / {season.totalRaces}</span>
-          </div>
-          <div className="flex flex-col">
-             <span className="text-xs text-slate-500 uppercase">Funds</span>
-             <span className="font-bold text-emerald-400">{economy.points.toLocaleString()} PTS</span>
           </div>
         </div>
 

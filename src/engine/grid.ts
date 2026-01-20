@@ -15,6 +15,7 @@ export interface Driver {
   stats: Record<StatName, number>;
   totalStats: number;
   championshipPoints: number;
+  experiencePoints: number;
 }
 
 export interface Team {
@@ -25,6 +26,7 @@ export interface Team {
   car: Car;
   totalStats: number; // Baseline for generation
   championshipPoints: number;
+  rdPoints: number;
 }
 
 const TEAM_NAMES = [
@@ -227,7 +229,8 @@ export const generateGrid = (): Team[] => {
         teamId,
         stats: driverStats,
         totalStats: budget,
-        championshipPoints: 0
+        championshipPoints: 0,
+        experiencePoints: 0
       });
     }
 
@@ -238,7 +241,8 @@ export const generateGrid = (): Team[] => {
       drivers,
       car,
       totalStats: totalPower,
-      championshipPoints: 0
+      championshipPoints: 0,
+      rdPoints: 0
     });
   }
 
