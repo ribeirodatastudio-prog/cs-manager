@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { STAT_NAMES } from '../engine/data';
 import { calculateStatCost, getStability } from '../engine/mathUtils';
-import { User, Activity } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
 
 const GaragePanel = () => {
@@ -34,7 +34,7 @@ const GaragePanel = () => {
                 : 'text-slate-500 hover:text-slate-300'
             }`}
           >
-            <User size={16} />
+            <span className="text-lg">{driver.flag}</span>
             {driver.name.split(' ')[1]}
           </button>
         ))}

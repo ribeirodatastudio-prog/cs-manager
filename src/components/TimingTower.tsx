@@ -70,6 +70,7 @@ const TimingTower = () => {
                    </td>
                    <td className="p-2">
                      <div className="flex items-center gap-2">
+                       <span className="text-lg">{row.flag}</span>
                        <span className="font-bold text-slate-200">{row.driverName}</span>
                        <span className="text-xs text-slate-500 hidden md:inline">{row.teamName}</span>
                        {row.penalty && <AlertTriangle size={12} className="text-orange-500" />}

@@ -4,6 +4,8 @@ import { GRID, STAT_NAMES, type StatName } from './data';
 export interface Driver {
   id: string;
   name: string;
+  nationality: string;
+  flag: string;
   teamId: string;
   stats: Record<StatName, number>;
   totalStats: number;
@@ -26,22 +28,82 @@ const TEAM_NAMES = [
   "Quantum Racing", "Nebula GP", "Vortex Autosport", "Titanium F1", "Phoenix Rising"
 ];
 
-const FIRST_NAMES = [
-  "Max", "Lewis", "Charles", "Lando", "Fernando", "George", "Carlos", "Oscar", "Sergio", "Pierre",
-  "Alex", "Nico", "Kevin", "Yuki", "Lance", "Valtteri", "Zhou", "Daniel", "Esteban", "Logan",
-  "Mick", "Sebastian", "Kimi", "Michael", "Ayrton", "Alain", "Niki", "James", "Jenson", "Damon"
-];
+const NAME_POOLS: Record<string, { country: string; code: string; flag: string; first: string[]; last: string[] }> = {
+  BRA: {
+    country: "Brazil",
+    code: "BRA",
+    flag: "🇧🇷",
+    first: ["Mateo", "Felipe", "Lucas", "Gabriel", "Enzo", "Rafael", "Bruno", "Thiago", "Pedro", "Gustavo", "Rodrigo", "Leonardo", "Daniel", "Eduardo", "Andre", "Fernando", "Ricardo", "Alexandre", "Caio", "Vitor"],
+    last: ["Silva", "Santos", "Oliveira", "Souza", "Lima", "Ferreira", "Costa", "Pereira", "Carvalho", "Almeida", "Ribeiro", "Martins", "Gomes", "Barbosa", "Rocha", "Alves", "Araujo", "Teixeira", "Mendes", "Cardoso"]
+  },
+  GBR: {
+    country: "United Kingdom",
+    code: "GBR",
+    flag: "🇬🇧",
+    first: ["James", "Lewis", "George", "Lando", "Oliver", "Harry", "Jack", "Charlie", "Thomas", "William", "Daniel", "Matthew", "Ryan", "Liam", "Ben", "Connor", "Callum", "Alex", "Sam", "Joe"],
+    last: ["Smith", "Taylor", "Wilson", "Norris", "Russell", "Hamilton", "Brown", "Evans", "Walker", "Johnson", "Robinson", "Wright", "Thompson", "White", "Hall", "Green", "Clarke", "Hill", "Wood", "Hughes"]
+  },
+  ITA: {
+    country: "Italy",
+    code: "ITA",
+    flag: "🇮🇹",
+    first: ["Alessandro", "Lorenzo", "Matteo", "Francesco", "Leonardo", "Davide", "Federico", "Marco", "Giuseppe", "Antonio", "Giovanni", "Roberto", "Andrea", "Michele", "Luca", "Simone", "Stefano", "Giorgio", "Enrico", "Fabio"],
+    last: ["Rossi", "Ferrari", "Esposito", "Bianchi", "Romano", "Colombo", "Ricci", "Marino", "Greco", "Bruno", "Gallo", "Conti", "De Luca", "Costa", "Giordano", "Mancini", "Rizzo", "Lombardi", "Moretti", "Barbieri"]
+  },
+  GER: {
+    country: "Germany",
+    code: "GER",
+    flag: "🇩🇪",
+    first: ["Maximilian", "Paul", "Lukas", "Felix", "Jonas", "Leon", "Finn", "Elias", "Tim", "Luis", "Julian", "Niklas", "Jan", "Philipp", "Sebastian", "Nico", "Mick", "David", "Simon", "Ben"],
+    last: ["Muller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner", "Becker", "Schulz", "Hoffmann", "Schafer", "Koch", "Bauer", "Richter", "Klein", "Wolf", "Schroder", "Neumann", "Schwarz", "Zimmermann"]
+  },
+  FRA: {
+    country: "France",
+    code: "FRA",
+    flag: "🇫🇷",
+    first: ["Lucas", "Hugo", "Louis", "Arthur", "Nathan", "Thomas", "Leo", "Gabriel", "Enzo", "Jules", "Mathis", "Theo", "Maxime", "Antoine", "Clement", "Axel", "Paul", "Pierre", "Esteban", "Romain"],
+    last: ["Martin", "Bernard", "Dubois", "Thomas", "Robert", "Richard", "Petit", "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel", "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier"]
+  },
+  ESP: {
+    country: "Spain",
+    code: "ESP",
+    flag: "🇪🇸",
+    first: ["Antonio", "Manuel", "Jose", "David", "Juan", "Javier", "Daniel", "Francisco", "Carlos", "Jesus", "Alejandro", "Miguel", "Rafael", "Pedro", "Angel", "Pablo", "Sergio", "Fernando", "Jorge", "Luis"],
+    last: ["Garcia", "Gonzalez", "Rodriguez", "Fernandez", "Lopez", "Martinez", "Sanchez", "Perez", "Gomez", "Martin", "Jimenez", "Ruiz", "Hernandez", "Diaz", "Moreno", "Muñoz", "Alvarez", "Romero", "Alonso", "Gutierrez"]
+  },
+  USA: {
+    country: "United States",
+    code: "USA",
+    flag: "🇺🇸",
+    first: ["James", "John", "Robert", "Michael", "William", "David", "Richard", "Joseph", "Thomas", "Charles", "Christopher", "Daniel", "Matthew", "Anthony", "Donald", "Mark", "Paul", "Steven", "Andrew", "Kenneth"],
+    last: ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin"]
+  },
+  JPN: {
+    country: "Japan",
+    code: "JPN",
+    flag: "🇯🇵",
+    first: ["Hiroshi", "Takashi", "Kenji", "Akira", "Yuki", "Kazuo", "Takeshi", "Masahiro", "Yoshio", "Tadashi", "Naoki", "Hideo", "Toshiyuki", "Koji", "Satoshi", "Shinji", "Yusuke", "Daisuke", "Ryota", "Kenta"],
+    last: ["Sato", "Suzuki", "Takahashi", "Tanaka", "Watanabe", "Ito", "Yamamoto", "Nakamura", "Kobayashi", "Kato", "Yoshida", "Yamada", "Sasaki", "Yamaguchi", "Saito", "Matsumoto", "Inoue", "Kimura", "Hayashi", "Shimizu"]
+  }
+};
 
-const LAST_NAMES = [
-  "Verstappen", "Hamilton", "Leclerc", "Norris", "Alonso", "Russell", "Sainz", "Piastri", "Perez", "Gasly",
-  "Albon", "Hulkenberg", "Magnussen", "Tsunoda", "Stroll", "Bottas", "Guanyu", "Ricciardo", "Ocon", "Sargeant",
-  "Schumacher", "Vettel", "Raikkonen", "Senna", "Prost", "Lauda", "Hunt", "Button", "Hill", "Mansell"
-];
+export const generateDriverIdentity = () => {
+  const countryKeys = Object.keys(NAME_POOLS);
+  const selectedKey = countryKeys[randomInt(0, countryKeys.length - 1)];
+  const nation = NAME_POOLS[selectedKey];
+
+  const first = nation.first[randomInt(0, nation.first.length - 1)];
+  const last = nation.last[randomInt(0, nation.last.length - 1)];
+
+  return {
+    name: `${first} ${last}`,
+    nationality: nation.country,
+    flag: nation.flag
+  };
+};
 
 export const generateDriverName = () => {
-  const first = FIRST_NAMES[randomInt(0, FIRST_NAMES.length - 1)];
-  const last = LAST_NAMES[randomInt(0, LAST_NAMES.length - 1)];
-  return `${first} ${last}`;
+  return generateDriverIdentity().name;
 };
 
 export const generateRandomTeamName = () => {
@@ -110,10 +172,13 @@ export const generateGrid = (): Team[] => {
       }
 
       const driverStats = distributePointsToStats(budget);
+      const identity = generateDriverIdentity();
 
       drivers.push({
         id: `driver-${rank}-${d}`,
-        name: generateDriverName(),
+        name: identity.name,
+        nationality: identity.nationality,
+        flag: identity.flag,
         teamId,
         stats: driverStats,
         totalStats: budget,

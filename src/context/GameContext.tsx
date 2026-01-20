@@ -11,6 +11,7 @@ export type GameState = 'START' | 'HQ' | 'QUALIFYING' | 'RACE' | 'RESULTS';
 interface RaceResult {
   driverId: string;
   driverName: string;
+  flag: string;
   teamName: string;
   totalTime: number;
   gapToLeader: number;
@@ -262,6 +263,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         results: grid.flatMap(team => team.drivers).map(d => ({
           driverId: d.id,
           driverName: d.name,
+          flag: d.flag || '🏳️',
           teamName: grid.find(t => t.id === d.teamId)?.name || '',
           totalTime: 0,
           gapToLeader: 0,

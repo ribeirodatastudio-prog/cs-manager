@@ -97,7 +97,7 @@ export const PostRaceSummary = () => {
         .sort(([, a], [, b]) => b - a)
         .map(([id, pts], idx) => {
              const { driver, team } = getDriverInfo(id);
-             return { rank: idx + 1, name: driver?.name || id, team: team?.name || '', points: pts };
+             return { rank: idx + 1, name: driver?.name || id, flag: driver?.flag || '', team: team?.name || '', points: pts };
         });
 
      const teamStandings = Object.entries(season.standings.teams)
@@ -125,8 +125,13 @@ export const PostRaceSummary = () => {
                           <tr key={d.rank} className="border-b border-slate-800/50">
                              <td className="p-2 text-center font-mono text-slate-500">{d.rank}</td>
                              <td className="p-2">
-                                <div className="font-bold text-slate-200">{d.name}</div>
-                                <div className="text-xs text-slate-500">{d.team}</div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg">{d.flag}</span>
+                                  <div>
+                                     <div className="font-bold text-slate-200">{d.name}</div>
+                                     <div className="text-xs text-slate-500">{d.team}</div>
+                                  </div>
+                                </div>
                              </td>
                              <td className="p-2 text-right font-mono font-bold text-race-gold">{d.points}</td>
                           </tr>
@@ -225,6 +230,7 @@ export const PostRaceSummary = () => {
                                   <td className={`p-3 text-center font-mono font-bold ${r.rank === 1 ? 'text-race-gold' : 'text-slate-500'}`}>{r.rank}</td>
                                   <td className="p-3">
                                      <div className="flex items-center gap-2">
+                                        <span className="text-lg">{r.flag}</span>
                                         <span className="font-bold text-slate-200">{r.driverName}</span>
                                         <span className="text-xs text-slate-500 bg-slate-900 px-1 rounded border border-slate-800">{r.teamName}</span>
                                      </div>
