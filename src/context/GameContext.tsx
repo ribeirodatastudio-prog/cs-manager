@@ -8,6 +8,16 @@ import { processTeamEvolution } from '../engine/evolution';
 
 export type GameState = 'START' | 'HQ' | 'QUALIFYING' | 'RACE' | 'RESULTS';
 
+export interface FeedMessage {
+  id: string;
+  lap: number;
+  driverId: string;
+  driverName: string;
+  type: 'positive' | 'negative' | 'neutral';
+  message: string;
+  color: string; // Additional accent color hint
+}
+
 interface RaceResult {
   driverId: string;
   driverName: string;
@@ -62,6 +72,7 @@ interface GameContextType {
   debugData: Record<string, LapAnalysis>;
 
   turnReport: string[];
+  teamRadio: FeedMessage[];
 
   actions: {
     startNewGame: (teamName: string, driver1Name: string, driver2Name: string) => void;
@@ -109,6 +120,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [standings, setStandings] = useState<{ drivers: Record<string, number>; teams: Record<string, number> }>(initialData.standings || { drivers: {}, teams: {} });
   const [debugData, setDebugData] = useState<Record<string, LapAnalysis>>({});
   const [turnReport, setTurnReport] = useState<string[]>([]);
+  const [teamRadio, setTeamRadio] = useState<FeedMessage[]>([]);
 
   const [raceData, setRaceData] = useState<{
     currentLap: number;
@@ -332,6 +344,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     },
 
     startRace: () => {
+      setTeamRadio([]); // Clear feed
       setRaceData(prev => {
         const staggeredResults = prev.results.map(r => {
            // We use the qualifying result order to determine the grid slot
@@ -359,6 +372,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       const track = currentTrackRef.current;
       const raceData = raceDataRef.current;
       const driverMap = driverMapRef.current;
+      const playerTeamId = playerTeamIdRef.current;
 
       if (!track || raceData.isRaceFinished) return;
 
@@ -475,6 +489,126 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
          isRaceFinished: allFinished
       });
 
+      // --- NARRATIVE FEED GENERATION ---
+      if (nextLap > 1) { // Skip Lap 1
+        const playerDrivers = gridRef.current.find(t => t.id === playerTeamId)?.drivers || [];
+        const newMessages: FeedMessage[] = [];
+
+        playerDrivers.forEach(pDriver => {
+           // 1. Get Start Pos
+           const startIdx = currentStandings.findIndex(r => r.driverId === pDriver.id);
+           const startPos = startIdx + 1;
+
+           // 2. Get End Pos
+           const endIdx = finalResults.findIndex(r => r.driverId === pDriver.id);
+           const endPos = endIdx + 1;
+
+           // 3. Get Lap Data
+           const newResult = finalResults[endIdx]; // Contains updated times
+           const prevResult = prev.results.find(r => r.driverId === pDriver.id);
+           const lapTime = newResult.lastLapTime;
+           const prevBest = prevResult?.bestLapTime || Infinity;
+
+           if (!prevResult) return;
+
+           const gapToAhead = newResult.gapToAhead;
+
+           // LOGIC (Priority Order)
+           let msg: FeedMessage | null = null;
+           const msgId = `${nextLap}-${pDriver.id}`;
+
+           // 1. Mover
+           if (endPos < startPos) {
+              msg = {
+                 id: msgId,
+                 lap: nextLap,
+                 driverId: pDriver.id,
+                 driverName: pDriver.name,
+                 type: 'positive',
+                 message: `Started P${startPos}, finished P${endPos}. Great overtake!`,
+                 color: 'text-green-400'
+              };
+           }
+           // 2. Slider
+           else if (endPos > startPos) {
+              msg = {
+                 id: msgId,
+                 lap: nextLap,
+                 driverId: pDriver.id,
+                 driverName: pDriver.name,
+                 type: 'negative',
+                 message: `Dropped from P${startPos} to P${endPos}. Struggling for grip.`,
+                 color: 'text-red-400'
+              };
+           }
+           // 3. Flyer (New PB)
+           else if (lapTime < prevBest) {
+              msg = {
+                 id: msgId,
+                 lap: nextLap,
+                 driverId: pDriver.id,
+                 driverName: pDriver.name,
+                 type: 'positive',
+                 message: `Purple Sectors! ${pDriver.name} just set their fastest lap.`,
+                 color: 'text-green-400'
+              };
+           }
+           // 4. Consistent (Within 1% of PB)
+           else if (prevBest !== Infinity && lapTime <= prevBest * 1.01) {
+              msg = {
+                 id: msgId,
+                 lap: nextLap,
+                 driverId: pDriver.id,
+                 driverName: pDriver.name,
+                 type: 'neutral',
+                 message: `${pDriver.name} is locked in. Solid pace.`,
+                 color: 'text-gray-300'
+              };
+           }
+           // 5. Traffic / Slow (> 105% PB)
+           else if (prevBest !== Infinity && lapTime > prevBest * 1.05) {
+              if (gapToAhead < 3.0) {
+                 // Calculate diff
+                 const diff = (lapTime - prevBest).toFixed(1);
+                 msg = {
+                    id: msgId,
+                    lap: nextLap,
+                    driverId: pDriver.id,
+                    driverName: pDriver.name,
+                    type: 'negative',
+                    message: `Lap time +${diff}s off pace. Reporting dirty air.`,
+                    color: 'text-red-400'
+                 };
+              } else {
+                 msg = {
+                    id: msgId,
+                    lap: nextLap,
+                    driverId: pDriver.id,
+                    driverName: pDriver.name,
+                    type: 'negative',
+                    message: `Losing time in Sector 2.`,
+                    color: 'text-red-400'
+                 };
+              }
+           }
+
+           if (msg) {
+              newMessages.push(msg);
+           }
+        });
+
+        if (newMessages.length > 0) {
+           setTeamRadio(prevFeed => [...newMessages, ...prevFeed].slice(0, 20));
+        }
+      }
+
+      setRaceData({
+         ...prev,
+         results: finalResults,
+         currentLap: isLastLap ? track.laps : nextLap,
+         isRaceFinished: allFinished
+      });
+
       if (allFinished) {
         handleRaceFinish(finalResults);
       }
@@ -579,8 +713,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     raceSpeed,
     debugData,
     turnReport,
+    teamRadio,
     actions
-  }), [gameState, grid, playerTeamId, getPlayerTeam, currentTrack, points, rdPoints, raceNumber, standings, raceData, isRacePaused, raceSpeed, debugData, turnReport, actions]);
+  }), [gameState, grid, playerTeamId, getPlayerTeam, currentTrack, points, rdPoints, raceNumber, standings, raceData, isRacePaused, raceSpeed, debugData, turnReport, teamRadio, actions]);
 
   // Race Timer Automation
   useEffect(() => {

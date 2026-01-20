@@ -8,6 +8,7 @@ import { QualifyingView } from './QualifyingView';
 import { RaceControlView } from './RaceControlView';
 import { DebugInspector } from './DebugInspector';
 import { PostRaceSummary } from './PostRaceSummary';
+import { TeamRadioFeed } from './TeamRadioFeed';
 
 const Dashboard = () => {
   const { gameState, actions, season, economy, getPlayerTeam, isRacePaused, raceSpeed } = useGame();
@@ -103,7 +104,9 @@ const Dashboard = () => {
 
         {/* Right: Debug/Map (4 cols) */}
         <section className="col-span-4 bg-slate-900/50 border border-slate-800 rounded overflow-hidden flex flex-col">
-           {gameState === 'QUALIFYING' || gameState === 'RACE' ? (
+           {gameState === 'RACE' ? (
+              <TeamRadioFeed />
+           ) : gameState === 'QUALIFYING' ? (
               <DebugInspector driverId={selectedDriverId} />
            ) : (
               <TrackMap />
