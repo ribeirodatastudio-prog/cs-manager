@@ -4,6 +4,7 @@ import { Pathfinder } from "../src/lib/engine/Pathfinder";
 import { DuelEngine } from "../src/lib/engine/DuelEngine";
 import { Bot } from "../src/lib/engine/Bot";
 import { MOCK_PLAYERS } from "../src/lib/mock-players";
+import { TeamSide } from "../src/lib/engine/constants";
 import { strict as assert } from "assert";
 
 console.log("Running Engine Tests...");
@@ -29,8 +30,8 @@ console.log("✓ Pathfinder Logic");
 // 3. Duel Test
 const p1 = MOCK_PLAYERS[0]; // Zywoo
 const p2 = MOCK_PLAYERS[1]; // Karrigan (Lower skill)
-const bot1 = new Bot(p1, "T", "mid");
-const bot2 = new Bot(p2, "CT", "mid");
+const bot1 = new Bot(p1, TeamSide.T, "mid");
+const bot2 = new Bot(p2, TeamSide.CT, "mid");
 // DuelEngine doesn't use zone for cover in calculation anymore in this version, but that's fine.
 
 // Run 100 duels, Zywoo should win most

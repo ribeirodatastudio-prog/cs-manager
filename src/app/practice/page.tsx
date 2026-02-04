@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { MatchSimulator, SimulationState } from "@/lib/engine/MatchSimulator";
 import { MOCK_PLAYERS_EXPANDED } from "@/lib/mock-players-expanded";
 import { Player } from "@/types";
-import { Tactic } from "@/lib/engine/TacticsManager";
+import { Tactic, TeamSide } from "@/lib/engine/TacticsManager";
 import { MapVisualizer } from "@/components/simulation/MapVisualizer";
 import { PracticeSidebar } from "@/components/practice/PracticeSidebar";
 import { CombatLog } from "@/components/practice/CombatLog";
@@ -90,8 +90,8 @@ export default function PracticePage() {
     });
 
     // Set initial tactics
-    sim.tacticsManager.setTactic("T", tacticT);
-    sim.tacticsManager.setTactic("CT", tacticCT);
+    sim.tacticsManager.setTactic(TeamSide.T, tacticT);
+    sim.tacticsManager.setTactic(TeamSide.CT, tacticCT);
     sim.setSpeed(playbackSpeed);
 
     simulatorRef.current = sim;
@@ -101,7 +101,10 @@ export default function PracticePage() {
         bots: sim.bots,
         tickCount: sim.tickCount,
         events: sim.events,
-        stats: sim.stats
+        stats: sim.stats,
+        matchState: sim.matchState,
+        bombState: sim.bomb,
+        roundTimer: sim.roundTimer
     });
 
     sim.start();
@@ -123,7 +126,10 @@ export default function PracticePage() {
           bots: simulatorRef.current.bots,
           tickCount: simulatorRef.current.tickCount,
           events: simulatorRef.current.events,
-          stats: simulatorRef.current.stats
+          stats: simulatorRef.current.stats,
+          matchState: simulatorRef.current.matchState,
+          bombState: simulatorRef.current.bomb,
+          roundTimer: simulatorRef.current.roundTimer
       });
     } else {
         setGameState(null);
@@ -140,13 +146,13 @@ export default function PracticePage() {
   // Update Tactics on fly
   useEffect(() => {
     if (simulatorRef.current) {
-        simulatorRef.current.tacticsManager.setTactic("T", tacticT);
+        simulatorRef.current.tacticsManager.setTactic(TeamSide.T, tacticT);
     }
   }, [tacticT]);
 
   useEffect(() => {
     if (simulatorRef.current) {
-        simulatorRef.current.tacticsManager.setTactic("CT", tacticCT);
+        simulatorRef.current.tacticsManager.setTactic(TeamSide.CT, tacticCT);
     }
   }, [tacticCT]);
 
@@ -163,7 +169,7 @@ export default function PracticePage() {
         onUpdateOverride={handleOverrideUpdate}
         tacticT={tacticT}
         tacticCT={tacticCT}
-        onTacticChange={(side, t) => side === "T" ? setTacticT(t) : setTacticCT(t)}
+        onTacticChange={(side, t) => side === TeamSide.T ? setTacticT(t) : setTacticCT(t)}
         onRandomize={handleRandomize}
       />
 

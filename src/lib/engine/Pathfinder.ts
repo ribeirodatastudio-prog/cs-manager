@@ -63,4 +63,38 @@ export class Pathfinder {
 
     return path.reverse();
   }
+
+  /**
+   * Finds the zone furthest from the startZoneId (in terms of hops).
+   * Used for "Save" logic.
+   */
+  static findFurthestZone(map: GameMap, startZoneId: string): string | null {
+    const startZone = map.getZone(startZoneId);
+    if (!startZone) return null;
+
+    const queue: { id: string; dist: number }[] = [{ id: startZoneId, dist: 0 }];
+    const visited = new Set<string>([startZoneId]);
+
+    let furthestZoneId = startZoneId;
+    let maxDist = 0;
+
+    while (queue.length > 0) {
+      const { id, dist } = queue.shift()!;
+
+      if (dist > maxDist) {
+        maxDist = dist;
+        furthestZoneId = id;
+      }
+
+      const neighbors = map.getNeighbors(id);
+      for (const next of neighbors) {
+        if (!visited.has(next.id)) {
+          visited.add(next.id);
+          queue.push({ id: next.id, dist: dist + 1 });
+        }
+      }
+    }
+
+    return furthestZoneId;
+  }
 }

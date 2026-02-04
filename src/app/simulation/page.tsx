@@ -41,7 +41,7 @@ export default function SimulationPage() {
       events: sim.events,
       stats: sim.stats,
       matchState: sim.matchState,
-      bombState: sim.bombState,
+      bombState: sim.bomb,
       roundTimer: sim.roundTimer
     });
 
@@ -55,13 +55,13 @@ export default function SimulationPage() {
   // Update Tactics when state changes
   useEffect(() => {
     if (simulatorRef.current) {
-      simulatorRef.current.tacticsManager.setTactic("T", tTactic);
+      simulatorRef.current.tacticsManager.setTactic(TeamSide.T, tTactic);
     }
   }, [tTactic]);
 
   useEffect(() => {
     if (simulatorRef.current) {
-      simulatorRef.current.tacticsManager.setTactic("CT", ctTactic);
+      simulatorRef.current.tacticsManager.setTactic(TeamSide.CT, ctTactic);
     }
   }, [ctTactic]);
 
@@ -90,7 +90,7 @@ export default function SimulationPage() {
         events: simulatorRef.current.events,
         stats: simulatorRef.current.stats,
         matchState: simulatorRef.current.matchState,
-        bombState: simulatorRef.current.bombState,
+        bombState: simulatorRef.current.bomb,
         roundTimer: simulatorRef.current.roundTimer
       });
     }
@@ -103,7 +103,7 @@ export default function SimulationPage() {
   };
 
   const handleTacticChange = (side: TeamSide, tactic: Tactic) => {
-    if (side === "T") setTTactic(tactic);
+    if (side === TeamSide.T) setTTactic(tactic);
     else setCtTactic(tactic);
   };
 

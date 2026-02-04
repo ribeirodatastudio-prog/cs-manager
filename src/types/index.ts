@@ -21,6 +21,7 @@ export interface MentalSkills {
   adaptability: number;
   composure: number;
   communication: number;
+  gameSense: number; // Ability to predict and react
   aggression: number; // Trait, indicates playstyle preference
 }
 

@@ -90,7 +90,7 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
           <label className="text-xs text-yellow-500 font-bold uppercase">TERRORIST TACTIC</label>
           <select
             value={tSideTactic}
-            onChange={(e) => onTacticChange("T", e.target.value as Tactic)}
+            onChange={(e) => onTacticChange(TeamSide.T, e.target.value as Tactic)}
             className="bg-zinc-800 text-white border border-zinc-600 p-2 text-sm rounded-none focus:border-yellow-500 outline-none"
           >
             {TACTICS.map((t) => (
@@ -104,7 +104,7 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
           <label className="text-xs text-blue-500 font-bold uppercase">CT TACTIC</label>
           <select
             value={ctSideTactic}
-            onChange={(e) => onTacticChange("CT", e.target.value as Tactic)}
+            onChange={(e) => onTacticChange(TeamSide.CT, e.target.value as Tactic)}
             className="bg-zinc-800 text-white border border-zinc-600 p-2 text-sm rounded-none focus:border-blue-500 outline-none"
           >
             {TACTICS.map((t) => (

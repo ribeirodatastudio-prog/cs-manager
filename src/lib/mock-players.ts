@@ -26,6 +26,7 @@ export const MOCK_PLAYERS: Player[] = [
         adaptability: 195,
         composure: 198,
         communication: 160,
+        gameSense: 195,
         aggression: 150,
       },
       physical: {
@@ -57,6 +58,7 @@ export const MOCK_PLAYERS: Player[] = [
         adaptability: 199,
         composure: 180,
         communication: 200,
+        gameSense: 195,
         aggression: 160,
       },
       physical: {
@@ -88,6 +90,7 @@ export const MOCK_PLAYERS: Player[] = [
         adaptability: 175,
         composure: 160,
         communication: 170,
+        gameSense: 175,
         aggression: 195,
       },
       physical: {
@@ -119,6 +122,7 @@ export const MOCK_PLAYERS: Player[] = [
         adaptability: 185,
         composure: 195,
         communication: 190,
+        gameSense: 190,
         aggression: 130,
       },
       physical: {
@@ -150,6 +154,7 @@ export const MOCK_PLAYERS: Player[] = [
         adaptability: 180,
         composure: 190,
         communication: 175,
+        gameSense: 195,
         aggression: 140,
       },
       physical: {
