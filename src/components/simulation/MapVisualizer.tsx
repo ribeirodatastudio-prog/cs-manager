@@ -5,16 +5,16 @@ import { Bot } from "@/lib/engine/Bot";
 interface MapVisualizerProps {
   map: GameMap;
   bots: Bot[];
+  selectedBotId?: string | null;
 }
 
-export const MapVisualizer: React.FC<MapVisualizerProps> = ({ map, bots }) => {
+export const MapVisualizer: React.FC<MapVisualizerProps> = ({ map, bots, selectedBotId }) => {
   const zones = map.getAllZones();
 
   // Draw connections (Edges)
-  // We need to avoid drawing duplicates. Set of "id-id".
   const drawnConnections = new Set<string>();
-
   const connections: React.ReactNode[] = [];
+
   zones.forEach((zone) => {
     zone.connections.forEach((targetId) => {
       const target = map.getZone(targetId);
@@ -38,11 +38,48 @@ export const MapVisualizer: React.FC<MapVisualizerProps> = ({ map, bots }) => {
     });
   });
 
+  // Draw Path for Selected Bot
+  const pathLines: React.ReactNode[] = [];
+  if (selectedBotId) {
+    const selectedBot = bots.find(b => b.id === selectedBotId);
+    if (selectedBot && selectedBot.path && selectedBot.path.length > 0) {
+      let startZone = map.getZone(selectedBot.currentZoneId);
+
+      // Draw line from current position to first path node
+      // Then from node to node
+
+      const fullPathIds = [selectedBot.currentZoneId, ...selectedBot.path];
+
+      for (let i = 0; i < fullPathIds.length - 1; i++) {
+        const z1 = map.getZone(fullPathIds[i]);
+        const z2 = map.getZone(fullPathIds[i+1]);
+        if (z1 && z2) {
+          pathLines.push(
+            <line
+              key={`path-${selectedBot.id}-${i}`}
+              x1={z1.x}
+              y1={z1.y}
+              x2={z2.x}
+              y2={z2.y}
+              stroke={selectedBot.side === "T" ? "#eab308" : "#3b82f6"} // yellow-500 or blue-500
+              strokeWidth="4"
+              strokeDasharray="10,5"
+              className="opacity-80"
+            />
+          );
+        }
+      }
+    }
+  }
+
   return (
     <div className="w-full aspect-square bg-zinc-900 border border-zinc-700 p-4 relative overflow-hidden rounded-none">
       <svg viewBox="0 0 1000 1000" className="w-full h-full">
         {/* Connections */}
         {connections}
+
+        {/* Path Lines */}
+        {pathLines}
 
         {/* Zones */}
         {zones.map((zone) => (
@@ -72,17 +109,25 @@ export const MapVisualizer: React.FC<MapVisualizerProps> = ({ map, bots }) => {
           const zone = map.getZone(bot.currentZoneId);
           if (!zone) return null;
 
-          // Offset based on bots in same zone?
-          // Simple random jitter or deterministic offset based on index?
-          // Let's just use index offset for now to separate them visually if stacked.
-          // But bots list order might change? No, it's stable.
-          // Count how many bots are here.
-          // For simplicity, just add small random jitter or use a predictable offset based on bot.id hash?
+          // Offset based on index to reduce overlapping
           const offsetX = (index % 3) * 15 - 7.5;
           const offsetY = Math.floor(index / 3) * 15 - 7.5;
 
+          const isSelected = bot.id === selectedBotId;
+
           return (
             <g key={bot.id}>
+              {/* Highlight Circle if selected */}
+              {isSelected && (
+                 <circle
+                   cx={zone.x + offsetX}
+                   cy={zone.y + offsetY}
+                   r={18}
+                   className="fill-none stroke-white"
+                   strokeWidth="3"
+                 />
+              )}
+
               <circle
                 cx={zone.x + offsetX}
                 cy={zone.y + offsetY}

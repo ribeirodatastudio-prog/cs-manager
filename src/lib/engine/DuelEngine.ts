@@ -3,6 +3,8 @@ import { TechnicalSkills, MentalSkills, PhysicalSkills } from "@/types";
 
 export interface DuelResult {
   winnerId: string;
+  loserId: string;
+  damage: number;
   bulletsFired: number;
   timeTaken: number; // in ms
   wasHeadshot: boolean;
@@ -41,43 +43,66 @@ export class DuelEngine {
 
     // Determine Winner
     let winnerId: string;
+    let loserId: string;
     let finalResult: CombatSimulationResult;
 
     // Logic: Fastest kill wins.
-    // If both miss (success = false), we default to the one with better health or just random?
-    // For this 'Micro-Duel', let's assume if both fail to kill in the sequence, the duel resets or is inconclusive.
-    // But we must return a winnerID.
-    // Tie-breaker: Damage dealt? Or just coin flip?
-    // Let's prefer the Defender in a tie (Holder's advantage) or the one who didn't miss?
-
     if (initiatorResult.success && targetResult.success) {
       if (initiatorResult.timeToKill < targetResult.timeToKill) {
         winnerId = initiator.id;
+        loserId = target.id;
         finalResult = initiatorResult;
       } else {
         winnerId = target.id;
+        loserId = initiator.id;
         finalResult = targetResult;
       }
     } else if (initiatorResult.success) {
       winnerId = initiator.id;
+      loserId = target.id;
       finalResult = initiatorResult;
     } else if (targetResult.success) {
       winnerId = target.id;
+      loserId = initiator.id;
       finalResult = targetResult;
     } else {
-      // Both missed. Pick random or based on remaining composure?
-      // Default to target (defender advantage)
+      // Both missed. Default to target (defender advantage)
       winnerId = target.id;
+      loserId = initiator.id;
       finalResult = targetResult;
       finalResult.log.push("Both missed. Defaulting to defender win.");
     }
 
     return {
       winnerId: winnerId,
+      loserId: loserId,
+      damage: 100, // Fatal damage for now
       bulletsFired: finalResult.bulletsFired,
       timeTaken: finalResult.timeToKill,
       wasHeadshot: finalResult.isHeadshot,
       log: [...initiatorResult.log, ...targetResult.log]
+    };
+  }
+
+  /**
+   * Runs the duel simulation multiple times to determine the statistical win probability.
+   * Useful for "Expected Kills" analysis.
+   */
+  public static getWinProbability(initiator: Bot, target: Bot, iterations: number = 50): { initiatorWinRate: number, targetWinRate: number } {
+    let initiatorWins = 0;
+
+    for (let i = 0; i < iterations; i++) {
+      // We assume initiator is always the one passed as first arg for consistency in the loop
+      const result = this.calculateOutcome(initiator, target);
+      if (result.winnerId === initiator.id) {
+        initiatorWins++;
+      }
+    }
+
+    const initiatorWinRate = initiatorWins / iterations;
+    return {
+      initiatorWinRate,
+      targetWinRate: 1 - initiatorWinRate
     };
   }
 
@@ -100,10 +125,6 @@ export class DuelEngine {
     // BaseDifficulty (100) - Attacker crosshairPlacement + Defender positioning.
     let difficulty = this.BASE_DIFFICULTY - tech.crosshairPlacement + targetMental.positioning;
 
-    // Clamp difficulty to reasonable bounds (e.g., 10 to 300) to avoid auto-wins or impossibilities?
-    // Requirement doesn't specify, but let's prevent negative difficulty.
-    // "If Success > Difficulty". If Difficulty is negative, Success is always greater.
-    // Let's leave it raw as per formula, but handle logic carefully.
     log.push(`Difficulty: ${difficulty} (100 - ${tech.crosshairPlacement} + ${targetMental.positioning})`);
 
     // 2. The Time Factor

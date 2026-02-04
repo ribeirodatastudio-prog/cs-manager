@@ -1,14 +1,23 @@
 import { Bot } from "./Bot";
 import { GameMap } from "./GameMap";
 import { TacticsManager } from "./TacticsManager";
-import { DuelSystem } from "./DuelSystem";
+import { DuelEngine, DuelResult } from "./DuelEngine";
 import { Player } from "@/types";
 import { DUST2_MAP } from "./maps/dust2";
+
+export interface PlayerStats {
+  kills: number;
+  deaths: number;
+  damageDealt: number;
+  expectedKills: number; // Sum of win probabilities
+  actualKills: number; // Matches kills, but good for explicit comparison
+}
 
 export interface SimulationState {
   bots: Bot[];
   tickCount: number;
   events: string[]; // Log of events
+  stats: Record<string, PlayerStats>;
 }
 
 export class MatchSimulator {
@@ -17,9 +26,14 @@ export class MatchSimulator {
   public bots: Bot[];
   public tickCount: number;
   public isRunning: boolean;
-  private intervalId: NodeJS.Timeout | null = null;
+  private timeoutId: NodeJS.Timeout | null = null;
   private onUpdate: (state: SimulationState) => void;
   public events: string[];
+  public stats: Record<string, PlayerStats> = {};
+
+  // Speed control
+  private speedMultiplier: number = 1.0;
+  private baseTickRate: number = 500; // ms
 
   constructor(players: Player[], onUpdate: (state: SimulationState) => void) {
     this.map = new GameMap(DUST2_MAP);
@@ -30,32 +44,34 @@ export class MatchSimulator {
     this.events = [];
 
     // Initialize Bots
-    // First 5 T, Next 5 CT? Or based on array?
-    // Let's assume MOCK_PLAYERS has roles, but we need to split them.
-    // For this demo, let's clone the players to make 5 v 5 if needed,
-    // or just assign first half T, second half CT.
-    // The user provided 5 mock players. I will duplicate them or just run 2v3.
-    // Let's create 5 Ts and 5 CTs by cloning the mock data if needed.
-    // Or just use the 5 provided: 3 T, 2 CT.
-
+    // We alternate sides for the provided list.
     this.bots = players.map((p, i) => {
-      const side = i % 2 === 0 ? "T" : "CT"; // Alternating for balance
+      const side = i % 2 === 0 ? "T" : "CT";
       const spawn = this.map.getSpawnPoint(side);
       return new Bot(p, side, spawn!.id);
     });
+
+    // Init Stats
+    this.bots.forEach(b => {
+      this.stats[b.player.id] = { kills: 0, deaths: 0, damageDealt: 0, expectedKills: 0, actualKills: 0 };
+    });
+  }
+
+  public setSpeed(multiplier: number) {
+    this.speedMultiplier = multiplier;
   }
 
   public start() {
     if (this.isRunning) return;
     this.isRunning = true;
-    this.intervalId = setInterval(() => this.tick(), 500);
+    this.scheduleTick();
   }
 
   public stop() {
     this.isRunning = false;
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
     }
   }
 
@@ -63,15 +79,25 @@ export class MatchSimulator {
     this.stop();
     this.tickCount = 0;
     this.events = [];
-    // Reset bots to spawn
     this.bots.forEach(bot => {
       bot.hp = 100;
       bot.status = "ALIVE";
       const spawn = this.map.getSpawnPoint(bot.side);
       bot.currentZoneId = spawn!.id;
       bot.path = [];
+      // Reset stats
+      this.stats[bot.player.id] = { kills: 0, deaths: 0, damageDealt: 0, expectedKills: 0, actualKills: 0 };
     });
     this.broadcast();
+  }
+
+  private scheduleTick() {
+    if (!this.isRunning) return;
+    const delay = this.baseTickRate / this.speedMultiplier;
+    this.timeoutId = setTimeout(() => {
+        this.tick();
+        this.scheduleTick();
+    }, delay);
   }
 
   private tick() {
@@ -98,8 +124,6 @@ export class MatchSimulator {
 
     // 3. Broadcast
     this.broadcast();
-
-    // Check End Condition (Optional for now)
   }
 
   private resolveCombat() {
@@ -114,6 +138,9 @@ export class MatchSimulator {
       zoneOccupants[bot.currentZoneId].push(bot);
     });
 
+    // Track who fought this tick to prevent multi-duels
+    const foughtThisTick = new Set<string>();
+
     // Check for conflicts
     Object.entries(zoneOccupants).forEach(([zoneId, bots]) => {
       const ts = bots.filter(b => b.side === "T");
@@ -123,41 +150,80 @@ export class MatchSimulator {
         const zone = this.map.getZone(zoneId);
         if (!zone) return;
 
-        // Simple All vs All round robin?
-        // Or each bot picks a target?
-        // Let's have each bot pick a random target from enemy list.
+        // Shuffle Ts to randomise who initiates
+        const shuffledTs = ts.sort(() => Math.random() - 0.5);
 
-        bots.forEach(attacker => {
-          if (attacker.status === "DEAD") return; // Might have died in previous duel this tick?
+        shuffledTs.forEach(attacker => {
+          if (attacker.status === "DEAD") return;
+          if (foughtThisTick.has(attacker.id)) return;
 
-          const enemies = attacker.side === "T" ? cts : ts;
-          const liveEnemies = enemies.filter(e => e.status === "ALIVE");
+          // Find a live CT target who hasn't fought ideally?
+          // Or can multiple people shoot one guy? Yes.
+          const liveCTs = cts.filter(c => c.status === "ALIVE");
+          if (liveCTs.length === 0) return;
 
-          if (liveEnemies.length > 0) {
-            const target = liveEnemies[Math.floor(Math.random() * liveEnemies.length)];
+          const target = liveCTs[Math.floor(Math.random() * liveCTs.length)];
 
-            // Resolve Duel
-            const result = DuelSystem.resolveDuel(attacker, target, zone);
+          // Mark both as busy?
+          // If we mark target as busy, they can't be shot by another? No, they can be team-shot.
+          // But they shouldn't initiate another duel themselves if they are defending.
+          // Let's mark attacker as fought.
+          foughtThisTick.add(attacker.id);
+          // Don't necessarily mark target, they might have to fend off multiple?
+          // But `DuelEngine` is 1v1.
+          // If 2 Ts shoot 1 CT.
+          // Duel 1: T1 vs CT. CT wins.
+          // Duel 2: T2 vs CT. T2 wins.
+          // This seems fair.
 
-            // Apply Damage
-            // Note: In this simple model, both shoot?
-            // DuelSystem returns "Winner" and "Loser".
-            // If Winner deals damage, does Loser deal damage?
-            // Usually a "Duel" implies exchange.
-            // My DuelSystem only calculates damage for the WINNER -> Loser.
-            // So if I win, I hit you. You miss?
-            // That works.
+          // Calculate Expected Win Probability (Monte Carlo)
+          // We do this BEFORE the actual duel to capture the "pre-fight" odds
+          const probs = DuelEngine.getWinProbability(attacker, target, 50);
+          this.stats[attacker.id].expectedKills += probs.initiatorWinRate;
+          this.stats[target.id].expectedKills += probs.targetWinRate;
 
-            const loserBot = this.bots.find(b => b.id === result.loserId);
-            if (loserBot && loserBot.status === "ALIVE") {
-               loserBot.takeDamage(result.damage);
-               this.events.unshift(`[${this.tickCount}] ${attacker.player.name} hit ${loserBot.player.name} for ${Math.round(result.damage)} dmg in ${zone.name}`);
+          // Resolve Duel
+          const result = DuelEngine.calculateOutcome(attacker, target);
+
+          const winner = this.bots.find(b => b.id === result.winnerId);
+          const loser = this.bots.find(b => b.id === result.loserId);
+
+          if (winner && loser && loser.status === "ALIVE") {
+               loser.takeDamage(result.damage);
+               this.stats[winner.id].damageDealt += result.damage;
+
+               // Log
+               // We only log the summary to avoid spam, or key details?
+               // Requirement: "Live Combat Log that prints the math... Example Log provided".
+               // The Example: "[Tick 42] ZywOo... CP: 196 vs Apex... Offset: -26. Wins."
+               // DuelEngine returns `result.log` which contains all this.
+               // We should extract the LAST few lines or formatting it.
+               // `DuelEngine` logs are arrays of strings. I'll join them.
+
+               // But the array might be huge (50 lines). The user wants "The math".
+               // Maybe I'll just take the top-level summary or collapse it?
+               // The prompt example implies a concise summary line.
+               // "ZywOo CP: 196 vs Apex Pos: 170. Offset: -26."
+               // `DuelEngine` logs: "Difficulty: 74...", "Tap Check: Score...", "Spray Hit..."
+               // I'll format a custom message using the result data AND maybe the first log line about Difficulty.
+
+               // Let's create a collapsible detail or just a rich string.
+               // I'll stick to joining the log for now, the UI can display it in a scroll box.
+
+               this.events.unshift(`[Tick ${this.tickCount}] ⚔️ ${attacker.player.name} engaged ${target.player.name} in ${zone.name}.`);
+
+               // Add technical details from log
+               // Filter for interesting lines?
+               const mathLogs = result.log.filter(l => l.includes("Difficulty") || l.includes("Score") || l.includes("Hit"));
+               this.events.unshift(`   > ${mathLogs.join(" | ")}`);
 
                // Check if they died from this damage
-               if (loserBot.hp <= 0) {
-                 this.events.unshift(`[${this.tickCount}] 💀 ${loserBot.player.name} was eliminated by ${attacker.player.name}!`);
+               if (loser.hp <= 0) {
+                 this.events.unshift(`[Tick ${this.tickCount}] 💀 ${loser.player.name} was eliminated by ${winner.player.name} (HP Rem: ${winner.hp})`);
+                 this.stats[winner.id].kills++;
+                 this.stats[winner.id].actualKills++;
+                 this.stats[loser.id].deaths++;
                }
-            }
           }
         });
       }
@@ -168,7 +234,8 @@ export class MatchSimulator {
     this.onUpdate({
       bots: this.bots,
       tickCount: this.tickCount,
-      events: this.events
+      events: this.events,
+      stats: this.stats
     });
   }
 }
