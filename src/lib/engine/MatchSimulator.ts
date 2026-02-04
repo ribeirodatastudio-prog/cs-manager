@@ -1,4 +1,4 @@
-import { Bot } from "./Bot";
+import { Bot, BotAIState } from "./Bot";
 import { GameMap } from "./GameMap";
 import { TacticsManager, TeamSide } from "./TacticsManager";
 import { DuelEngine, DuelResult } from "./DuelEngine";
@@ -8,6 +8,7 @@ import { MatchState, MatchPhase, RoundEndReason, RoundHistory } from "./types";
 import { EconomySystem } from "./EconomySystem";
 import { BuyLogic } from "./BuyLogic";
 import { ECONOMY } from "./constants";
+import { Bomb, BombStatus } from "./Bomb";
 
 export interface PlayerStats {
   kills: number;
@@ -18,22 +19,13 @@ export interface PlayerStats {
   actualKills: number;
 }
 
-export interface BombState {
-  isPlanted: boolean;
-  plantTick: number; // Tick when it was planted
-  plantSite?: string; // Zone ID
-  carrierId?: string; // Bot ID
-  droppedLocation?: string; // Zone ID
-  planterId?: string; // Bot ID for bonus
-}
-
 export interface SimulationState {
   bots: Bot[];
   tickCount: number;
   events: string[];
   stats: Record<string, PlayerStats>;
   matchState: MatchState;
-  bombState: BombState;
+  bombState: Bomb; // Use Bomb class instance
   roundTimer: number; // Seconds
 }
 
@@ -50,7 +42,7 @@ export class MatchSimulator {
 
   // Match Logic
   public matchState: MatchState;
-  public bombState: BombState;
+  public bomb: Bomb;
   public roundTimer: number;
 
   // Config
@@ -58,7 +50,6 @@ export class MatchSimulator {
   private baseTickRate: number = 500; // ms
   private readonly TICKS_PER_SEC = 2;
   private readonly ROUND_TIME = 115; // 1:55
-  private readonly BOMB_TIME = 40;
   private readonly FREEZE_TIME = 20;
 
   constructor(players: Player[], onUpdate: (state: SimulationState) => void) {
@@ -80,16 +71,13 @@ export class MatchSimulator {
       winThreshold: 13
     };
 
-    this.bombState = {
-      isPlanted: false,
-      plantTick: 0
-    };
+    this.bomb = new Bomb();
 
     this.roundTimer = this.ROUND_TIME;
 
     // Initialize Bots
     this.bots = players.map((p, i) => {
-      const side = i % 2 === 0 ? "T" : "CT";
+      const side = i % 2 === 0 ? TeamSide.T : TeamSide.CT;
       const spawn = this.map.getSpawnPoint(side);
       return new Bot(p, side, spawn!.id);
     });
@@ -169,7 +157,7 @@ export class MatchSimulator {
 
   private startRound(isMatchStart: boolean = false) {
     // Reset Map Objects
-    this.bombState = { isPlanted: false, plantTick: 0 };
+    this.bomb.reset();
     this.roundTimer = this.ROUND_TIME;
     this.matchState.phase = MatchPhase.FREEZETIME;
     this.matchState.phaseTimer = this.FREEZE_TIME;
@@ -178,8 +166,8 @@ export class MatchSimulator {
     this.bots.forEach(bot => {
       bot.hp = 100;
       bot.status = "ALIVE";
-      bot.isPlanting = false;
-      bot.isDefusing = false;
+      bot.aiState = BotAIState.DEFAULT;
+      bot.reactionTimer = 0;
       bot.hasBomb = false;
       bot.path = [];
       const spawn = this.map.getSpawnPoint(bot.side);
@@ -187,11 +175,11 @@ export class MatchSimulator {
     });
 
     // Assign Bomb to random T
-    const ts = this.bots.filter(b => b.side === "T");
+    const ts = this.bots.filter(b => b.side === TeamSide.T);
     if (ts.length > 0) {
         const carrier = ts[Math.floor(Math.random() * ts.length)];
         carrier.hasBomb = true;
-        this.bombState.carrierId = carrier.id;
+        this.bomb.pickup(carrier.id);
         this.events.unshift(`[Round ${this.matchState.round}] 💣 ${carrier.player.name} has the bomb.`);
     }
 
@@ -234,17 +222,27 @@ export class MatchSimulator {
   }
 
   private tickLive() {
+    // 1. Update Timer
     if (this.tickCount % this.TICKS_PER_SEC === 0) {
-        if (this.bombState.isPlanted) {
-             this.roundTimer--;
+        if (this.bomb.status === BombStatus.PLANTED || this.bomb.status === BombStatus.DEFUSING) {
+             // Round timer stops or ignored when bomb planted, we show bomb timer
         } else {
              this.roundTimer--;
         }
     }
 
+    // 2. Bomb Logic Tick
+    this.bomb.tick();
+
+    // 3. Bots Decision
     this.bots.forEach(bot => {
       if (bot.status === "DEAD") return;
-      const action = bot.decideAction(this.map, this.tacticsManager);
+
+      // Update Goal / AI State
+      bot.updateGoal(this.map, this.bomb, this.tacticsManager);
+
+      // Get Action
+      const action = bot.decideAction(this.map);
 
       if (action.type === "MOVE" && action.targetZoneId) {
         bot.currentZoneId = action.targetZoneId;
@@ -252,59 +250,42 @@ export class MatchSimulator {
           bot.path.shift();
         }
       } else if (action.type === "PLANT") {
-          this.handlePlanting(bot);
+          // Attempt start planting
+          if (this.bomb.status === BombStatus.IDLE) {
+              this.bomb.startPlanting(bot.id, bot.currentZoneId);
+          }
       } else if (action.type === "DEFUSE") {
-          this.handleDefusing(bot);
+          // Attempt start defusing
+          if (this.bomb.status === BombStatus.PLANTED) {
+              this.bomb.startDefusing(bot.id);
+          }
       }
     });
 
+    // 4. Resolve Combat (may interrupt planting/defusing)
     this.resolveCombat();
+
+    // 5. Update Bomb Progress (Plant/Defuse)
+    if (this.bomb.status === BombStatus.PLANTING) {
+        if (this.bomb.updatePlanting()) {
+            this.events.unshift(`[Tick ${this.tickCount}] 💣 BOMB PLANTED at ${this.bomb.plantSite === this.map.data.bombSites.A ? "A" : "B"}!`);
+            this.events.unshift(`⏱️ 40 seconds to explosion!`);
+            // Remove bomb from carrier inventory visually (handled by Bomb state)
+             const carrier = this.bots.find(b => b.id === this.bomb.planterId);
+             if (carrier) carrier.hasBomb = false;
+        }
+    } else if (this.bomb.status === BombStatus.DEFUSING) {
+        const defuser = this.bots.find(b => b.id === this.bomb.defuserId);
+        const hasKit = defuser?.player.inventory?.hasKit || false;
+        if (this.bomb.updateDefusing(hasKit)) {
+             // Defused! handled in checkWinConditions or here
+             // We'll let checkWinConditions handle it via status
+        }
+    }
+
+    // 6. Check Win Conditions
     this.checkWinConditions();
   }
-
-  private handlePlanting(bot: Bot) {
-    if (!bot.hasBomb) { bot.isPlanting = false; return; }
-    const sites = this.map.data.bombSites;
-    if (bot.currentZoneId !== sites.A && bot.currentZoneId !== sites.B) {
-        bot.isPlanting = false;
-        return;
-    }
-
-    bot.isPlanting = true;
-    if (!this.bombState.isPlanted) {
-        this.bombState.isPlanted = true;
-        this.bombState.plantTick = this.tickCount;
-        this.bombState.plantSite = bot.currentZoneId;
-        this.bombState.planterId = bot.id;
-        this.roundTimer = this.BOMB_TIME;
-        bot.hasBomb = false;
-        bot.isPlanting = false;
-        this.events.unshift(`[Tick ${this.tickCount}] 💣 BOMB PLANTED at ${bot.currentZoneId === sites.A ? "A" : "B"} by ${bot.player.name}!`);
-        this.events.unshift(`⏱️ 40 seconds to explosion!`);
-    }
-  }
-
-  private handleDefusing(bot: Bot) {
-      if (!this.bombState.isPlanted) { bot.isDefusing = false; return; }
-      if (bot.currentZoneId !== this.bombState.plantSite) { bot.isDefusing = false; return; }
-
-      bot.isDefusing = true;
-      const requiredTime = DuelEngine.getDefuseTime(bot);
-      const requiredTicks = requiredTime / this.baseTickRate;
-
-      if (!this.defuseProgress.has(bot.id)) {
-          this.defuseProgress.set(bot.id, 0);
-      }
-
-      const progress = this.defuseProgress.get(bot.id)! + 1;
-      this.defuseProgress.set(bot.id, progress);
-
-      if (progress >= requiredTicks) {
-          this.endRound(TeamSide.CT, RoundEndReason.BOMB_DEFUSED);
-      }
-  }
-
-  private defuseProgress: Map<string, number> = new Map();
 
   private resolveCombat() {
     const zoneOccupants: Record<string, Bot[]> = {};
@@ -317,8 +298,8 @@ export class MatchSimulator {
     const foughtThisTick = new Set<string>();
 
     Object.entries(zoneOccupants).forEach(([zoneId, bots]) => {
-      const ts = bots.filter(b => b.side === "T");
-      const cts = bots.filter(b => b.side === "CT");
+      const ts = bots.filter(b => b.side === TeamSide.T);
+      const cts = bots.filter(b => b.side === TeamSide.CT);
 
       if (ts.length > 0 && cts.length > 0) {
         const zone = this.map.getZone(zoneId);
@@ -328,7 +309,13 @@ export class MatchSimulator {
            if (attacker.status === "DEAD") return;
            if (foughtThisTick.has(attacker.id)) return;
 
-           if (attacker.isPlanting || attacker.isDefusing) return;
+           // Can't shoot if planting/defusing
+           if (attacker.aiState === BotAIState.PLANTING && attacker.hasBomb) return; // Simplified check
+           if (attacker.aiState === BotAIState.DEFUSING && this.bomb.defuserId === attacker.id) return;
+
+           // Actually, verify against bomb state
+           if (this.bomb.planterId === attacker.id) return;
+           if (this.bomb.defuserId === attacker.id) return;
 
            const targets = allBots.filter(b => b.side !== attacker.side && b.status === "ALIVE");
            if (targets.length === 0) return;
@@ -337,10 +324,14 @@ export class MatchSimulator {
 
            foughtThisTick.add(attacker.id);
 
-           if (target.isPlanting) target.isPlanting = false;
-           if (target.isDefusing) {
-               target.isDefusing = false;
-               this.defuseProgress.delete(target.id);
+           // Interrupt logic
+           if (this.bomb.planterId === target.id) {
+               this.bomb.abortPlanting();
+               target.aiState = BotAIState.DEFAULT; // Force out of plant state
+           }
+           if (this.bomb.defuserId === target.id) {
+               this.bomb.abortDefusing();
+               target.aiState = BotAIState.DEFAULT;
            }
 
            const probs = DuelEngine.getWinProbability(attacker, target, 20);
@@ -361,11 +352,18 @@ export class MatchSimulator {
                this.stats[winner.id].actualKills++;
                this.stats[loser.id].deaths++;
 
-               if (loser.hasBomb) {
+               // Drop Bomb logic
+               if (this.bomb.carrierId === loser.id) {
                    loser.hasBomb = false;
-                   this.bombState.carrierId = undefined;
-                   this.bombState.droppedLocation = loser.currentZoneId;
+                   this.bomb.drop(loser.currentZoneId);
                    this.events.unshift(`⚠️ Bomb dropped at ${zone?.name}!`);
+               }
+               // Clean up planter/defuser IDs if they died (already handled by drop, but defuser?)
+               if (this.bomb.defuserId === loser.id) {
+                   this.bomb.abortDefusing();
+               }
+               if (this.bomb.planterId === loser.id) {
+                   this.bomb.abortPlanting();
                }
            }
         });
@@ -374,23 +372,48 @@ export class MatchSimulator {
   }
 
   private checkWinConditions() {
-      if (this.bombState.isPlanted && this.roundTimer <= 0) {
+      // 1. Bomb Detonated
+      if (this.bomb.status === BombStatus.DETONATED) {
           this.endRound(TeamSide.T, RoundEndReason.TARGET_BOMBED);
           return;
       }
-      if (!this.bombState.isPlanted && this.roundTimer <= 0) {
-          this.endRound(TeamSide.CT, RoundEndReason.TIME_RUNNING_OUT);
+      // 2. Bomb Defused
+      if (this.bomb.status === BombStatus.DEFUSED) {
+          this.endRound(TeamSide.CT, RoundEndReason.BOMB_DEFUSED);
           return;
       }
 
-      const tAlive = this.bots.filter(b => b.side === "T" && b.status === "ALIVE").length;
-      const ctAlive = this.bots.filter(b => b.side === "CT" && b.status === "ALIVE").length;
+      // 3. Time Running Out (Only if bomb NOT planted/planting/defusing check? No, timer check logic handled in tick)
+      // Actually, if bomb is planted, roundTimer is ignored.
+      if (this.bomb.status === BombStatus.IDLE || this.bomb.status === BombStatus.PLANTING) {
+          if (this.roundTimer <= 0) {
+              this.endRound(TeamSide.CT, RoundEndReason.TIME_RUNNING_OUT);
+              return;
+          }
+      }
 
-      if (tAlive === 0 && !this.bombState.isPlanted) {
-          this.endRound(TeamSide.CT, RoundEndReason.ELIMINATION_T);
+      // 4. Elimination
+      const tAlive = this.bots.filter(b => b.side === TeamSide.T && b.status === "ALIVE").length;
+      const ctAlive = this.bots.filter(b => b.side === TeamSide.CT && b.status === "ALIVE").length;
+
+      if (tAlive === 0) {
+           if (this.bomb.status === BombStatus.PLANTED || this.bomb.status === BombStatus.DEFUSING) {
+               // CTs must defuse to win.
+               // If no CTs are defusing and time runs out -> T win (Detonated)
+               // But elimination doesn't end round if bomb is planted.
+           } else {
+               this.endRound(TeamSide.CT, RoundEndReason.ELIMINATION_T);
+           }
       }
       if (ctAlive === 0) {
-          this.endRound(TeamSide.T, RoundEndReason.ELIMINATION_CT);
+           // T win unless bomb planted? If bomb planted, T wins automatically (CTs dead, can't defuse)
+           // But tecnically we wait for boom or just award win.
+           // CS logic: If all CTs dead, T wins immediately (Elimination).
+           // UNLESS bomb is planted? If bomb planted, T wins (Target Bombed?) or Elimination?
+           // Usually Elimination if boom hasn't happened.
+           // However, if bomb is planted, we often wait for detonation visually, but the round is decided.
+           // Let's end it as ELIMINATION_CT.
+           this.endRound(TeamSide.T, RoundEndReason.ELIMINATION_CT);
       }
   }
 
@@ -424,8 +447,6 @@ export class MatchSimulator {
       if (isRegulationEnd || isOtSegmentEnd) {
           if (this.matchState.scores.T === this.matchState.scores.CT) {
               this.handleOvertimeStart();
-              // Don't increment round here? Next round is R25.
-              // We just handle transition updates (money/threshold).
           }
       }
 
@@ -442,11 +463,11 @@ export class MatchSimulator {
 
   private updateEconomy(winner: TeamSide, reason: RoundEndReason) {
       this.matchState.lossBonus[winner] = EconomySystem.updateLossBonus(this.matchState.lossBonus[winner], true);
-      const loser = winner === "T" ? "CT" : "T";
+      const loser = winner === TeamSide.T ? TeamSide.CT : TeamSide.T;
       this.matchState.lossBonus[loser] = EconomySystem.updateLossBonus(this.matchState.lossBonus[loser], false);
 
       if (this.matchState.round === 1 || this.matchState.round === 13) {
-          if (winner === "T") this.matchState.lossBonus.CT = EconomySystem.getPistolRoundLossLevel();
+          if (winner === TeamSide.T) this.matchState.lossBonus.CT = EconomySystem.getPistolRoundLossLevel();
           else this.matchState.lossBonus.T = EconomySystem.getPistolRoundLossLevel();
       }
 
@@ -457,9 +478,15 @@ export class MatchSimulator {
               winner,
               reason,
               this.matchState.lossBonus[bot.side],
-              this.bombState.isPlanted
+              // Bomb planted check
+              this.bomb.status === BombStatus.PLANTED || this.bomb.status === BombStatus.DETONATED || this.bomb.status === BombStatus.DEFUSED
+              // Actually EconomySystem just checks boolean isPlanted.
+              // So if it was planted at any point?
+              // Usually if T loses but planted, they get bonus.
+              // If T wins via Explosion, they get win money.
           );
-          if (bot.side === "T" && bot.status === "ALIVE" && reason === RoundEndReason.TIME_RUNNING_OUT) {
+          // Special case: T survives after time runs out -> $0 income
+          if (bot.side === TeamSide.T && bot.status === "ALIVE" && reason === RoundEndReason.TIME_RUNNING_OUT) {
               income = 0;
           }
           bot.player.inventory.money = Math.min(ECONOMY.MAX_MONEY, bot.player.inventory.money + income);
@@ -472,7 +499,7 @@ export class MatchSimulator {
       const startMoney = isOvertime ? ECONOMY.OT_MR12_MONEY : ECONOMY.START_MONEY;
 
       this.bots.forEach(bot => {
-          bot.side = bot.side === "T" ? "CT" : "T";
+          bot.side = bot.side === TeamSide.T ? TeamSide.CT : TeamSide.T;
           if (bot.player.inventory) {
               bot.player.inventory.money = startMoney;
               bot.player.inventory.hasKevlar = false;
@@ -520,7 +547,7 @@ export class MatchSimulator {
       events: this.events,
       stats: this.stats,
       matchState: this.matchState,
-      bombState: this.bombState,
+      bombState: this.bomb, // Pass Bomb instance
       roundTimer: this.roundTimer
     });
   }
