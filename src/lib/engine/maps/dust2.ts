@@ -7,6 +7,10 @@ export const DUST2_MAP: MapData = {
     T: "t_spawn",
     CT: "ct_spawn",
   },
+  bombSites: {
+    A: "a_site",
+    B: "b_site"
+  },
   zones: [
     // T Side
     {

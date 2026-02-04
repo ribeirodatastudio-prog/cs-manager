@@ -10,6 +10,8 @@ interface SimulationControlsProps {
   onStart: () => void;
   onStop: () => void;
   onReset: () => void;
+  onNextRound: () => void;
+  canStartNextRound: boolean;
   onTacticChange: (side: TeamSide, tactic: Tactic) => void;
 }
 
@@ -24,6 +26,8 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
   onStart,
   onStop,
   onReset,
+  onNextRound,
+  canStartNextRound,
   onTacticChange,
 }) => {
   const logRef = useRef<HTMLDivElement>(null);
@@ -41,27 +45,42 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
       </div>
 
       {/* Controls */}
-      <div className="flex gap-2">
-        {!isRunning ? (
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2">
+          {!isRunning ? (
+            <button
+              onClick={onStart}
+              disabled={canStartNextRound} // Disable start if we should hit next round instead? Usually Start acts as resume.
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-none uppercase text-sm disabled:opacity-50"
+            >
+              Resume
+            </button>
+          ) : (
+            <button
+              onClick={onStop}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-none uppercase text-sm"
+            >
+              Pause
+            </button>
+          )}
           <button
-            onClick={onStart}
-            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-none uppercase text-sm"
+            onClick={onReset}
+            className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-2 px-4 rounded-none uppercase text-sm"
           >
-            Start
+            Reset Match
           </button>
-        ) : (
-          <button
-            onClick={onStop}
-            className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-none uppercase text-sm"
-          >
-            Pause
-          </button>
-        )}
+        </div>
+
         <button
-          onClick={onReset}
-          className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-2 px-4 rounded-none uppercase text-sm"
+            onClick={onNextRound}
+            disabled={!canStartNextRound}
+            className={`w-full font-bold py-3 px-4 rounded-none uppercase text-sm transition-colors ${
+                canStartNextRound
+                ? "bg-yellow-500 hover:bg-yellow-400 text-black animate-pulse"
+                : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+            }`}
         >
-          Reset
+            Start Next Round
         </button>
       </div>
 

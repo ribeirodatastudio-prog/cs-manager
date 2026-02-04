@@ -31,6 +31,17 @@ export class DuelEngine {
   private static readonly SPRAY_CONTROL_RECOIL_INCREMENT = 5;
 
   /**
+   * Returns the time required to defuse the bomb (in ms).
+   * 10 seconds without kit, 5 seconds with kit.
+   */
+  public static getDefuseTime(bot: Bot): number {
+    if (bot.player.inventory?.hasKit) {
+      return 5000;
+    }
+    return 10000;
+  }
+
+  /**
    * Calculates the outcome of a duel between an initiator (Attacker) and a target (Defender).
    * Both sides simulate their shooting sequence simultaneously. The one with the lower Time To Kill (TTK) wins.
    *

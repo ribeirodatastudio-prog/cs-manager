@@ -1,7 +1,8 @@
 import { Player } from "@/types";
+import { TeamSide } from "./constants";
 
+export { TeamSide };
 export type Tactic = "RUSH_A" | "RUSH_B" | "MID_CONTROL" | "DEFAULT";
-export type TeamSide = "T" | "CT";
 
 interface TeamStrategy {
   tactic: Tactic;

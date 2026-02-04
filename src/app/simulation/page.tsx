@@ -6,7 +6,9 @@ import { MOCK_PLAYERS } from "@/lib/mock-players";
 import { Player } from "@/types";
 import { MapVisualizer } from "@/components/simulation/MapVisualizer";
 import { SimulationControls } from "@/components/simulation/SimulationControls";
+import { Scoreboard } from "@/components/simulation/Scoreboard";
 import { Tactic, TeamSide } from "@/lib/engine/TacticsManager";
+import { MatchPhase } from "@/lib/engine/types";
 
 // Helper to create 10 players from the mock 5
 const generatePlayers = (): Player[] => {
@@ -37,7 +39,10 @@ export default function SimulationPage() {
       bots: sim.bots,
       tickCount: sim.tickCount,
       events: sim.events,
-      stats: sim.stats
+      stats: sim.stats,
+      matchState: sim.matchState,
+      bombState: sim.bombState,
+      roundTimer: sim.roundTimer
     });
 
     simulatorRef.current = sim;
@@ -83,8 +88,17 @@ export default function SimulationPage() {
         bots: simulatorRef.current.bots,
         tickCount: simulatorRef.current.tickCount,
         events: simulatorRef.current.events,
-        stats: simulatorRef.current.stats
+        stats: simulatorRef.current.stats,
+        matchState: simulatorRef.current.matchState,
+        bombState: simulatorRef.current.bombState,
+        roundTimer: simulatorRef.current.roundTimer
       });
+    }
+  };
+
+  const handleNextRound = () => {
+    if (simulatorRef.current) {
+      simulatorRef.current.nextRound();
     }
   };
 
@@ -105,9 +119,17 @@ export default function SimulationPage() {
             Counter-Strike Strategy Engine
           </h1>
           <p className="text-zinc-500">
-            Phase 1-3 Prototype: Map, Navigation, Combat
+            Phase 4: Economy, Objectives & MR12 Logic
           </p>
         </header>
+
+        {/* Scoreboard */}
+        <Scoreboard
+            matchState={gameState.matchState}
+            bombState={gameState.bombState}
+            roundTimer={gameState.roundTimer}
+            bots={gameState.bots}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Map Visualization (Left 2 cols) */}
@@ -129,6 +151,8 @@ export default function SimulationPage() {
               onStart={handleStart}
               onStop={handleStop}
               onReset={handleReset}
+              onNextRound={handleNextRound}
+              canStartNextRound={gameState.matchState.phase === MatchPhase.ROUND_END}
               onTacticChange={handleTacticChange}
             />
           </div>

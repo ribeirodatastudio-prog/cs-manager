@@ -1,0 +1,42 @@
+npm warn exec The following package was not found and will be installed: next@16.1.6
+⚠ Installing TypeScript as it was not found while loading "next.config.ts".
+
+Installing devDependencies (npm):
+- typescript
+
+
+added 369 packages, and audited 370 packages in 39s
+
+146 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+
+✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+✓ Ready in 41s
+○ Compiling /simulation ...
+ GET /simulation 200 in 3.8s (compile: 3.5s, render: 234ms)
+ GET /simulation 200 in 71ms (compile: 9ms, render: 62ms)
+ GET /simulation 200 in 71ms (compile: 5ms, render: 65ms)
+ GET /simulation 200 in 82ms (compile: 7ms, render: 76ms)
+ GET /simulation 200 in 67ms (compile: 5ms, render: 62ms)
+ GET /simulation 200 in 141ms (compile: 10ms, render: 131ms)
+ GET /simulation 200 in 59ms (compile: 4ms, render: 55ms)
+ GET /simulation 200 in 67ms (compile: 4ms, render: 63ms)
+ GET /simulation 200 in 71ms (compile: 5ms, render: 66ms)
+ GET /simulation 200 in 63ms (compile: 5ms, render: 58ms)
+ GET /simulation 200 in 80ms (compile: 6ms, render: 74ms)
+ GET /simulation 200 in 55ms (compile: 4ms, render: 50ms)
+ GET /simulation 200 in 56ms (compile: 5ms, render: 51ms)
+ GET /simulation 200 in 77ms (compile: 5ms, render: 72ms)
+ GET /simulation 200 in 102ms (compile: 5ms, render: 97ms)
+ GET /simulation 200 in 65ms (compile: 3ms, render: 62ms)

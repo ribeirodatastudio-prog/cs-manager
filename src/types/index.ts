@@ -50,4 +50,15 @@ export interface Player {
     mental: MentalSkills;
     physical: PhysicalSkills;
   };
+  inventory?: PlayerInventory;
+}
+
+export interface PlayerInventory {
+  money: number;
+  primaryWeapon?: string; // Weapon ID
+  secondaryWeapon?: string; // Weapon ID
+  hasKevlar: boolean;
+  hasHelmet: boolean;
+  hasKit: boolean; // CT only
+  utilities: string[]; // List of grenades/utils
 }
