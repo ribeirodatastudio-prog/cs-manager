@@ -169,7 +169,7 @@ export class TacticsManager {
           let bCount = 0;
           let midCount = 0;
 
-          if (bots.length >= 5) { aCount = 2; midCount = 1; bCount = 2; }
+          if (bots.length >= 5) { aCount = 2; midCount = 0; bCount = 3; }
           else if (bots.length === 4) { aCount = 2; midCount = 0; bCount = 2; }
           else if (bots.length === 3) { aCount = 1; midCount = 1; bCount = 1; }
           else if (bots.length === 2) { aCount = 1; midCount = 0; bCount = 1; }

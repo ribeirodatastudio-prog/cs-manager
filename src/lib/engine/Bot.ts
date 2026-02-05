@@ -166,11 +166,16 @@ export class Bot {
       const mobility = weapon ? weapon.mobility : 250;
       let speed = baseSpeed * (mobility / 250);
 
-      speed *= this.sprintMultiplier;
-
       if (this.isShiftWalking) {
           speed *= 0.6;
       }
+
+      // CT Emergency Rotation Boost - sprint when bomb is planted
+      if (this.side === TeamSide.CT && (this.aiState === BotAIState.DEFUSING || this.aiState === BotAIState.ROTATING)) {
+          this.isShiftWalking = false; // Never walk during retakes
+          speed *= 1.20; // 20% faster rotation (increased from 15%)
+      }
+
       return speed;
   }
 
@@ -310,7 +315,7 @@ export class Bot {
              desiredState = BotAIState.DEFUSING;
              desiredGoal = bomb.plantSite || null;
 
-             // Fix 2: Retake Coordination
+             // Retake Coordination: Don't rush in alone, but be more aggressive
              if (desiredGoal && allBots.length > 0) {
                  const siteId = desiredGoal;
                  const myDist = map.getDistance(this.currentZoneId, siteId);
@@ -322,7 +327,8 @@ export class Bot {
                      (b.aiState === BotAIState.DEFUSING || b.aiState === BotAIState.WAITING_FOR_SPLIT)
                  ).length;
 
-                 if (retakingCTs < 2 && myDist < 300 && myDist > 50) {
+                 // If completely alone and close, wait for just 1 teammate (only if time permits)
+                 if (retakingCTs === 1 && myDist < 200 && myDist > 50 && timeRemaining > 200) {
                       desiredState = BotAIState.WAITING_FOR_SPLIT;
                       desiredGoal = this.currentZoneId;
                  }

@@ -328,10 +328,11 @@ export class MatchSimulator {
 
     // 5. Default Strategy Transition (Stall Fix)
     if (tTactic === "DEFAULT") {
-        // Check if round timer < 55s or kills > 0 (More aggressive transition)
-        if (this.roundTimer <= 55 || this.roundKills > 0) {
-            // Check if we already transitioned? (Wait, tacticsManager still has DEFAULT)
-            // So we transition now.
+        // Add randomness to prevent predictable timing
+        // Transition between 60-70 seconds to add variety
+        const transitionTime = 60 + Math.floor(Math.random() * 11); // 60-70s
+
+        if (this.roundTimer <= transitionTime || this.roundKills > 0) {
             const newTactic = Math.random() > 0.5 ? "EXECUTE_A" : "EXECUTE_B";
             this.tacticsManager.setTactic(TeamSide.T, newTactic);
             this.tacticsManager.updateAssignments(this.bots, this.map);
