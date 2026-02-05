@@ -1,4 +1,5 @@
 import { ECONOMY, TeamSide, Weapon, WEAPONS } from "./constants";
+import { Weapon as RuntimeWeapon } from "@/types/Weapon";
 import { MatchState, RoundEndReason } from "./types";
 
 export class EconomySystem {
@@ -73,7 +74,10 @@ export class EconomySystem {
     return 1; // Corresponds to $1900
   }
 
-  public static getKillReward(weapon: Weapon): number {
-      return weapon.killReward;
+  public static getKillReward(weapon: Weapon | RuntimeWeapon): number {
+      if ('killAward' in weapon) {
+          return weapon.killAward;
+      }
+      return (weapon as Weapon).killReward;
   }
 }
