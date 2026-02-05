@@ -1,0 +1,6878 @@
+{
+  "totalRounds": 5000,
+  "winRate": {
+    "T": "57.42%",
+    "CT": "42.58%"
+  },
+  "winTypes": {
+    "TARGET_BOMBED": 1051,
+    "ELIMINATION_CT": 1820,
+    "BOMB_DEFUSED": 128,
+    "TIME_RUNNING_OUT": 1159,
+    "ELIMINATION_T": 842
+  },
+  "siteSuccess": {
+    "A": {
+      "attempts": 2149,
+      "winRate": "57.19%"
+    },
+    "B": {
+      "attempts": 2533,
+      "winRate": "61.03%"
+    }
+  },
+  "weaponPerformance": {
+    "AK-47": "21.90%",
+    "MP9": "17.23%",
+    "MAC-10": "15.79%",
+    "Galil AR": "15.41%",
+    "FAMAS": "14.78%",
+    "P250": "7.33%",
+    "Glock-18": "5.99%",
+    "Tec-9": "1.33%",
+    "Five-SeveN": "0.23%"
+  },
+  "tradeRate": "19.05%",
+  "heroPlays": [
+    {
+      "roundId": 26,
+      "matchRound": 4,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 29,
+      "matchRound": 7,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 34,
+      "matchRound": 12,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 37,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 39,
+      "matchRound": 17,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 58,
+      "matchRound": 16,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 61,
+      "matchRound": 19,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 64,
+      "matchRound": 22,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 66,
+      "matchRound": 24,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 67,
+      "matchRound": 25,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 79,
+      "matchRound": 7,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 80,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 81,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 85,
+      "matchRound": 13,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 94,
+      "matchRound": 6,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 97,
+      "matchRound": 9,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 107,
+      "matchRound": 19,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 115,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 120,
+      "matchRound": 11,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 124,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 130,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 163,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 169,
+      "matchRound": 21,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 170,
+      "matchRound": 22,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 175,
+      "matchRound": 4,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 180,
+      "matchRound": 9,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 185,
+      "matchRound": 14,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 186,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 188,
+      "matchRound": 17,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 194,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 195,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 202,
+      "matchRound": 13,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 204,
+      "matchRound": 15,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 216,
+      "matchRound": 6,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 219,
+      "matchRound": 9,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 222,
+      "matchRound": 12,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 233,
+      "matchRound": 2,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 234,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 242,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 257,
+      "matchRound": 2,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 275,
+      "matchRound": 5,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 280,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 289,
+      "matchRound": 19,
+      "playerId": "player-2",
+      "playerName": "Peter David",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 293,
+      "matchRound": 23,
+      "playerId": "player-2",
+      "playerName": "Peter David",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 299,
+      "matchRound": 29,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 303,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 306,
+      "matchRound": 6,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 308,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 322,
+      "matchRound": 21,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 334,
+      "matchRound": 13,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 335,
+      "matchRound": 14,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 368,
+      "matchRound": 4,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 380,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 382,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 383,
+      "matchRound": 19,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 396,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 398,
+      "matchRound": 13,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 401,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 403,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 408,
+      "matchRound": 22,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 413,
+      "matchRound": 6,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 421,
+      "matchRound": 14,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 434,
+      "matchRound": 6,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 439,
+      "matchRound": 11,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 443,
+      "matchRound": 15,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 446,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 448,
+      "matchRound": 2,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 462,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 467,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 473,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 478,
+      "matchRound": 14,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 482,
+      "matchRound": 18,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 488,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 491,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 503,
+      "matchRound": 20,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 508,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 513,
+      "matchRound": 11,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 517,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 526,
+      "matchRound": 2,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 531,
+      "matchRound": 7,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 535,
+      "matchRound": 11,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 552,
+      "matchRound": 7,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 558,
+      "matchRound": 13,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 563,
+      "matchRound": 18,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 566,
+      "matchRound": 21,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 570,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 572,
+      "matchRound": 6,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 574,
+      "matchRound": 8,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 583,
+      "matchRound": 17,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 584,
+      "matchRound": 18,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 585,
+      "matchRound": 19,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 586,
+      "matchRound": 19,
+      "playerId": "player-5",
+      "playerName": "Jordan David",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 587,
+      "matchRound": 2,
+      "playerId": "player-5",
+      "playerName": "Jordan David",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 590,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 603,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 607,
+      "matchRound": 2,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 614,
+      "matchRound": 9,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 632,
+      "matchRound": 3,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 640,
+      "matchRound": 11,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 651,
+      "matchRound": 21,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 667,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 668,
+      "matchRound": 18,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 670,
+      "matchRound": 20,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 676,
+      "matchRound": 4,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 687,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 689,
+      "matchRound": 17,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 690,
+      "matchRound": 18,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 694,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 695,
+      "matchRound": 5,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 696,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 701,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 701,
+      "matchRound": 11,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 714,
+      "matchRound": 23,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 715,
+      "matchRound": 2,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 720,
+      "matchRound": 7,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 728,
+      "matchRound": 15,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 735,
+      "matchRound": 4,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 736,
+      "matchRound": 5,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 741,
+      "matchRound": 10,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 743,
+      "matchRound": 12,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 746,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 753,
+      "matchRound": 6,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 757,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 769,
+      "matchRound": 6,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 776,
+      "matchRound": 13,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 781,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 784,
+      "matchRound": 21,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 785,
+      "matchRound": 21,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 792,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 795,
+      "matchRound": 11,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 808,
+      "matchRound": 5,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 809,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 817,
+      "matchRound": 14,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 819,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 824,
+      "matchRound": 2,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 830,
+      "matchRound": 8,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 852,
+      "matchRound": 7,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 853,
+      "matchRound": 8,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 859,
+      "matchRound": 14,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 863,
+      "matchRound": 18,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 864,
+      "matchRound": 19,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 867,
+      "matchRound": 22,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 869,
+      "matchRound": 24,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 871,
+      "matchRound": 26,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 879,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 880,
+      "matchRound": 6,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 889,
+      "matchRound": 15,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 890,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 895,
+      "matchRound": 21,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 900,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 901,
+      "matchRound": 5,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 906,
+      "matchRound": 10,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 910,
+      "matchRound": 14,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 931,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 935,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 936,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 939,
+      "matchRound": 14,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 954,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 986,
+      "matchRound": 24,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 989,
+      "matchRound": 3,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 992,
+      "matchRound": 6,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 996,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 999,
+      "matchRound": 13,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1004,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1005,
+      "matchRound": 19,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1022,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1026,
+      "matchRound": 19,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1029,
+      "matchRound": 21,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1033,
+      "matchRound": 5,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1034,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1035,
+      "matchRound": 7,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1041,
+      "matchRound": 13,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1061,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1062,
+      "matchRound": 13,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1069,
+      "matchRound": 20,
+      "playerId": "player-2",
+      "playerName": "Peter David",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1070,
+      "matchRound": 21,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1071,
+      "matchRound": 22,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1079,
+      "matchRound": 7,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1082,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1085,
+      "matchRound": 13,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1086,
+      "matchRound": 14,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1087,
+      "matchRound": 15,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1107,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1109,
+      "matchRound": 2,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1110,
+      "matchRound": 3,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1113,
+      "matchRound": 6,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1114,
+      "matchRound": 7,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1119,
+      "matchRound": 12,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1129,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1130,
+      "matchRound": 9,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1134,
+      "matchRound": 13,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1137,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1141,
+      "matchRound": 2,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1156,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1158,
+      "matchRound": 19,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1167,
+      "matchRound": 28,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1168,
+      "matchRound": 28,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1180,
+      "matchRound": 13,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1196,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1216,
+      "matchRound": 8,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1242,
+      "matchRound": 14,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1256,
+      "matchRound": 4,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1257,
+      "matchRound": 5,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1276,
+      "matchRound": 4,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1277,
+      "matchRound": 5,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1279,
+      "matchRound": 7,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1292,
+      "matchRound": 20,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1297,
+      "matchRound": 25,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1301,
+      "matchRound": 29,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1310,
+      "matchRound": 9,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1314,
+      "matchRound": 13,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1318,
+      "matchRound": 17,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1323,
+      "matchRound": 4,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1323,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1325,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1345,
+      "matchRound": 7,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1346,
+      "matchRound": 8,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1353,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1354,
+      "matchRound": 15,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1365,
+      "matchRound": 12,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1367,
+      "matchRound": 14,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1369,
+      "matchRound": 16,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1383,
+      "matchRound": 13,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1386,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1388,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1391,
+      "matchRound": 2,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1393,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1399,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1405,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1408,
+      "matchRound": 19,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1421,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1425,
+      "matchRound": 14,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1438,
+      "matchRound": 3,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1449,
+      "matchRound": 14,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1452,
+      "matchRound": 17,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1459,
+      "matchRound": 2,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1468,
+      "matchRound": 11,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1478,
+      "matchRound": 21,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1482,
+      "matchRound": 2,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1485,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1489,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1495,
+      "matchRound": 15,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1500,
+      "matchRound": 20,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1521,
+      "matchRound": 13,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1522,
+      "matchRound": 14,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1541,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1543,
+      "matchRound": 13,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1553,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1554,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1556,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1566,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1570,
+      "matchRound": 2,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1575,
+      "matchRound": 7,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1577,
+      "matchRound": 9,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1578,
+      "matchRound": 10,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1579,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1585,
+      "matchRound": 17,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1592,
+      "matchRound": 3,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1594,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1600,
+      "matchRound": 11,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1602,
+      "matchRound": 13,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1609,
+      "matchRound": 20,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1611,
+      "matchRound": 2,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1612,
+      "matchRound": 3,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1615,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1619,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1631,
+      "matchRound": 21,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1640,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1641,
+      "matchRound": 11,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1646,
+      "matchRound": 16,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1653,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1655,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1661,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1669,
+      "matchRound": 2,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1690,
+      "matchRound": 22,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1692,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1697,
+      "matchRound": 8,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1703,
+      "matchRound": 14,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1706,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1726,
+      "matchRound": 19,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1734,
+      "matchRound": 8,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1735,
+      "matchRound": 9,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1739,
+      "matchRound": 13,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1740,
+      "matchRound": 14,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1742,
+      "matchRound": 16,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1761,
+      "matchRound": 35,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1765,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1766,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1767,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1778,
+      "matchRound": 17,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1779,
+      "matchRound": 18,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1781,
+      "matchRound": 2,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1799,
+      "matchRound": 19,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1807,
+      "matchRound": 9,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1821,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1822,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1825,
+      "matchRound": 12,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1828,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1831,
+      "matchRound": 18,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1838,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1839,
+      "matchRound": 7,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1844,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1846,
+      "matchRound": 14,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1850,
+      "matchRound": 18,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1858,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1863,
+      "matchRound": 11,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1868,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1869,
+      "matchRound": 17,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1873,
+      "matchRound": 21,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1890,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1895,
+      "matchRound": 21,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1896,
+      "matchRound": 21,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1906,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1907,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1918,
+      "matchRound": 23,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1924,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1928,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1931,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1933,
+      "matchRound": 14,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1938,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1939,
+      "matchRound": 2,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1943,
+      "matchRound": 6,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1945,
+      "matchRound": 8,
+      "playerId": "player-5",
+      "playerName": "Jordan David",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1950,
+      "matchRound": 13,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1967,
+      "matchRound": 14,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1968,
+      "matchRound": 15,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1971,
+      "matchRound": 18,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1972,
+      "matchRound": 19,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1975,
+      "matchRound": 22,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1976,
+      "matchRound": 23,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1979,
+      "matchRound": 3,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1992,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 1993,
+      "matchRound": 17,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2003,
+      "matchRound": 5,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2007,
+      "matchRound": 9,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2008,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2010,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2014,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2028,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2031,
+      "matchRound": 14,
+      "playerId": "player-2",
+      "playerName": "Peter David",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2037,
+      "matchRound": 2,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2049,
+      "matchRound": 14,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2055,
+      "matchRound": 20,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2057,
+      "matchRound": 22,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2057,
+      "matchRound": 22,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2062,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2063,
+      "matchRound": 5,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2071,
+      "matchRound": 13,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2073,
+      "matchRound": 15,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2074,
+      "matchRound": 16,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2080,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2082,
+      "matchRound": 6,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2083,
+      "matchRound": 7,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2087,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2092,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2093,
+      "matchRound": 17,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2104,
+      "matchRound": 11,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2112,
+      "matchRound": 19,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2118,
+      "matchRound": 2,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2121,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2132,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2132,
+      "matchRound": 16,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2134,
+      "matchRound": 18,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2139,
+      "matchRound": 23,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2142,
+      "matchRound": 2,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2146,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2147,
+      "matchRound": 7,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2173,
+      "matchRound": 11,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2184,
+      "matchRound": 22,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2187,
+      "matchRound": 24,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2188,
+      "matchRound": 2,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2191,
+      "matchRound": 5,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2194,
+      "matchRound": 8,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2201,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2212,
+      "matchRound": 3,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2216,
+      "matchRound": 7,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2217,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2224,
+      "matchRound": 15,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2230,
+      "matchRound": 20,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2236,
+      "matchRound": 7,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2238,
+      "matchRound": 9,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2239,
+      "matchRound": 10,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2249,
+      "matchRound": 20,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2255,
+      "matchRound": 26,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2259,
+      "matchRound": 30,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2269,
+      "matchRound": 40,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2274,
+      "matchRound": 45,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2291,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2300,
+      "matchRound": 17,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2310,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2313,
+      "matchRound": 11,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2316,
+      "matchRound": 14,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2324,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2333,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2339,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2342,
+      "matchRound": 4,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2348,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2354,
+      "matchRound": 16,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2355,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2361,
+      "matchRound": 23,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2368,
+      "matchRound": 7,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2373,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2374,
+      "matchRound": 13,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2391,
+      "matchRound": 30,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2392,
+      "matchRound": 31,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2395,
+      "matchRound": 34,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2396,
+      "matchRound": 35,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2411,
+      "matchRound": 15,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2418,
+      "matchRound": 3,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2431,
+      "matchRound": 16,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2433,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2439,
+      "matchRound": 7,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2441,
+      "matchRound": 9,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2446,
+      "matchRound": 14,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2464,
+      "matchRound": 8,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2465,
+      "matchRound": 9,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2466,
+      "matchRound": 10,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2467,
+      "matchRound": 11,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2470,
+      "matchRound": 14,
+      "playerId": "player-2",
+      "playerName": "Peter David",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2482,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2486,
+      "matchRound": 14,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2490,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2495,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2498,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2512,
+      "matchRound": 22,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2514,
+      "matchRound": 2,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2530,
+      "matchRound": 4,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2532,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2543,
+      "matchRound": 17,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2548,
+      "matchRound": 2,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2552,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2562,
+      "matchRound": 16,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2563,
+      "matchRound": 17,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2564,
+      "matchRound": 18,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2574,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2575,
+      "matchRound": 5,
+      "playerId": "player-5",
+      "playerName": "Jordan David",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2577,
+      "matchRound": 7,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2580,
+      "matchRound": 10,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2592,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2606,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2615,
+      "matchRound": 10,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2616,
+      "matchRound": 11,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2623,
+      "matchRound": 2,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2636,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2637,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2651,
+      "matchRound": 9,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2653,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2667,
+      "matchRound": 24,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2681,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2689,
+      "matchRound": 23,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2695,
+      "matchRound": 29,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2702,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2717,
+      "matchRound": 21,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2731,
+      "matchRound": 13,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2736,
+      "matchRound": 18,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2738,
+      "matchRound": 20,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2748,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2751,
+      "matchRound": 13,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2752,
+      "matchRound": 14,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2760,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2766,
+      "matchRound": 11,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2769,
+      "matchRound": 14,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2777,
+      "matchRound": 5,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2778,
+      "matchRound": 6,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2787,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2789,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2800,
+      "matchRound": 28,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2809,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2810,
+      "matchRound": 4,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2821,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2828,
+      "matchRound": 6,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2837,
+      "matchRound": 15,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2848,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2854,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2861,
+      "matchRound": 17,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2862,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2870,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2873,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2874,
+      "matchRound": 13,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2879,
+      "matchRound": 2,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2883,
+      "matchRound": 6,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2890,
+      "matchRound": 13,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2891,
+      "matchRound": 14,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2895,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2898,
+      "matchRound": 21,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2906,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2907,
+      "matchRound": 9,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2916,
+      "matchRound": 18,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2918,
+      "matchRound": 20,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2919,
+      "matchRound": 20,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2931,
+      "matchRound": 13,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2937,
+      "matchRound": 2,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2939,
+      "matchRound": 4,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2942,
+      "matchRound": 7,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2959,
+      "matchRound": 7,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2962,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2971,
+      "matchRound": 19,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2973,
+      "matchRound": 21,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 2987,
+      "matchRound": 14,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3008,
+      "matchRound": 11,
+      "playerId": "player-5",
+      "playerName": "Jordan David",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3013,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3017,
+      "matchRound": 5,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3018,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3024,
+      "matchRound": 12,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3031,
+      "matchRound": 19,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3035,
+      "matchRound": 3,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3044,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3049,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3055,
+      "matchRound": 23,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3057,
+      "matchRound": 24,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3059,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3067,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3072,
+      "matchRound": 16,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3073,
+      "matchRound": 17,
+      "playerId": "player-5",
+      "playerName": "Jordan David",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3081,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3084,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3096,
+      "matchRound": 22,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3105,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3111,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3114,
+      "matchRound": 19,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3120,
+      "matchRound": 24,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3122,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3126,
+      "matchRound": 7,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3151,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3153,
+      "matchRound": 12,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3155,
+      "matchRound": 14,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3166,
+      "matchRound": 4,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3171,
+      "matchRound": 9,
+      "playerId": "player-5",
+      "playerName": "Jordan David",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3176,
+      "matchRound": 14,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3180,
+      "matchRound": 17,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3187,
+      "matchRound": 8,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3193,
+      "matchRound": 14,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3194,
+      "matchRound": 15,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3201,
+      "matchRound": 22,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3205,
+      "matchRound": 3,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3217,
+      "matchRound": 15,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3218,
+      "matchRound": 16,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3232,
+      "matchRound": 6,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3238,
+      "matchRound": 12,
+      "playerId": "player-2",
+      "playerName": "Peter David",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3243,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3244,
+      "matchRound": 18,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3245,
+      "matchRound": 19,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3257,
+      "matchRound": 8,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3264,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3277,
+      "matchRound": 7,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3278,
+      "matchRound": 8,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3279,
+      "matchRound": 9,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3283,
+      "matchRound": 13,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3287,
+      "matchRound": 17,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3291,
+      "matchRound": 3,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3293,
+      "matchRound": 5,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3297,
+      "matchRound": 9,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3310,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3312,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3315,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3321,
+      "matchRound": 15,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3337,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3343,
+      "matchRound": 14,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3345,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3350,
+      "matchRound": 21,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3353,
+      "matchRound": 24,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3357,
+      "matchRound": 4,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3361,
+      "matchRound": 8,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3374,
+      "matchRound": 21,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3379,
+      "matchRound": 26,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3380,
+      "matchRound": 27,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3394,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3397,
+      "matchRound": 15,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3402,
+      "matchRound": 20,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3405,
+      "matchRound": 2,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3411,
+      "matchRound": 8,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3417,
+      "matchRound": 14,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3420,
+      "matchRound": 17,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3421,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3423,
+      "matchRound": 19,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3431,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3433,
+      "matchRound": 11,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3436,
+      "matchRound": 14,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3441,
+      "matchRound": 19,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3443,
+      "matchRound": 2,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3445,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3452,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3453,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3458,
+      "matchRound": 17,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3474,
+      "matchRound": 14,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3475,
+      "matchRound": 15,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3478,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3488,
+      "matchRound": 5,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3490,
+      "matchRound": 7,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3491,
+      "matchRound": 8,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3495,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3498,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3499,
+      "matchRound": 15,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3503,
+      "matchRound": 5,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3512,
+      "matchRound": 14,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3515,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3522,
+      "matchRound": 24,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3526,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3528,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3532,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3541,
+      "matchRound": 18,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3552,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3555,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3568,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3570,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3583,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3586,
+      "matchRound": 7,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3598,
+      "matchRound": 19,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3603,
+      "matchRound": 2,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3611,
+      "matchRound": 10,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3612,
+      "matchRound": 11,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3613,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3615,
+      "matchRound": 14,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3616,
+      "matchRound": 15,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3618,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3621,
+      "matchRound": 19,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3625,
+      "matchRound": 5,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3629,
+      "matchRound": 9,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3631,
+      "matchRound": 11,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3636,
+      "matchRound": 16,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3660,
+      "matchRound": 17,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3666,
+      "matchRound": 22,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3667,
+      "matchRound": 2,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3677,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3699,
+      "matchRound": 17,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3709,
+      "matchRound": 8,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3712,
+      "matchRound": 11,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3714,
+      "matchRound": 13,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3716,
+      "matchRound": 15,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3726,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3738,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3746,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3753,
+      "matchRound": 11,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3757,
+      "matchRound": 15,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3766,
+      "matchRound": 5,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3767,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3768,
+      "matchRound": 7,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3772,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3773,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3778,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3789,
+      "matchRound": 14,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3790,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3794,
+      "matchRound": 4,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3801,
+      "matchRound": 11,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3812,
+      "matchRound": 3,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3819,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3833,
+      "matchRound": 23,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3840,
+      "matchRound": 8,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3842,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3845,
+      "matchRound": 13,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3854,
+      "matchRound": 22,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3856,
+      "matchRound": 23,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3859,
+      "matchRound": 4,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3865,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3871,
+      "matchRound": 16,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3872,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3875,
+      "matchRound": 20,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3876,
+      "matchRound": 20,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3880,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3890,
+      "matchRound": 15,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3895,
+      "matchRound": 2,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3896,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3910,
+      "matchRound": 17,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3919,
+      "matchRound": 6,
+      "playerId": "player-2",
+      "playerName": "Peter David",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3920,
+      "matchRound": 7,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3929,
+      "matchRound": 16,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3930,
+      "matchRound": 17,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3946,
+      "matchRound": 10,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3951,
+      "matchRound": 15,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3952,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3953,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3958,
+      "matchRound": 22,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3963,
+      "matchRound": 3,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3968,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3970,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3977,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3981,
+      "matchRound": 21,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 3991,
+      "matchRound": 9,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4003,
+      "matchRound": 3,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4005,
+      "matchRound": 5,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4011,
+      "matchRound": 11,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4017,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4025,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4030,
+      "matchRound": 10,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4032,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4035,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4045,
+      "matchRound": 3,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4049,
+      "matchRound": 7,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4057,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4066,
+      "matchRound": 4,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4070,
+      "matchRound": 8,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4080,
+      "matchRound": 2,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4083,
+      "matchRound": 5,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4086,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4093,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4098,
+      "matchRound": 20,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4101,
+      "matchRound": 2,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4105,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4110,
+      "matchRound": 11,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4117,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4121,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4126,
+      "matchRound": 10,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4127,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4131,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4142,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4143,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4144,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4146,
+      "matchRound": 12,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4157,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4160,
+      "matchRound": 8,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4161,
+      "matchRound": 9,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4163,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4177,
+      "matchRound": 2,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4190,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4192,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4200,
+      "matchRound": 2,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4200,
+      "matchRound": 2,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4201,
+      "matchRound": 3,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4223,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4230,
+      "matchRound": 12,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4239,
+      "matchRound": 20,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4240,
+      "matchRound": 2,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4246,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4253,
+      "matchRound": 15,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4271,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4281,
+      "matchRound": 19,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4289,
+      "matchRound": 7,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4295,
+      "matchRound": 13,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4296,
+      "matchRound": 14,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4304,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4305,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4306,
+      "matchRound": 5,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4308,
+      "matchRound": 7,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4315,
+      "matchRound": 14,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4322,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4333,
+      "matchRound": 14,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4338,
+      "matchRound": 6,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4349,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4357,
+      "matchRound": 8,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4364,
+      "matchRound": 15,
+      "playerId": "player-2",
+      "playerName": "Peter David",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4369,
+      "matchRound": 20,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4370,
+      "matchRound": 20,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4379,
+      "matchRound": 10,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4387,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4392,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4408,
+      "matchRound": 19,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4411,
+      "matchRound": 22,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4412,
+      "matchRound": 23,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4415,
+      "matchRound": 26,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4416,
+      "matchRound": 27,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4421,
+      "matchRound": 2,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4422,
+      "matchRound": 3,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4434,
+      "matchRound": 15,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4437,
+      "matchRound": 18,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4441,
+      "matchRound": 21,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4444,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4445,
+      "matchRound": 5,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4447,
+      "matchRound": 7,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4450,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4453,
+      "matchRound": 13,
+      "playerId": "player-2",
+      "playerName": "Peter David",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4457,
+      "matchRound": 2,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4459,
+      "matchRound": 4,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4465,
+      "matchRound": 10,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4471,
+      "matchRound": 16,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4476,
+      "matchRound": 21,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4481,
+      "matchRound": 2,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4483,
+      "matchRound": 4,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4484,
+      "matchRound": 5,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4494,
+      "matchRound": 15,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4497,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4511,
+      "matchRound": 8,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4515,
+      "matchRound": 12,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4521,
+      "matchRound": 18,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4532,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4536,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4540,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4544,
+      "matchRound": 20,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4547,
+      "matchRound": 2,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4548,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4553,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4557,
+      "matchRound": 12,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4559,
+      "matchRound": 14,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4578,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4582,
+      "matchRound": 13,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4583,
+      "matchRound": 14,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4586,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4587,
+      "matchRound": 18,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4599,
+      "matchRound": 2,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4607,
+      "matchRound": 10,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4608,
+      "matchRound": 11,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4613,
+      "matchRound": 16,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4615,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4634,
+      "matchRound": 19,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4643,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4645,
+      "matchRound": 12,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4648,
+      "matchRound": 15,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4655,
+      "matchRound": 21,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4656,
+      "matchRound": 2,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4663,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4664,
+      "matchRound": 10,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4667,
+      "matchRound": 13,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4674,
+      "matchRound": 20,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4677,
+      "matchRound": 22,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4679,
+      "matchRound": 3,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4685,
+      "matchRound": 9,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4693,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4694,
+      "matchRound": 17,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4695,
+      "matchRound": 2,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4699,
+      "matchRound": 6,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4701,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4707,
+      "matchRound": 14,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4709,
+      "matchRound": 16,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4720,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4732,
+      "matchRound": 15,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4733,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4734,
+      "matchRound": 17,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4736,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4759,
+      "matchRound": 2,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4762,
+      "matchRound": 5,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4780,
+      "matchRound": 2,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4785,
+      "matchRound": 7,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4786,
+      "matchRound": 8,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4794,
+      "matchRound": 16,
+      "playerId": "player-1",
+      "playerName": "Jordan Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4796,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4798,
+      "matchRound": 19,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4811,
+      "matchRound": 14,
+      "playerId": "player-3",
+      "playerName": "Kenny Kostyliev",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4825,
+      "matchRound": 8,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4838,
+      "matchRound": 21,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4842,
+      "matchRound": 4,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4845,
+      "matchRound": 7,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4849,
+      "matchRound": 11,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4854,
+      "matchRound": 16,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4855,
+      "matchRound": 17,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4859,
+      "matchRound": 21,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4862,
+      "matchRound": 24,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4863,
+      "matchRound": 24,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4866,
+      "matchRound": 4,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4868,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4891,
+      "matchRound": 29,
+      "playerId": "player-4",
+      "playerName": "Peter Meister",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4897,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4909,
+      "matchRound": 18,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4913,
+      "matchRound": 21,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4926,
+      "matchRound": 14,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4934,
+      "matchRound": 22,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4938,
+      "matchRound": 3,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4940,
+      "matchRound": 5,
+      "playerId": "player-7",
+      "playerName": "Kenny Kovac",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4941,
+      "matchRound": 6,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4948,
+      "matchRound": 13,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4950,
+      "matchRound": 15,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4951,
+      "matchRound": 16,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4961,
+      "matchRound": 6,
+      "playerId": "player-8",
+      "playerName": "Nicolai Toledo",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4977,
+      "matchRound": 3,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4985,
+      "matchRound": 11,
+      "playerId": "player-6",
+      "playerName": "Nikola Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4986,
+      "matchRound": 12,
+      "playerId": "player-10",
+      "playerName": "Peter Rasmussen",
+      "kills": 5,
+      "weapon": "Multiple"
+    },
+    {
+      "roundId": 4997,
+      "matchRound": 23,
+      "playerId": "player-9",
+      "playerName": "Jordan Gilbert",
+      "kills": 4,
+      "weapon": "Multiple"
+    }
+  ]
+}
