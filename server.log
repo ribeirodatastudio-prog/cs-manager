@@ -13,39 +13,8 @@ You can learn more, including how to opt-out if you'd not like to participate in
 https://nextjs.org/telemetry
 
  ✓ Ready in 2.1s
- ○ Compiling /simulation ...
- ✓ Compiled /simulation in 8s (653 modules)
- GET /simulation 200 in 9520ms
- ✓ Compiled in 369ms (268 modules)
- ✓ Compiled in 132ms (268 modules)
- ✓ Compiled in 828ms (268 modules)
- ✓ Compiled in 422ms (268 modules)
- ✓ Compiled in 179ms (268 modules)
- ⨯ ./src/lib/player-generator.ts:2:1
-Module not found: Can't resolve 'uuid'
-  1 | import { Player } from "@/types";
-> 2 | import { v4 as uuidv4 } from "uuid";
-    | ^
-  3 |
-  4 | // Helper to get random integer
-  5 | function getRandomInt(min: number, max: number): number {
-
-https://nextjs.org/docs/messages/module-not-found
-
-Import trace for requested module:
-./src/app/simulation/page.tsx
- ⨯ ./src/lib/player-generator.ts:2:1
-Module not found: Can't resolve 'uuid'
-  1 | import { Player } from "@/types";
-> 2 | import { v4 as uuidv4 } from "uuid";
-    | ^
-  3 |
-  4 | // Helper to get random integer
-  5 | function getRandomInt(min: number, max: number): number {
-
-https://nextjs.org/docs/messages/module-not-found
-
-Import trace for requested module:
-./src/app/simulation/page.tsx
- ✓ Compiled in 362ms (289 modules)
- ✓ Compiled in 147ms (289 modules)
+ ○ Compiling /practice ...
+ ✓ Compiled /practice in 9.1s (679 modules)
+ GET /practice 200 in 10811ms
+ ✓ Compiled in 309ms (281 modules)
+[?25h
