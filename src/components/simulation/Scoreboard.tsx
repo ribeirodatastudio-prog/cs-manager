@@ -65,8 +65,8 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
               );
           case BombStatus.DEFUSING:
               const defuser = bots.find(b => b.id === bombState.defuserId);
-              const hasKit = defuser?.player.inventory?.hasKit || false;
-              const required = hasKit ? bombState.TICKS_DEFUSE_KIT : bombState.TICKS_DEFUSE_NO_KIT;
+              const hasDefuseKit = defuser?.player.inventory?.hasDefuseKit || false;
+              const required = hasDefuseKit ? bombState.TICKS_DEFUSE_KIT : bombState.TICKS_DEFUSE_NO_KIT;
               const defusePct = Math.min(100, (bombState.defuseProgress / required) * 100);
               return (
                   <div className="flex flex-col items-center w-full px-2">
