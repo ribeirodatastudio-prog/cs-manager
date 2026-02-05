@@ -57,7 +57,7 @@ export class MatchSimulator {
   private baseTickRate: number = 500; // ms
   private readonly TICKS_PER_SEC = 2;
   private readonly ROUND_TIME = 115; // 1:55
-  private readonly FREEZE_TIME = 20;
+  private readonly FREEZE_TIME = 5;
 
   constructor(players: Player[], onUpdate: (state: SimulationState) => void) {
     this.map = new GameMap(DUST2_MAP);

@@ -7,6 +7,7 @@ import { Player } from "@/types";
 import { Tactic, TeamSide } from "@/lib/engine/TacticsManager";
 import { MatchPhase } from "@/lib/engine/types";
 import { MapVisualizer } from "@/components/simulation/MapVisualizer";
+import { RoundResultOverlay } from "@/components/simulation/RoundResultOverlay";
 import { CombatLog } from "@/components/practice/CombatLog";
 import { DuelStats } from "@/components/practice/DuelStats";
 import { RosterSelection } from "@/components/practice/RosterSelection";
@@ -149,6 +150,12 @@ export default function PracticePage() {
       setStep("ROSTER");
   };
 
+  const handleNextRound = () => {
+      if (simulatorRef.current) {
+          simulatorRef.current.nextRound();
+      }
+  };
+
   const handleSpeedChange = (speed: number) => {
     setPlaybackSpeed(speed);
     if (simulatorRef.current) {
@@ -199,7 +206,7 @@ export default function PracticePage() {
   }
 
   return (
-    <div className="flex h-screen bg-black text-white font-sans overflow-hidden">
+    <div className="flex h-screen bg-black text-white font-sans overflow-hidden relative">
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header / Controls */}
@@ -258,7 +265,7 @@ export default function PracticePage() {
         {/* Workspace Grid - Full Width */}
         <div className="flex-1 grid grid-cols-4 gap-0 min-h-0">
             {/* Map (3 cols) */}
-            <div className="col-span-3 bg-zinc-900/50 relative border-r border-zinc-800 flex flex-col">
+            <div className="col-span-3 bg-zinc-900/50 relative border-r border-zinc-800 flex flex-col min-h-0">
                {/* Overlay Info */}
                <div className="absolute top-4 left-4 z-10 pointer-events-none">
                  <div className="text-zinc-400 text-xs font-mono">
@@ -266,7 +273,7 @@ export default function PracticePage() {
                  </div>
                </div>
 
-               <div className="flex-1 p-8 flex items-center justify-center">
+               <div className="flex-1 p-8 flex items-center justify-center overflow-hidden">
                   {simulatorRef.current ? (
                       <MapVisualizer
                         map={simulatorRef.current.map}
@@ -293,6 +300,16 @@ export default function PracticePage() {
             </div>
         </div>
       </div>
+
+      {/* Round Result Overlay */}
+      {gameState?.matchState.phase === MatchPhase.ROUND_END && (
+          <RoundResultOverlay
+              matchState={gameState.matchState}
+              bots={gameState.bots}
+              stats={gameState.stats}
+              onNextRound={handleNextRound}
+          />
+      )}
 
       {/* In-Game Tactics Modal */}
       {isTacticsModalOpen && (
