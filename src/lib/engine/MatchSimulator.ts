@@ -254,7 +254,7 @@ export class MatchSimulator {
     }, delay);
   }
 
-  private tick() {
+  public tick() {
     if (this.matchState.phase === MatchPhase.PAUSED_FOR_STRATEGY) {
       this.broadcast();
       return;
