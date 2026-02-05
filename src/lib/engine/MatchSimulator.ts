@@ -19,6 +19,10 @@ export interface PlayerStats {
   actualKills: number;
 }
 
+export interface ZoneState {
+    noiseLevel: number;
+}
+
 export interface SimulationState {
   bots: Bot[];
   tickCount: number;
@@ -27,6 +31,7 @@ export interface SimulationState {
   matchState: MatchState;
   bombState: Bomb; // Use Bomb class instance
   roundTimer: number; // Seconds
+  zoneStates: Record<string, ZoneState>;
 }
 
 export class MatchSimulator {
@@ -44,6 +49,8 @@ export class MatchSimulator {
   public matchState: MatchState;
   public bomb: Bomb;
   public roundTimer: number;
+  public zoneStates: Record<string, ZoneState> = {};
+  private roundKills: number = 0; // Kills this round
 
   // Config
   private speedMultiplier: number = 1.0;
@@ -72,8 +79,12 @@ export class MatchSimulator {
     };
 
     this.bomb = new Bomb();
-
     this.roundTimer = this.ROUND_TIME;
+
+    // Initialize Zone States
+    this.map.data.zones.forEach(z => {
+        this.zoneStates[z.id] = { noiseLevel: 0 };
+    });
 
     // Initialize Bots
     this.bots = players.map((p, i) => {
@@ -160,8 +171,12 @@ export class MatchSimulator {
     // Reset Map Objects
     this.bomb.reset();
     this.roundTimer = this.ROUND_TIME;
+    this.roundKills = 0; // Reset kills for the round
     this.matchState.phase = MatchPhase.PAUSED_FOR_STRATEGY; // Pause for strategy
     this.matchState.phaseTimer = this.FREEZE_TIME;
+
+    // Reset Zone Noise
+    Object.keys(this.zoneStates).forEach(key => this.zoneStates[key].noiseLevel = 0);
 
     // Respawn Bots
     this.bots.forEach(bot => {
@@ -171,6 +186,9 @@ export class MatchSimulator {
       bot.reactionTimer = 0;
       bot.hasBomb = false;
       bot.path = [];
+      bot.isShiftWalking = false;
+      bot.isChargingUtility = false;
+      bot.utilityChargeTimer = 0;
       const spawn = this.map.getSpawnPoint(bot.side);
       bot.currentZoneId = spawn!.id;
     });
@@ -184,6 +202,9 @@ export class MatchSimulator {
         this.events.unshift(`[Round ${this.matchState.round}] 💣 ${carrier.player.name} has the bomb.`);
     }
 
+    // Update Assignments (Default)
+    this.tacticsManager.updateAssignments(this.bots, this.map);
+
     // Note: Buy Logic is now deferred to applyStrategies
   }
 
@@ -191,6 +212,9 @@ export class MatchSimulator {
     // 1. Set Tactics
     this.tacticsManager.setTactic(TeamSide.T, tTactic);
     this.tacticsManager.setTactic(TeamSide.CT, ctTactic);
+
+    // Update Assignments based on new tactics
+    this.tacticsManager.updateAssignments(this.bots, this.map);
 
     // 2. Execute Buy Logic
     this.bots.forEach(bot => {
@@ -254,12 +278,57 @@ export class MatchSimulator {
     // 2. Bomb Logic Tick
     this.bomb.tick();
 
-    // 3. Bots Decision
+    // 3. Update Noise Levels (Decay)
+    Object.values(this.zoneStates).forEach(state => {
+        state.noiseLevel = Math.max(0, state.noiseLevel - 5); // Decay 5 per tick
+    });
+
+    // 4. Split Strategy Coordination
+    const tTactic = this.tacticsManager.getTactic(TeamSide.T);
+    if (tTactic.includes("SPLIT") && this.tacticsManager.getStage(TeamSide.T) === "SETUP") {
+        // Check if all T bots are at their assigned pincer point (or dead)
+        const tBots = this.bots.filter(b => b.side === TeamSide.T && b.status === "ALIVE");
+        let allReady = true;
+        for (const bot of tBots) {
+            const goal = this.tacticsManager.getGoalZone(bot, this.map); // Returns pincer point in SETUP
+            if (bot.currentZoneId !== goal) {
+                allReady = false;
+                break;
+            }
+        }
+
+        if (allReady && tBots.length > 0) {
+            this.tacticsManager.setStage(TeamSide.T, "EXECUTE");
+            this.events.unshift(`[Tactics] 🔄 Split Groups Synchronized. Executing Site Push!`);
+        }
+    }
+
+    // 5. Default Strategy Transition (Stall Fix)
+    if (tTactic === "DEFAULT") {
+        // Check if round timer < 45s or kills > 0
+        if (this.roundTimer <= 45 || this.roundKills > 0) {
+            // Check if we already transitioned? (Wait, tacticsManager still has DEFAULT)
+            // So we transition now.
+            const newTactic = Math.random() > 0.5 ? "EXECUTE_A" : "EXECUTE_B";
+            this.tacticsManager.setTactic(TeamSide.T, newTactic);
+            this.tacticsManager.updateAssignments(this.bots, this.map);
+            this.events.unshift(`[Tactics] ⏱️ Default Phase Over. Transitioning to ${newTactic.replace("_", " ")}!`);
+        }
+    }
+
+
+    // 6. Bots Decision
     this.bots.forEach(bot => {
       if (bot.status === "DEAD") return;
 
+      // Add Noise
+      const noise = bot.makeNoise();
+      if (this.zoneStates[bot.currentZoneId]) {
+          this.zoneStates[bot.currentZoneId].noiseLevel += noise;
+      }
+
       // Update Goal / AI State
-      bot.updateGoal(this.map, this.bomb, this.tacticsManager);
+      bot.updateGoal(this.map, this.bomb, this.tacticsManager, this.zoneStates);
 
       // Get Action
       const action = bot.decideAction(this.map);
@@ -283,10 +352,7 @@ export class MatchSimulator {
            }
         } else {
            // Calculate Speed
-           const weapon = bot.getEquippedWeapon();
-           const mobility = weapon ? weapon.mobility : 250;
-           const baseSpeed = 40; // Map units per second
-           const effectiveSpeed = baseSpeed * (mobility / 250);
+           const effectiveSpeed = bot.getEffectiveSpeed(40);
 
            // Move amount per tick (0.5s)
            const moveAmount = effectiveSpeed * 0.5;
@@ -320,13 +386,18 @@ export class MatchSimulator {
               this.bomb.startDefusing(bot.id);
           }
       }
+      // Check Charge Action
+      else if (action.type === "CHARGE_UTILITY") {
+          // Just waiting, maybe log event once?
+          // Bot status is CHARGING_UTILITY
+      }
       }
     });
 
-    // 4. Resolve Combat (may interrupt planting/defusing)
+    // 7. Resolve Combat (may interrupt planting/defusing)
     this.resolveCombat();
 
-    // 5. Update Bomb Progress (Plant/Defuse)
+    // 8. Update Bomb Progress (Plant/Defuse)
     if (this.bomb.status === BombStatus.PLANTING) {
         if (this.bomb.updatePlanting()) {
             this.events.unshift(`[Tick ${this.tickCount}] 💣 BOMB PLANTED at ${this.bomb.plantSite === this.map.data.bombSites.A ? "A" : "B"}!`);
@@ -344,7 +415,7 @@ export class MatchSimulator {
         }
     }
 
-    // 6. Check Win Conditions
+    // 9. Check Win Conditions
     this.checkWinConditions();
   }
 
@@ -373,6 +444,8 @@ export class MatchSimulator {
            // Can't shoot if planting/defusing
            if (attacker.aiState === BotAIState.PLANTING && attacker.hasBomb) return; // Simplified check
            if (attacker.aiState === BotAIState.DEFUSING && this.bomb.defuserId === attacker.id) return;
+           // Can't shoot if Charging Utility
+           if (attacker.aiState === BotAIState.CHARGING_UTILITY) return;
 
            // Actually, verify against bomb state
            if (this.bomb.planterId === attacker.id) return;
@@ -393,6 +466,16 @@ export class MatchSimulator {
            if (this.bomb.defuserId === target.id) {
                this.bomb.abortDefusing();
                target.aiState = BotAIState.DEFAULT;
+           }
+           if (target.aiState === BotAIState.CHARGING_UTILITY) {
+               target.aiState = BotAIState.DEFAULT; // Interrupted
+               target.isChargingUtility = false;
+               target.utilityChargeTimer = 0;
+           }
+
+           // Shooting adds NOISE
+           if (this.zoneStates[attacker.currentZoneId]) {
+               this.zoneStates[attacker.currentZoneId].noiseLevel += 50; // Gunshot noise
            }
 
            const probs = DuelEngine.getWinProbability(attacker, target, 100, 20);
@@ -420,6 +503,9 @@ export class MatchSimulator {
                this.stats[winner.id].kills++;
                this.stats[winner.id].actualKills++;
                this.stats[loser.id].deaths++;
+
+               // Increment Round Kills
+               this.roundKills++;
 
                // Drop Bomb logic
                if (this.bomb.carrierId === loser.id) {
@@ -617,7 +703,8 @@ export class MatchSimulator {
       stats: this.stats,
       matchState: this.matchState,
       bombState: this.bomb, // Pass Bomb instance
-      roundTimer: this.roundTimer
+      roundTimer: this.roundTimer,
+      zoneStates: this.zoneStates // Pass zoneStates
     });
   }
 }

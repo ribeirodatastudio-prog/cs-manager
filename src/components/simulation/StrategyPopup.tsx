@@ -15,7 +15,7 @@ export const StrategyPopup: React.FC<StrategyPopupProps> = ({ matchState, bots, 
   const [tBuy, setTBuy] = useState<BuyStrategy>("ECO");
   const [tTactic, setTTactic] = useState<Tactic>("DEFAULT");
   const [ctBuy, setCtBuy] = useState<BuyStrategy>("ECO");
-  const [ctTactic, setCtTactic] = useState<Tactic>("DEFAULT");
+  const [ctTactic, setCtTactic] = useState<Tactic>("STANDARD"); // Changed default to STANDARD
 
   // Reset to ECO/DEFAULT when round changes or phase becomes PAUSED?
   // We can use useEffect to set defaults based on money when popup appears
@@ -43,7 +43,7 @@ export const StrategyPopup: React.FC<StrategyPopupProps> = ({ matchState, bots, 
 
   return (
      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div className="bg-zinc-900 border border-zinc-700 p-6 w-[800px] shadow-2xl">
+        <div className="bg-zinc-900 border border-zinc-700 p-6 w-[800px] shadow-2xl relative">
              <h2 className="text-2xl font-bold text-yellow-500 mb-6 uppercase tracking-wider text-center">Tactical Phase</h2>
 
              <div className="grid grid-cols-2 gap-8">
@@ -81,11 +81,12 @@ export const StrategyPopup: React.FC<StrategyPopupProps> = ({ matchState, bots, 
                             <option value="DEFAULT">Default</option>
                             <option value="RUSH_A">Rush A</option>
                             <option value="RUSH_B">Rush B</option>
-                            <option value="MID_CONTROL">Mid Control</option>
-                            <option value="FOCUS_A">Focus A</option>
-                            <option value="FOCUS_B">Focus B</option>
-                            <option value="SPLIT">Split A/B</option>
-                            <option value="MID_AGGRESSION">Mid Aggression</option>
+                            <option value="EXECUTE_A">Execute A</option>
+                            <option value="EXECUTE_B">Execute B</option>
+                            <option value="CONTACT_A">Contact A</option>
+                            <option value="CONTACT_B">Contact B</option>
+                            <option value="SPLIT_A">Split A</option>
+                            <option value="SPLIT_B">Split B</option>
                         </select>
                     </div>
                 </div>
@@ -121,11 +122,11 @@ export const StrategyPopup: React.FC<StrategyPopupProps> = ({ matchState, bots, 
                             onChange={(e) => setCtTactic(e.target.value as Tactic)}
                             className="w-full bg-zinc-950 border border-zinc-700 p-2 text-white focus:border-blue-500 outline-none"
                         >
-                            <option value="DEFAULT">Default</option>
-                            <option value="FOCUS_A">Stack A</option>
-                            <option value="FOCUS_B">Stack B</option>
-                            <option value="MID_AGGRESSION">Aggressive Mid</option>
-                            <option value="SPLIT">Standard Split</option>
+                            <option value="STANDARD">Standard</option>
+                            <option value="AGGRESSIVE_PUSH">Aggressive Push</option>
+                            <option value="GAMBLE_STACK_A">Gamble Stack A</option>
+                            <option value="GAMBLE_STACK_B">Gamble Stack B</option>
+                            <option value="RETAKE_SETUP">Retake Setup</option>
                         </select>
                     </div>
                 </div>

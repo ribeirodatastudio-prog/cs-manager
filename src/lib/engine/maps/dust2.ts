@@ -11,6 +11,18 @@ export const DUST2_MAP: MapData = {
     A: "a_site",
     B: "b_site"
   },
+  strategies: {
+    split: {
+      A: [
+        { name: "Long", pincerPoint: "long_doors" },
+        { name: "Short", pincerPoint: "a_short" }
+      ],
+      B: [
+        { name: "Tunnels", pincerPoint: "upper_tunnels" },
+        { name: "Mid", pincerPoint: "mid_doors" }
+      ]
+    }
+  },
   zones: [
     // T Side
     {

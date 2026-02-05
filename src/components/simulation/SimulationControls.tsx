@@ -15,7 +15,20 @@ interface SimulationControlsProps {
   onTacticChange: (side: TeamSide, tactic: Tactic) => void;
 }
 
-const TACTICS: Tactic[] = ["DEFAULT", "RUSH_A", "RUSH_B", "MID_CONTROL"];
+const T_TACTICS: Tactic[] = [
+  "DEFAULT",
+  "RUSH_A", "RUSH_B",
+  "EXECUTE_A", "EXECUTE_B",
+  "CONTACT_A", "CONTACT_B",
+  "SPLIT_A", "SPLIT_B"
+];
+
+const CT_TACTICS: Tactic[] = [
+  "STANDARD",
+  "AGGRESSIVE_PUSH",
+  "GAMBLE_STACK_A", "GAMBLE_STACK_B",
+  "RETAKE_SETUP"
+];
 
 export const SimulationControls: React.FC<SimulationControlsProps> = ({
   isRunning,
@@ -93,9 +106,9 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
             onChange={(e) => onTacticChange(TeamSide.T, e.target.value as Tactic)}
             className="bg-zinc-800 text-white border border-zinc-600 p-2 text-sm rounded-none focus:border-yellow-500 outline-none"
           >
-            {TACTICS.map((t) => (
+            {T_TACTICS.map((t) => (
               <option key={t} value={t}>
-                {t.replace("_", " ")}
+                {t.replace(/_/g, " ")}
               </option>
             ))}
           </select>
@@ -107,9 +120,9 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
             onChange={(e) => onTacticChange(TeamSide.CT, e.target.value as Tactic)}
             className="bg-zinc-800 text-white border border-zinc-600 p-2 text-sm rounded-none focus:border-blue-500 outline-none"
           >
-            {TACTICS.map((t) => (
+            {CT_TACTICS.map((t) => (
               <option key={t} value={t}>
-                {t.replace("_", " ")}
+                {t.replace(/_/g, " ")}
               </option>
             ))}
           </select>

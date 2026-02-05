@@ -7,6 +7,19 @@ export interface Zone {
   cover: number; // 0.0 to 1.0 (0% to 100% cover bonus)
 }
 
+export interface SplitGroup {
+  name: string; // e.g. "Long", "Short", "Tunnels"
+  pincerPoint: string; // Zone ID to wait at
+  path?: string[]; // Optional specific path to pincer point
+}
+
+export interface StrategyData {
+  split: {
+    A: SplitGroup[];
+    B: SplitGroup[];
+  };
+}
+
 export interface MapData {
   id: string;
   name: string;
@@ -19,6 +32,7 @@ export interface MapData {
     A: string; // Zone ID
     B: string; // Zone ID
   };
+  strategies?: StrategyData;
 }
 
 export enum MatchPhase {
