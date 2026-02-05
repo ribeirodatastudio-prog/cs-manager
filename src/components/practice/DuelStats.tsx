@@ -4,6 +4,7 @@ import { PlayerStats } from "@/lib/engine/MatchSimulator";
 import { DuelEngine } from "@/lib/engine/DuelEngine";
 import { Bot } from "@/lib/engine/Bot";
 import { TeamSide } from "@/lib/engine/constants";
+import { EventManager } from "@/lib/engine/EventManager";
 
 interface DuelStatsProps {
   stats: Record<string, PlayerStats>;
@@ -65,8 +66,9 @@ export const DuelStats: React.FC<DuelStatsProps> = ({ stats, players }) => {
             const ratio1 = totalScore > 0 ? (score1 / totalScore) * 100 : 50;
 
             // 2. Monte Carlo
-            const b1 = new Bot(p1, TeamSide.T, "temp");
-            const b2 = new Bot(p2, TeamSide.CT, "temp");
+            const em = new EventManager(); // Dummy event manager for calculator
+            const b1 = new Bot(p1, TeamSide.T, "temp", em);
+            const b2 = new Bot(p2, TeamSide.CT, "temp", em);
             const mc = DuelEngine.getWinProbability(b1, b2, 100);
 
             // 3. Aim Delta

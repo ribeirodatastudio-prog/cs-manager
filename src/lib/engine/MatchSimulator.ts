@@ -9,6 +9,7 @@ import { EconomySystem } from "./EconomySystem";
 import { BuyLogic } from "./BuyLogic";
 import { ECONOMY } from "./constants";
 import { Bomb, BombStatus } from "./Bomb";
+import { EventManager } from "./EventManager";
 
 export interface PlayerStats {
   kills: number;
@@ -51,6 +52,7 @@ export class MatchSimulator {
   public roundTimer: number;
   public zoneStates: Record<string, ZoneState> = {};
   private roundKills: number = 0; // Kills this round
+  private eventManager: EventManager;
 
   // Config
   private speedMultiplier: number = 1.0;
@@ -66,6 +68,7 @@ export class MatchSimulator {
     this.isRunning = false;
     this.onUpdate = onUpdate;
     this.events = [];
+    this.eventManager = new EventManager();
 
     // Initialize Match State
     this.matchState = {
@@ -90,7 +93,7 @@ export class MatchSimulator {
     this.bots = players.map((p, i) => {
       const side = i % 2 === 0 ? TeamSide.T : TeamSide.CT;
       const spawn = this.map.getSpawnPoint(side);
-      return new Bot(p, side, spawn!.id);
+      return new Bot(p, side, spawn!.id, this.eventManager);
     });
 
     // Init Stats
@@ -328,7 +331,7 @@ export class MatchSimulator {
       }
 
       // Update Goal / AI State
-      bot.updateGoal(this.map, this.bomb, this.tacticsManager, this.zoneStates);
+      bot.updateGoal(this.map, this.bomb, this.tacticsManager, this.zoneStates, this.tickCount);
 
       // Get Action
       const action = bot.decideAction(this.map);
@@ -483,6 +486,26 @@ export class MatchSimulator {
 
         foughtThisTick.add(attacker.id);
 
+        // Notify Enemy Spotted (Both ways)
+        // Only if not already spotted recently? Bot handles duplicates via timestamp logic usually, but here we spam it.
+        // Let's rely on EventManager to handle listeners.
+        this.eventManager.publish({
+            type: "ENEMY_SPOTTED",
+            zoneId: target.currentZoneId,
+            timestamp: this.tickCount,
+            enemyCount: 1, // At least 1
+            spottedBy: attacker.id
+        });
+
+        // Target also spots attacker
+        this.eventManager.publish({
+            type: "ENEMY_SPOTTED",
+            zoneId: attacker.currentZoneId,
+            timestamp: this.tickCount,
+            enemyCount: 1,
+            spottedBy: target.id
+        });
+
         // Interrupt logic
         if (this.bomb.planterId === target.id) {
             this.bomb.abortPlanting();
@@ -534,6 +557,15 @@ export class MatchSimulator {
             this.stats[winner.id].actualKills++;
             this.stats[loser.id].deaths++;
             this.roundKills++;
+
+            // Trigger Teammate Died Event
+            this.eventManager.publish({
+                type: "TEAMMATE_DIED",
+                zoneId: loser.currentZoneId,
+                timestamp: this.tickCount,
+                victimId: loser.id,
+                killerId: winner.id
+            });
 
             // Apply Combat Delay (Target Acquisition)
             // Delay (ticks) = Math.max(2, 6 - (ReactionTime + Dexterity) / 50)

@@ -6,6 +6,7 @@ import { ECONOMY, WEAPONS } from "./constants";
 import { Bomb, BombStatus } from "./Bomb";
 import { WeaponManager } from "./WeaponManager";
 import { Weapon } from "@/types/Weapon";
+import { EventManager, GameEvent } from "./EventManager";
 
 export type BotStatus = "ALIVE" | "DEAD";
 
@@ -44,6 +45,8 @@ export class Bot {
   public aiState: BotAIState = BotAIState.DEFAULT;
   public goalZoneId: string | null = null;
   public reactionTimer: number = 0; // Ticks to wait before acting on new goal
+  public internalThreatMap: Record<string, { level: number; timestamp: number }> = {};
+  public focusZoneId: string | null = null;
 
   // Behavior State
   public isShiftWalking: boolean = false;
@@ -51,6 +54,8 @@ export class Bot {
   public utilityChargeTimer: number = 0;
   public stealthMode: boolean = false;
   public splitGroup: string | null = null; // "Short", "Long", etc.
+
+  private eventManager: EventManager;
 
   get hp(): number {
     return this.player.health ?? 100;
@@ -67,10 +72,11 @@ export class Bot {
     return this.player.hasVest ?? (this.player.inventory?.hasKevlar ?? false);
   }
 
-  constructor(player: Player, side: TeamSide, startZoneId: string) {
+  constructor(player: Player, side: TeamSide, startZoneId: string, eventManager: EventManager) {
     this.id = player.id;
     this.player = player;
     this.side = side;
+    this.eventManager = eventManager;
 
     // Initialize Health/Armor state
     if (this.player.health === undefined) this.player.health = 100;
@@ -94,6 +100,37 @@ export class Bot {
     if (!this.player.inventory.secondaryWeapon) {
       this.player.inventory.secondaryWeapon = side === TeamSide.T ? "glock-18" : "usp-s";
     }
+
+    this.subscribeToEvents();
+  }
+
+  private subscribeToEvents() {
+    this.eventManager.subscribe("ENEMY_SPOTTED", (e) => this.handleEvent(e));
+    this.eventManager.subscribe("TEAMMATE_DIED", (e) => this.handleEvent(e));
+  }
+
+  private handleEvent(event: GameEvent) {
+      if (this.status === "DEAD") return;
+
+      // Filter events: Ignore own events if handled elsewhere, but generally bots know what they see.
+      // But this event comes from MatchSimulator broadcast.
+      if (event.type === "ENEMY_SPOTTED") {
+          // If I am the spotter, I already know.
+          if (event.spottedBy === this.id) {
+              // Self-knowledge: High confidence
+              this.internalThreatMap[event.zoneId] = { level: 100, timestamp: event.timestamp };
+          } else {
+              // Teammate communication
+              const comms = this.player.skills.mental.communication;
+              // Chance to miss info? Or simply degraded info.
+              // Let's say high comms = instant accurate update. Low comms = delayed or lower threat level.
+              // For simplicity: Update threat map.
+              this.internalThreatMap[event.zoneId] = { level: 80, timestamp: event.timestamp };
+          }
+      } else if (event.type === "TEAMMATE_DIED") {
+          // Teammate died at zoneId. HIGH THREAT.
+          this.internalThreatMap[event.zoneId] = { level: 100, timestamp: event.timestamp };
+      }
   }
 
   getEquippedWeapon(): Weapon | undefined {
@@ -136,7 +173,22 @@ export class Bot {
       return 0;
   }
 
-  updateGoal(map: GameMap, bomb: Bomb, tacticsManager: TacticsManager, zoneStates: Record<string, { noiseLevel: number }>) {
+  private calculateGlobalThreat(map: GameMap, currentTick: number): number {
+      let totalThreat = 0;
+      // Cleanup old threats
+      for (const zoneId in this.internalThreatMap) {
+          const entry = this.internalThreatMap[zoneId];
+          const age = currentTick - entry.timestamp;
+          if (age > 50) { // Decay after 5 seconds
+               delete this.internalThreatMap[zoneId];
+          } else {
+               totalThreat += entry.level;
+          }
+      }
+      return totalThreat;
+  }
+
+  updateGoal(map: GameMap, bomb: Bomb, tacticsManager: TacticsManager, zoneStates: Record<string, { noiseLevel: number }>, currentTick: number = 0) {
     if (this.status === "DEAD") return;
 
     if (this.combatCooldown > 0) {
@@ -164,9 +216,6 @@ export class Bot {
 
     // Stealth / Shift Walk Logic
     if (tactic.includes("CONTACT")) {
-        // Assume stealth unless compromised.
-        // Logic to unset stealthMode would be external (MatchSimulator sees enemy -> unsets)
-        // For now, enforce it if true.
         if (this.stealthMode) this.isShiftWalking = true;
     } else {
         this.stealthMode = false;
@@ -194,6 +243,7 @@ export class Bot {
 
     // --- CT LOGIC ---
     if (this.side === TeamSide.CT) {
+      // 1. Check Bomb Status
       if (bomb.status === BombStatus.PLANTED && bomb.timer < 14 && !bomb.defuserId) {
          desiredState = BotAIState.SAVING;
          desiredGoal = Pathfinder.findFurthestZone(map, bomb.plantSite || this.currentZoneId);
@@ -213,21 +263,75 @@ export class Bot {
          desiredState = BotAIState.DEFAULT;
          desiredGoal = tacticsManager.getGoalZone(this, map);
 
-         // CT Rotation Logic based on Noise
-         if (this.player.skills.mental.gameSense > 70 && this.aiState === BotAIState.DEFAULT) {
-            // Simple heuristic: If total noise in Site A > 50, and I am at B, rotate.
-            // We need to know which zones belong to A or B.
-            // Simplified: distance check?
-            // If I am closer to B, check A noise.
+         // 2. CT Rotation Logic based on Internal Threat Map and Noise
+         const gameSense = this.player.skills.mental.gameSense;
+
+         // Calculate Global Threat
+         this.calculateGlobalThreat(map, currentTick);
+
+         // "Guess" Rotation Logic: Check Transition Zones
+         // If Mid Doors or Catwalk is high threat, and I am not an anchor on a site under attack, rotate?
+         // Actually, if Mid is lost, adjacent zones (Short, B Doors) increase in threat.
+
+         // Let's implement the specific logic: "When a kill occurs at a 'Transition Zone' like Mid Doors... nearest living CT must move to fill that gap."
+         // And "CTs at the opposite site should move to 'Aggressive Hold' positions"
+
+         // Check for High Threat in Transition Zones
+         const transitionZones = ["mid_doors", "catwalk", "lower_tunnels", "long_doors"];
+         let criticalTransition: string | null = null;
+
+         for (const tz of transitionZones) {
+             if (this.internalThreatMap[tz]?.level > 80) {
+                 criticalTransition = tz;
+                 break;
+             }
+         }
+
+         if (criticalTransition) {
+             // A transition zone is compromised.
+             // Am I the nearest rotator?
+             const myDist = map.getDistance(this.currentZoneId, criticalTransition);
+
+             // Simplification: If I am relatively close (distance < 300) and not currently on a bomb site, I fill the gap.
+             const onSite = this.currentZoneId === map.data.bombSites.A || this.currentZoneId === map.data.bombSites.B;
+
+             if (!onSite && myDist < 400) {
+                 desiredGoal = criticalTransition;
+                 desiredState = BotAIState.ROTATING;
+             } else if (onSite) {
+                 // I am on site. Opposite site?
+                 // If I am on B and Mid is lost, maybe push B Doors/Window (Aggressive Hold)
+                 // If I am on A and Mid is lost, maybe push Short (Aggressive Hold)
+
+                 // If critical is Mid Doors (near B/CT):
+                 if (criticalTransition === "mid_doors") {
+                     if (this.currentZoneId === map.data.bombSites.B) {
+                         // Push B Window or B Doors
+                         desiredGoal = "b_window"; // Aggressive
+                         desiredState = BotAIState.HOLDING_ANGLE;
+                     }
+                 }
+                 // If critical is Catwalk (near A):
+                 if (criticalTransition === "catwalk") {
+                      if (this.currentZoneId === map.data.bombSites.A) {
+                          // Push Short
+                          desiredGoal = "a_short";
+                          desiredState = BotAIState.HOLDING_ANGLE;
+                      }
+                 }
+             }
+         }
+
+         // Fallback to Noise heuristic if no direct event threat
+         if (!criticalTransition && gameSense > 70 && this.aiState === BotAIState.DEFAULT) {
             const distToA = Pathfinder.findPath(map, this.currentZoneId, map.data.bombSites.A)?.length || 99;
             const distToB = Pathfinder.findPath(map, this.currentZoneId, map.data.bombSites.B)?.length || 99;
 
             let targetSiteNoise = 0;
             let otherSite = "";
 
-            // If closer to B, check A
             if (distToB < distToA) {
-                const aZones = ["long_doors", "a_ramp", "a_site", "a_short"]; // Heuristic list
+                const aZones = ["long_doors", "a_ramp", "a_site", "a_short"];
                 aZones.forEach(z => targetSiteNoise += (zoneStates[z]?.noiseLevel || 0));
                 otherSite = map.data.bombSites.A;
             } else {
@@ -236,14 +340,7 @@ export class Bot {
                 otherSite = map.data.bombSites.B;
             }
 
-            if (targetSiteNoise > 40) { // Threshold
-                 // Force rotate?
-                 // But TacticsManager controls goal.
-                 // We can't override assignment permanently.
-                 // We can temporarily set goal?
-                 // But updateGoal runs every tick.
-                 // We need TacticsManager to support "Rotation".
-                 // Or just override desiredGoal locally here.
+            if (targetSiteNoise > 40) {
                  desiredGoal = otherSite;
                  desiredState = BotAIState.ROTATING;
             }
@@ -284,7 +381,8 @@ export class Bot {
         this.goalZoneId = desiredGoal;
         this.aiState = desiredState;
 
-        const newPath = Pathfinder.findPath(map, this.currentZoneId, this.goalZoneId);
+        const prioritizeCover = this.aiState === BotAIState.ROTATING;
+        const newPath = Pathfinder.findPath(map, this.currentZoneId, this.goalZoneId, prioritizeCover);
         if (newPath) {
              if (newPath[0] === this.currentZoneId) newPath.shift();
              this.path = newPath;
@@ -296,7 +394,8 @@ export class Bot {
     }
 
     if (this.goalZoneId && this.currentZoneId !== this.goalZoneId && this.path.length === 0) {
-        const newPath = Pathfinder.findPath(map, this.currentZoneId, this.goalZoneId);
+        const prioritizeCover = this.aiState === BotAIState.ROTATING;
+        const newPath = Pathfinder.findPath(map, this.currentZoneId, this.goalZoneId, prioritizeCover);
         if (newPath) {
              if (newPath[0] === this.currentZoneId) newPath.shift();
              this.path = newPath;
@@ -326,6 +425,36 @@ export class Bot {
 
     if (this.reactionTimer > 0) {
         return { type: "IDLE" };
+    }
+
+    // Set Focus Zone
+    if (this.targetZoneId) {
+        this.focusZoneId = this.targetZoneId;
+    } else if (this.goalZoneId) {
+        // If holding, look at goal, or look at dangerous connection?
+        // For simplicity, look at goal if not at goal, or look at 'front' if at goal.
+        // If at goal, we need a default look direction.
+        // We can pick the connection with highest threat or default connection.
+        if (this.currentZoneId === this.goalZoneId) {
+             const zone = map.getZone(this.currentZoneId);
+             // Pick first connection that isn't where we came from?
+             // Or pick connection with highest threat.
+             let bestLook = zone?.connections[0] || null;
+             let maxThreat = -1;
+
+             zone?.connections.forEach(conn => {
+                 const threat = this.internalThreatMap[conn]?.level || 0;
+                 if (threat > maxThreat) {
+                     maxThreat = threat;
+                     bestLook = conn;
+                 }
+             });
+             this.focusZoneId = bestLook;
+        } else {
+            // Looking towards next step in path?
+            if (this.path.length > 0) this.focusZoneId = this.path[0];
+            else this.focusZoneId = this.goalZoneId;
+        }
     }
 
     if (this.goalZoneId && this.currentZoneId === this.goalZoneId) {
