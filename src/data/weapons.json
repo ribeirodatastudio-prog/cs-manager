@@ -13,7 +13,8 @@
         "recoveryTime": 0.8112,
         "mobility": 230,
         "magazineSize": 7,
-        "reloadTime": 2.2
+        "reloadTime": 2.2,
+        "damageFalloff": 0.1
     },
     {
         "name": "R8 Revolver",
@@ -29,7 +30,8 @@
         "recoveryTime": 0.9,
         "mobility": 180,
         "magazineSize": 8,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.1
     },
     {
         "name": "Revolver (Rapid Fire)",
@@ -45,7 +47,8 @@
         "recoveryTime": 0.0,
         "mobility": 220,
         "magazineSize": 0,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.15
     },
     {
         "name": "Dual Berettas",
@@ -61,7 +64,8 @@
         "recoveryTime": 0.524989,
         "mobility": 240,
         "magazineSize": 30,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.15
     },
     {
         "name": "Five-SeveN",
@@ -77,7 +81,8 @@
         "recoveryTime": 0.2,
         "mobility": 240,
         "magazineSize": 20,
-        "reloadTime": 2.2
+        "reloadTime": 2.2,
+        "damageFalloff": 0.15
     },
     {
         "name": "Glock-18",
@@ -93,7 +98,8 @@
         "recoveryTime": 0.2,
         "mobility": 240,
         "magazineSize": 20,
-        "reloadTime": 2.3
+        "reloadTime": 2.3,
+        "damageFalloff": 0.15
     },
     {
         "name": "Glock-18 (burst)",
@@ -109,7 +115,8 @@
         "recoveryTime": 0.0,
         "mobility": 0,
         "magazineSize": 0,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.15
     },
     {
         "name": "P2000",
@@ -125,7 +132,8 @@
         "recoveryTime": 0.349532,
         "mobility": 240,
         "magazineSize": 13,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.15
     },
     {
         "name": "USP-S (no silencer)",
@@ -141,7 +149,8 @@
         "recoveryTime": 0.349532,
         "mobility": 240,
         "magazineSize": 12,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.15
     },
     {
         "name": "USP-S (silencer)",
@@ -157,7 +166,8 @@
         "recoveryTime": 0.0,
         "mobility": 0,
         "magazineSize": 0,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.15
     },
     {
         "name": "P250",
@@ -173,7 +183,8 @@
         "recoveryTime": 0.345388,
         "mobility": 240,
         "magazineSize": 13,
-        "reloadTime": 2.2
+        "reloadTime": 2.2,
+        "damageFalloff": 0.15
     },
     {
         "name": "CZ75 Auto",
@@ -189,7 +200,8 @@
         "recoveryTime": 0.2425,
         "mobility": 240,
         "magazineSize": 12,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.15
     },
     {
         "name": "Tec-9",
@@ -205,7 +217,8 @@
         "recoveryTime": 0.391,
         "mobility": 240,
         "magazineSize": 18,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.15
     },
     {
         "name": "Mag-7",
@@ -221,7 +234,8 @@
         "recoveryTime": 0.399729,
         "mobility": 225,
         "magazineSize": 5,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.25
     },
     {
         "name": "Nova",
@@ -237,7 +251,8 @@
         "recoveryTime": 0.460517,
         "mobility": 220,
         "magazineSize": 8,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.25
     },
     {
         "name": "Sawed-Off",
@@ -253,7 +268,8 @@
         "recoveryTime": 0.460517,
         "mobility": 210,
         "magazineSize": 7,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.25
     },
     {
         "name": "XM1014",
@@ -269,7 +285,8 @@
         "recoveryTime": 0.506569,
         "mobility": 215,
         "magazineSize": 7,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.25
     },
     {
         "name": "PP-Bizon",
@@ -285,7 +302,8 @@
         "recoveryTime": 0.331572,
         "mobility": 240,
         "magazineSize": 64,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.12
     },
     {
         "name": "MAC-10",
@@ -301,7 +319,8 @@
         "recoveryTime": 0.399729,
         "mobility": 240,
         "magazineSize": 30,
-        "reloadTime": 2.6
+        "reloadTime": 2.6,
+        "damageFalloff": 0.12
     },
     {
         "name": "MP7",
@@ -317,7 +336,8 @@
         "recoveryTime": 0.437491,
         "mobility": 220,
         "magazineSize": 30,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.12
     },
     {
         "name": "MP5-SD",
@@ -333,7 +353,8 @@
         "recoveryTime": 0.437491,
         "mobility": 235,
         "magazineSize": 30,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.12
     },
     {
         "name": "MP9",
@@ -349,7 +370,8 @@
         "recoveryTime": 0.25789,
         "mobility": 240,
         "magazineSize": 30,
-        "reloadTime": 2.1
+        "reloadTime": 2.1,
+        "damageFalloff": 0.12
     },
     {
         "name": "P90",
@@ -365,7 +387,8 @@
         "recoveryTime": 0.372098,
         "mobility": 230,
         "magazineSize": 50,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.12
     },
     {
         "name": "UMP-45",
@@ -381,7 +404,8 @@
         "recoveryTime": 0.349993,
         "mobility": 230,
         "magazineSize": 25,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.12
     },
     {
         "name": "AK-47",
@@ -397,7 +421,8 @@
         "recoveryTime": 0.368,
         "mobility": 215,
         "magazineSize": 30,
-        "reloadTime": 2.4
+        "reloadTime": 2.4,
+        "damageFalloff": 0.03
     },
     {
         "name": "AUG",
@@ -413,7 +438,8 @@
         "recoveryTime": 0.429727,
         "mobility": 220,
         "magazineSize": 30,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.03
     },
     {
         "name": "AUG (scoped)",
@@ -429,7 +455,8 @@
         "recoveryTime": 0.0,
         "mobility": 150,
         "magazineSize": 0,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.02
     },
     {
         "name": "FAMAS",
@@ -445,7 +472,8 @@
         "recoveryTime": 0.25,
         "mobility": 220,
         "magazineSize": 25,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.03
     },
     {
         "name": "FAMAS (burst)",
@@ -461,7 +489,8 @@
         "recoveryTime": 0.0,
         "mobility": 0,
         "magazineSize": 0,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.03
     },
     {
         "name": "Galil AR",
@@ -477,7 +506,8 @@
         "recoveryTime": 0.3,
         "mobility": 215,
         "magazineSize": 35,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.03
     },
     {
         "name": "M4A4",
@@ -493,7 +523,8 @@
         "recoveryTime": 0.338941,
         "mobility": 225,
         "magazineSize": 30,
-        "reloadTime": 3.1
+        "reloadTime": 3.1,
+        "damageFalloff": 0.03
     },
     {
         "name": "M4A1-S (no silencer)",
@@ -509,7 +540,8 @@
         "recoveryTime": 0.338941,
         "mobility": 225,
         "magazineSize": 20,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.03
     },
     {
         "name": "M4A1-S (silencer)",
@@ -525,7 +557,8 @@
         "recoveryTime": 0.0,
         "mobility": 0,
         "magazineSize": 0,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.03
     },
     {
         "name": "SG 553",
@@ -541,7 +574,8 @@
         "recoveryTime": 0.452886,
         "mobility": 210,
         "magazineSize": 30,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.03
     },
     {
         "name": "SG 553 (scoped)",
@@ -557,7 +591,8 @@
         "recoveryTime": 0.0,
         "mobility": 150,
         "magazineSize": 0,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.02
     },
     {
         "name": "M249",
@@ -573,7 +608,8 @@
         "recoveryTime": 0.828931,
         "mobility": 195,
         "magazineSize": 100,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.05
     },
     {
         "name": "Negev",
@@ -589,7 +625,8 @@
         "recoveryTime": 0.3,
         "mobility": 150,
         "magazineSize": 150,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.05
     },
     {
         "name": "AWP",
@@ -605,7 +642,8 @@
         "recoveryTime": 0.34539,
         "mobility": 200,
         "magazineSize": 5,
-        "reloadTime": 3.7
+        "reloadTime": 3.7,
+        "damageFalloff": 0.01
     },
     {
         "name": "AWP (scoped)",
@@ -621,7 +659,8 @@
         "recoveryTime": 0.0,
         "mobility": 100,
         "magazineSize": 0,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.01
     },
     {
         "name": "G3SG1",
@@ -637,7 +676,8 @@
         "recoveryTime": 0.544331,
         "mobility": 215,
         "magazineSize": 20,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.01
     },
     {
         "name": "G3SG1 (scoped)",
@@ -653,7 +693,8 @@
         "recoveryTime": 0.0,
         "mobility": 120,
         "magazineSize": 0,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.01
     },
     {
         "name": "SCAR-20",
@@ -669,7 +710,8 @@
         "recoveryTime": 0.544331,
         "mobility": 215,
         "magazineSize": 20,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.01
     },
     {
         "name": "SCAR-20 (scoped)",
@@ -685,7 +727,8 @@
         "recoveryTime": 0.0,
         "mobility": 120,
         "magazineSize": 0,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.01
     },
     {
         "name": "SSG 08",
@@ -701,7 +744,8 @@
         "recoveryTime": 0.142096,
         "mobility": 230,
         "magazineSize": 10,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.01
     },
     {
         "name": "SSG 08 (scoped)",
@@ -717,6 +761,7 @@
         "recoveryTime": 0.0,
         "mobility": 0,
         "magazineSize": 0,
-        "reloadTime": 2.5
+        "reloadTime": 2.5,
+        "damageFalloff": 0.01
     }
 ]

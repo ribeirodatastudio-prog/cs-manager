@@ -54,8 +54,8 @@ export class MatchSimulator {
 
   // Config
   private speedMultiplier: number = 1.0;
-  private baseTickRate: number = 500; // ms
-  private readonly TICKS_PER_SEC = 2;
+  private baseTickRate: number = 100; // ms
+  private readonly TICKS_PER_SEC = 10;
   private readonly ROUND_TIME = 115; // 1:55
   private readonly FREEZE_TIME = 5;
 
@@ -354,8 +354,8 @@ export class MatchSimulator {
            // Calculate Speed
            const effectiveSpeed = bot.getEffectiveSpeed(40);
 
-           // Move amount per tick (0.5s)
-           const moveAmount = effectiveSpeed * 0.5;
+           // Move amount per tick (0.1s)
+           const moveAmount = effectiveSpeed * 0.1;
 
            bot.movementProgress += moveAmount;
 
@@ -443,6 +443,7 @@ export class MatchSimulator {
         if (this.bomb.planterId === attacker.id) return;
         if (this.bomb.defuserId === attacker.id) return;
         if (attacker.aiState === BotAIState.CHARGING_UTILITY) return;
+        if (attacker.combatCooldown > 0) return;
 
         // Find potential targets:
         // 1. In same zone
@@ -526,11 +527,20 @@ export class MatchSimulator {
         }
 
         if (loser.hp <= 0) {
-            this.events.unshift(`💀 ${loser.player.name} eliminated by ${winner.player.name}`);
+            const weapon = winner.getEquippedWeapon();
+            const weaponName = weapon ? weapon.name : "Unknown";
+            this.events.unshift(`💀 [${weaponName}] ${loser.player.name} eliminated by ${winner.player.name}`);
             this.stats[winner.id].kills++;
             this.stats[winner.id].actualKills++;
             this.stats[loser.id].deaths++;
             this.roundKills++;
+
+            // Apply Combat Delay (Target Acquisition)
+            // Delay (ticks) = Math.max(2, 6 - (ReactionTime + Dexterity) / 50)
+            const rxn = winner.player.skills.physical.reactionTime;
+            const dex = winner.player.skills.physical.dexterity;
+            const delay = Math.max(2, Math.floor(6 - (rxn + dex) / 50));
+            winner.combatCooldown = delay;
 
             if (this.bomb.carrierId === loser.id) {
                 loser.hasBomb = false;

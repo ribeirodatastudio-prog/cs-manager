@@ -19,11 +19,11 @@ export class Bomb {
   public defuserId?: string;
   public droppedLocation?: string; // Zone ID if dropped
 
-  // Constants (Ticks)
-  public readonly TICKS_PLANT = 7; // 3.5s * 2
-  public readonly TICKS_DEFUSE_KIT = 10; // 5s * 2
-  public readonly TICKS_DEFUSE_NO_KIT = 20; // 10s * 2
-  public readonly TICKS_EXPLOSION = 80; // 40s * 2
+  // Constants (Ticks - 100ms per tick)
+  public readonly TICKS_PLANT = 35; // 3.5s * 10
+  public readonly TICKS_DEFUSE_KIT = 50; // 5s * 10
+  public readonly TICKS_DEFUSE_NO_KIT = 100; // 10s * 10
+  public readonly TICKS_EXPLOSION = 400; // 40s * 10
 
   constructor() {
     this.reset();

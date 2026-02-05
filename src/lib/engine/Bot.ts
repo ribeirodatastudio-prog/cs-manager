@@ -38,6 +38,7 @@ export class Bot {
   public movementProgress: number = 0;
   public targetZoneId: string | null = null;
   public recoilBulletIndex: number = 0;
+  public combatCooldown: number = 0; // Ticks to wait after a kill
 
   // AI State
   public aiState: BotAIState = BotAIState.DEFAULT;
@@ -137,6 +138,10 @@ export class Bot {
 
   updateGoal(map: GameMap, bomb: Bomb, tacticsManager: TacticsManager, zoneStates: Record<string, { noiseLevel: number }>) {
     if (this.status === "DEAD") return;
+
+    if (this.combatCooldown > 0) {
+      this.combatCooldown--;
+    }
 
     if (this.reactionTimer > 0) {
       this.reactionTimer--;

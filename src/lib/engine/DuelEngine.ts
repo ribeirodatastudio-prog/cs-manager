@@ -202,8 +202,8 @@ export class DuelEngine {
 
     if (Math.random() < successProb) {
         // HIT
-        const hitGroup = determineHitGroup(shooter);
-        const dmgResult = calculateDamage(weapon, hitGroup, target);
+        const hitGroup = determineHitGroup(shooter, distance);
+        const dmgResult = calculateDamage(weapon, hitGroup, target, distance);
 
         const hitMsg = `${shooter.player.name} hit ${target.player.name} in ${hitGroup} with ${weapon.name} for ${dmgResult.damage} damage (Armor reduced: ${dmgResult.armorReduced ? "Yes" : "No"}).`;
         log.push(hitMsg);
@@ -246,8 +246,8 @@ export class DuelEngine {
         sprayProb = Math.max(0.01, Math.min(0.99, sprayProb));
 
         if (Math.random() < sprayProb) {
-            const hitGroup = determineHitGroup(shooter);
-            const dmgResult = calculateDamage(weapon, hitGroup, target);
+            const hitGroup = determineHitGroup(shooter, distance);
+            const dmgResult = calculateDamage(weapon, hitGroup, target, distance);
 
             const hitMsg = `${shooter.player.name} hit ${target.player.name} in ${hitGroup} with ${weapon.name} for ${dmgResult.damage} damage (Armor reduced: ${dmgResult.armorReduced ? "Yes" : "No"}).`;
             log.push(hitMsg);

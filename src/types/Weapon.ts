@@ -13,4 +13,5 @@ export interface Weapon {
   mobility: number;
   magazineSize: number;
   reloadTime: number;
+  damageFalloff: number;
 }
