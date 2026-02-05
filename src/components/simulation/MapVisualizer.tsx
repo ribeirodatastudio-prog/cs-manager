@@ -70,6 +70,68 @@ export const MapVisualizer: React.FC<MapVisualizerProps> = ({ map, bots, selecte
     }
   }
 
+  // Draw Cones of Vision
+  const cones: React.ReactNode[] = [];
+  bots.forEach((bot, index) => {
+      if (bot.status === "DEAD") return;
+      // Only draw if selected or maybe for all? Requirement implies visualizer shows focus area.
+      // Let's show for all but maybe fainter for non-selected.
+
+      const zone = map.getZone(bot.currentZoneId);
+      if (!zone) return;
+
+      const offsetX = (index % 3) * 15 - 7.5;
+      const offsetY = Math.floor(index / 3) * 15 - 7.5;
+      const startX = zone.x + offsetX;
+      const startY = zone.y + offsetY;
+
+      let targetX = startX;
+      let targetY = startY;
+
+      if (bot.focusZoneId) {
+          const targetZone = map.getZone(bot.focusZoneId);
+          if (targetZone) {
+              targetX = targetZone.x;
+              targetY = targetZone.y;
+          }
+      } else if (bot.goalZoneId && bot.goalZoneId !== bot.currentZoneId) {
+           const targetZone = map.getZone(bot.goalZoneId);
+           if (targetZone) {
+               targetX = targetZone.x;
+               targetY = targetZone.y;
+           }
+      }
+
+      if (targetX !== startX || targetY !== startY) {
+          const angle = Math.atan2(targetY - startY, targetX - startX);
+          const length = 100; // Visual length
+          const width = Math.PI / 4; // 45 degrees
+
+          const leftAngle = angle - width / 2;
+          const rightAngle = angle + width / 2;
+
+          const x1 = startX + length * Math.cos(leftAngle);
+          const y1 = startY + length * Math.sin(leftAngle);
+          const x2 = startX + length * Math.cos(rightAngle);
+          const y2 = startY + length * Math.sin(rightAngle);
+
+          const isSelected = bot.id === selectedBotId;
+          const color = bot.side === "T" ? "fill-yellow-500" : "fill-blue-500";
+          const opacity = isSelected ? "opacity-30" : "opacity-10";
+
+          // Path for sector
+          const d = `M ${startX} ${startY} L ${x1} ${y1} A ${length} ${length} 0 0 1 ${x2} ${y2} Z`;
+
+          cones.push(
+              <path
+                  key={`cone-${bot.id}`}
+                  d={d}
+                  className={`${color} ${opacity} pointer-events-none`}
+              />
+          );
+      }
+  });
+
   return (
     <div className="w-full h-full bg-zinc-900 border border-zinc-700 p-4 relative overflow-hidden rounded-none flex items-center justify-center">
       <svg viewBox="0 0 1000 1200" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
@@ -78,6 +140,9 @@ export const MapVisualizer: React.FC<MapVisualizerProps> = ({ map, bots, selecte
 
         {/* Path Lines */}
         {pathLines}
+
+        {/* Vision Cones */}
+        {cones}
 
         {/* Zones */}
         {zones.map((zone) => (

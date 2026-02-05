@@ -9,8 +9,9 @@ interface QueueNode {
 export class Pathfinder {
   /**
    * Finds the shortest path (fewest hops) between startZoneId and endZoneId.
+   * @param prioritizeCover If true, adds penalty for zones with low cover to encourage safe routes.
    */
-  static findPath(map: GameMap, startZoneId: string, endZoneId: string): string[] | null {
+  static findPath(map: GameMap, startZoneId: string, endZoneId: string, prioritizeCover: boolean = false): string[] | null {
     if (startZoneId === endZoneId) return [startZoneId];
 
     const startZone = map.getZone(startZoneId);
@@ -27,6 +28,8 @@ export class Pathfinder {
 
     while (frontier.length > 0) {
       // Sort descending and pop (simple priority queue)
+      // Note: For A*, we want lowest priority value (cost + heuristic).
+      // Here priority represents cost. We pop the lowest cost.
       frontier.sort((a, b) => b.priority - a.priority);
       const current = frontier.pop()!;
 
@@ -36,12 +39,18 @@ export class Pathfinder {
 
       const neighbors = map.getNeighbors(current.zoneId);
       for (const next of neighbors) {
-        const newCost = costSoFar[current.zoneId] + 1; // Uniform cost for now (1 hop)
+        // Base cost is 1 (hop).
+        // If prioritizeCover, add penalty for low cover.
+        // Penalty: (1 - cover) * 5.  (Cover 0.0 -> +5 cost. Cover 1.0 -> +0 cost).
+        // Heavily penalize open areas.
+        const stepCost = 1 + (prioritizeCover ? (1 - (next.cover || 0)) * 5 : 0);
+
+        const newCost = costSoFar[current.zoneId] + stepCost;
 
         if (!(next.id in costSoFar) || newCost < costSoFar[next.id]) {
           costSoFar[next.id] = newCost;
           // Heuristic: Euclidean distance / 100 (rough scale) to guide it, or just 0 for Dijkstra
-          // Let's use 0 for now to guarantee shortest hop path
+          // Let's use 0 for now to guarantee shortest hop path (or safest path)
           const priority = newCost;
           frontier.push({ zoneId: next.id, priority });
           cameFrom[next.id] = current.zoneId;

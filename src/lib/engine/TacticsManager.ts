@@ -27,7 +27,7 @@ interface TeamStrategy {
 interface BotAssignment {
   targetZoneId: string;
   group?: string; // For splits
-  role?: string; // "Anchor", "Rotator", "Lurker"
+  role?: string; // "Anchor", "Rotator", "Lurker", "Support"
 }
 
 export class TacticsManager {
@@ -64,8 +64,8 @@ export class TacticsManager {
    * Should be called at round start or tactic change.
    */
   updateAssignments(bots: Bot[], map: GameMap) {
-      const tBots = bots.filter(b => b.side === TeamSide.T);
-      const ctBots = bots.filter(b => b.side === TeamSide.CT);
+      const tBots = bots.filter(b => b.side === TeamSide.T && b.status === "ALIVE");
+      const ctBots = bots.filter(b => b.side === TeamSide.CT && b.status === "ALIVE");
 
       this.assignTSide(tBots, map);
       this.assignCTSide(ctBots, map);
@@ -136,36 +136,130 @@ export class TacticsManager {
       const tactic = this.strategies.CT.tactic;
       const sites = map.data.bombSites;
 
-      bots.forEach(b => this.assignments[b.id] = { targetZoneId: "ct_spawn" });
+      if (bots.length === 0) return;
+
+      // Define standard support zones
+      const aSupport = ["a_ramp", "long_doors", "a_short"];
+      const bSupport = ["b_window", "b_doors"];
+      const midSupport = ["mid_doors", "ct_spawn"];
 
       if (tactic === "STANDARD" || tactic === "RETAKE_SETUP") {
-          // 2-1-2 Setup
-          // A: 2, Mid: 1, B: 2
-          const distribution = [sites.A, sites.A, "mid_doors", sites.B, sites.B];
-          bots.forEach((b, i) => {
-              this.assignments[b.id] = { targetZoneId: distribution[i % distribution.length] };
+          // Dynamic Allocation: 2-1-2 ratio
+          // If 5 bots: 2 A, 1 Mid, 2 B
+          // If 4 bots: 2 A, 2 B
+          // If 3 bots: 1 A, 1 Mid, 1 B
+          // If 2 bots: 1 A, 1 B
+          // If 1 bot: A (or Mid?)
+
+          let aCount = 0;
+          let bCount = 0;
+          let midCount = 0;
+
+          if (bots.length >= 5) { aCount = 2; midCount = 1; bCount = 2; }
+          else if (bots.length === 4) { aCount = 2; midCount = 0; bCount = 2; }
+          else if (bots.length === 3) { aCount = 1; midCount = 1; bCount = 1; }
+          else if (bots.length === 2) { aCount = 1; midCount = 0; bCount = 1; }
+          else { aCount = 1; } // Last survivor usually anchors? Or rotates?
+
+          // Sort bots by Positioning skill to assign Anchors
+          const sortedBots = [...bots].sort((a, b) => b.player.skills.mental.positioning - a.player.skills.mental.positioning);
+
+          const aGroup: Bot[] = [];
+          const bGroup: Bot[] = [];
+          const midGroup: Bot[] = [];
+
+          sortedBots.forEach((bot, i) => {
+              if (aGroup.length < aCount) aGroup.push(bot);
+              else if (bGroup.length < bCount) bGroup.push(bot);
+              else midGroup.push(bot);
           });
+
+          // Assign A Group
+          if (aGroup.length > 0) {
+              // Best positioning -> Anchor (Site)
+              this.assignments[aGroup[0].id] = { targetZoneId: sites.A, role: "Anchor" };
+              // Others -> Support
+              for (let i = 1; i < aGroup.length; i++) {
+                  // Distribute to different support zones
+                  const zone = aSupport[(i - 1) % aSupport.length];
+                  this.assignments[aGroup[i].id] = { targetZoneId: zone, role: "Support" };
+              }
+          }
+
+          // Assign B Group
+          if (bGroup.length > 0) {
+              this.assignments[bGroup[0].id] = { targetZoneId: sites.B, role: "Anchor" };
+              for (let i = 1; i < bGroup.length; i++) {
+                  const zone = bSupport[(i - 1) % bSupport.length];
+                  this.assignments[bGroup[i].id] = { targetZoneId: zone, role: "Support" };
+              }
+          }
+
+          // Assign Mid Group
+          midGroup.forEach((bot, i) => {
+              const zone = midSupport[i % midSupport.length];
+              this.assignments[bot.id] = { targetZoneId: zone, role: "Support" };
+          });
+
       }
       else if (tactic === "AGGRESSIVE_PUSH") {
-          // Push key areas
           const pushes = ["long_doors", "lower_tunnels", "top_mid", "catwalk", "outside_long"];
           bots.forEach((b, i) => {
               this.assignments[b.id] = { targetZoneId: pushes[i % pushes.length] };
           });
       }
       else if (tactic === "GAMBLE_STACK_A") {
-          // 4 A, 1 B
-           bots.forEach((b, i) => {
-              if (i === 0) this.assignments[b.id] = { targetZoneId: sites.B, role: "Anchor" };
-              else this.assignments[b.id] = { targetZoneId: sites.A };
-          });
+           // 4 A, 1 B (if full)
+           const bCount = bots.length > 1 ? 1 : 0;
+           const aCount = bots.length - bCount;
+
+           const sortedBots = [...bots].sort((a, b) => b.player.skills.mental.positioning - a.player.skills.mental.positioning);
+
+           // Anchor for B is critical if solo? Or sacrifice?
+           // Usually Gamble Stack puts 'weaker' player solo or 'star' player solo?
+           // Let's put best anchor on stack? Or best anchor solo?
+           // Put best anchor on the SOLO site to survive.
+
+           const soloBot = sortedBots[0];
+           const stackBots = sortedBots.slice(1);
+
+           if (bCount > 0) {
+               this.assignments[soloBot.id] = { targetZoneId: sites.B, role: "Anchor" };
+           } else {
+               // All A
+               stackBots.push(soloBot); // Just move back
+           }
+
+           // Stack A
+           if (stackBots.length > 0) {
+               // 1 Anchor, rest Support/Aggressive
+               this.assignments[stackBots[0].id] = { targetZoneId: sites.A, role: "Anchor" };
+               for (let i = 1; i < stackBots.length; i++) {
+                   const zone = aSupport[(i - 1) % aSupport.length];
+                   this.assignments[stackBots[i].id] = { targetZoneId: zone, role: "Support" };
+               }
+           }
       }
       else if (tactic === "GAMBLE_STACK_B") {
-           // 4 B, 1 A
-           bots.forEach((b, i) => {
-              if (i === 0) this.assignments[b.id] = { targetZoneId: sites.A, role: "Anchor" };
-              else this.assignments[b.id] = { targetZoneId: sites.B };
-          });
+           const aCount = bots.length > 1 ? 1 : 0;
+           const sortedBots = [...bots].sort((a, b) => b.player.skills.mental.positioning - a.player.skills.mental.positioning);
+
+           const soloBot = sortedBots[0];
+           const stackBots = sortedBots.slice(1);
+
+           if (aCount > 0) {
+               this.assignments[soloBot.id] = { targetZoneId: sites.A, role: "Anchor" };
+           } else {
+               stackBots.push(soloBot);
+           }
+
+           if (stackBots.length > 0) {
+               this.assignments[stackBots[0].id] = { targetZoneId: sites.B, role: "Anchor" };
+               for (let i = 1; i < stackBots.length; i++) {
+                   const zone = bSupport[(i - 1) % bSupport.length];
+                   this.assignments[stackBots[i].id] = { targetZoneId: zone, role: "Support" };
+               }
+           }
       }
   }
 
