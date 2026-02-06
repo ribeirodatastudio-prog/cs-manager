@@ -832,14 +832,15 @@ export class MatchSimulator {
         const targetZone = this.map.getZone(chosen.bot.currentZoneId);
 
         let peekType: PeekType = "HOLD";
-        if (bot.targetZoneId || bot.movementProgress > 0) {
-            // Moving
+        // Check HOLDING state FIRST (priority over movement)
+        if (bot.aiState === BotAIState.HOLDING_ANGLE) {
+            peekType = "HOLD";
+        } else if (bot.targetZoneId || bot.movementProgress > 0) {
+            // Moving/Peeking
             const aggression = bot.player.skills.mental.aggression;
             if (aggression > 150) peekType = "WIDE";
             else if (aggression < 100) peekType = "JIGGLE";
             else peekType = "SWING";
-        } else if (bot.aiState === BotAIState.HOLDING_ANGLE) {
-            peekType = "HOLD";
         }
 
         // Smoked Check
@@ -857,7 +858,8 @@ export class MatchSimulator {
             context: {
                 isCrossZone: chosen.isCrossZone,
                 peekType: peekType,
-                defenderHolding: chosen.bot.aiState === BotAIState.HOLDING_ANGLE,
+                // FIX: Only mark as defenderHolding if target is ACTUALLY holding and attacker is NOT
+                defenderHolding: chosen.bot.aiState === BotAIState.HOLDING_ANGLE && peekType !== "HOLD",
                 attackerCover: attackerZone?.cover || 0,
                 defenderCover: targetZone?.cover || 0,
                 flashedAttacker: Math.min(1, bot.stunTimer / 20),
@@ -870,8 +872,21 @@ export class MatchSimulator {
     // 3. Resolve Engagements (Initiative Logic)
     const spentBots = new Set<string>();
 
-    // Randomize processing order
-    engagements.sort(() => Math.random() - 0.5);
+    // CRITICAL FIX: Process PEEKERS FIRST
+    // We want the Peeker to be the 'Attacker' and Holder to be 'Target'
+    // This ensures DuelEngine correctly identifies 'defenderHolding' on the Target.
+    engagements.sort((a, b) => {
+        const aHolding = a.attacker.aiState === BotAIState.HOLDING_ANGLE ? 1 : 0;
+        const bHolding = b.attacker.aiState === BotAIState.HOLDING_ANGLE ? 1 : 0;
+
+        // If both holding or both moving, use original randomization for that subset
+        if (aHolding === bHolding) {
+            return Math.random() - 0.5;
+        }
+
+        // Peekers (0) process before Holders (1)
+        return aHolding - bHolding;
+    });
 
     for (const eng of engagements) {
          if (spentBots.has(eng.attacker.id)) continue; // Attacker already fought
@@ -901,6 +916,20 @@ export class MatchSimulator {
          spentBots.add(eng.attacker.id);
 
          const result = DuelEngine.calculateOutcome(eng.attacker, eng.target, eng.distance, eng.isCrossZone, targetCanFire, eng.context);
+
+        // ADD DEBUG:
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`
+            Engagement: ${eng.attacker.player.name} vs ${eng.target.player.name}
+            Attacker State: ${eng.attacker.aiState}
+            Target State: ${eng.target.aiState}
+            PeekType: ${eng.context.peekType}
+            DefenderHolding: ${eng.context.defenderHolding}
+            Attacker Time: ${result.initiator.timeTaken}ms
+            Target Time: ${result.target.timeTaken}ms
+            Winner: ${result.winnerId}
+            `);
+        }
 
          // Note: ENEMY_SPOTTED is now handled by detectEnemies().
          // However, gunfire definitely reveals position instantly and reliably.

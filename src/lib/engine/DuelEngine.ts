@@ -54,9 +54,6 @@ export class DuelEngine {
     const targetCover = context ? context.defenderCover : 0;
 
     const initiatorResult = this.simulateEngagement(initiator, target, distance, true, isCrossZone, context, targetCover);
-    if (!isCrossZone) {
-      initiatorResult.timeToKill *= 0.95; // 5% faster for initiator close range
-    }
 
     // Simulate Target
     let targetResult: CombatSimulationResult;
