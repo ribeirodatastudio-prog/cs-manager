@@ -1,7 +1,7 @@
 import { Bot, BotAIState } from "./Bot";
 import { GameMap } from "./GameMap";
 import { TacticsManager, TeamSide, Tactic } from "./TacticsManager";
-import { DuelEngine, DuelResult } from "./DuelEngine";
+import { DuelEngine, DuelResult, ParticipantResult } from "./DuelEngine";
 import { Player } from "@/types";
 import { DUST2_MAP } from "./maps/dust2";
 import { MatchState, MatchPhase, RoundEndReason, BuyStrategy, DroppedWeapon } from "./types";
@@ -11,6 +11,7 @@ import { ECONOMY, WEAPONS, WeaponType } from "./constants";
 import { WeaponUtils } from "./WeaponUtils";
 import { Bomb, BombStatus } from "./Bomb";
 import { EventManager } from "./EventManager";
+import { Weapon } from "@/types/Weapon";
 
 export interface PlayerStats {
   kills: number;
@@ -824,7 +825,7 @@ export class MatchSimulator {
       const bp = b.player.skills.technical.crosshairPlacement;
 
       let aScore = ar + ap * 0.6;
-      let bScore = br + bp * 0.6;
+      const bScore = br + bp * 0.6;
 
       if (isPeekerA) aScore += 10;
 
@@ -836,7 +837,7 @@ export class MatchSimulator {
       const target = this.bots.find(b => b.id === result.target.id);
       if (!initiator || !target) return;
 
-      const events: {time: number, actor: Bot, victim: Bot, damage: number, result: any}[] = [];
+      const events: {time: number, actor: Bot, victim: Bot, damage: number, result: ParticipantResult}[] = [];
 
       if (result.initiator.fired) {
           events.push({
@@ -879,7 +880,7 @@ export class MatchSimulator {
       }
   }
 
-  private handleKill(killer: Bot, victim: Bot, isHeadshot: boolean, weapon: any) {
+  private handleKill(killer: Bot, victim: Bot, isHeadshot: boolean, weapon: Weapon | undefined) {
       const weaponName = weapon ? weapon.name : "Unknown";
 
       // Update Victim Status (takeDamage does it, but ensure consistency)
