@@ -1,5 +1,6 @@
 import { Bot, BotAIState } from "./Bot";
 import { GameMap } from "./GameMap";
+import { Pathfinder } from "./Pathfinder";
 import { TacticsManager, TeamSide, Tactic } from "./TacticsManager";
 import { DuelEngine, DuelResult, ParticipantResult } from "./DuelEngine";
 import { Player } from "@/types";
@@ -50,6 +51,13 @@ export class MatchSimulator {
   private onUpdate: (state: SimulationState) => void;
   public events: string[];
   public stats: Record<string, PlayerStats> = {};
+
+  private roundStateMetrics = {
+    tLastProgressed: 0,
+    tStuckCounter: 0,
+    lastContactZone: null as string | null,
+    lastTacticChange: 0
+  };
 
   // Match Logic
   public matchState: MatchState;
@@ -344,6 +352,8 @@ export class MatchSimulator {
         state.noiseLevel = Math.max(0, state.noiseLevel - 5); // Decay 5 per tick
     });
 
+    this.evaluateTacticTransition();
+
     // 4. Split Strategy Coordination
     const tTactic = this.tacticsManager.getTactic(TeamSide.T);
     if (tTactic.includes("SPLIT") && this.tacticsManager.getStage(TeamSide.T) === "SETUP") {
@@ -364,19 +374,7 @@ export class MatchSimulator {
         }
     }
 
-    // 5. Default Strategy Transition (Stall Fix)
-    if (tTactic === "DEFAULT") {
-        // Add randomness to prevent predictable timing
-        // Transition between 60-70 seconds to add variety
-        const transitionTime = 60 + Math.floor(Math.random() * 11); // 60-70s
-
-        if (this.roundTimer <= transitionTime || this.roundKills > 0) {
-            const newTactic = Math.random() > 0.5 ? "EXECUTE_A" : "EXECUTE_B";
-            this.tacticsManager.setTactic(TeamSide.T, newTactic);
-            this.tacticsManager.updateAssignments(this.bots, this.map);
-            this.events.unshift(`[Tactics] ⏱️ Default Phase Over. Transitioning to ${newTactic.replace("_", " ")}!`);
-        }
-    }
+    // 5. Default Strategy Transition -> Handled by evaluateTacticTransition()
 
     // 5.5 Detect Enemies (Info War)
     this.detectEnemies();
@@ -466,7 +464,7 @@ export class MatchSimulator {
       bot.updateGoal(this.map, this.bomb, this.tacticsManager, this.zoneStates, this.tickCount, this.bots);
 
       // Get Action
-      const action = bot.decideAction(this.map, this.zoneStates);
+      const action = bot.decideAction(this.map, this.zoneStates, this.roundTimer);
 
       if (action.type === "PICKUP_WEAPON") {
           const zoneDrops = this.zoneStates[bot.currentZoneId]?.droppedWeapons || [];
@@ -538,7 +536,7 @@ export class MatchSimulator {
            }
         } else {
            // Calculate Speed
-           const effectiveSpeed = bot.getEffectiveSpeed(40);
+           const effectiveSpeed = bot.getEffectiveSpeed(40, this.roundTimer);
 
            // Move amount per tick (0.1s)
            const moveAmount = effectiveSpeed * 0.1;
@@ -1313,5 +1311,248 @@ export class MatchSimulator {
       roundTimer: this.roundTimer,
       zoneStates: this.zoneStates // Pass zoneStates
     });
+  }
+
+  private evaluateTacticTransition() {
+      const tTactic = this.tacticsManager.getTactic(TeamSide.T);
+      const tAlive = this.bots.filter(b => b.side === TeamSide.T && b.status === "ALIVE").length;
+      const ctAlive = this.bots.filter(b => b.side === TeamSide.CT && b.status === "ALIVE").length;
+
+      if (tAlive === 0) return; // No T's alive, don't bother
+
+      // Calculate urgency score (0-100)
+      let urgencyScore = 0;
+
+      // 1. TIME PRESSURE (0-40 points)
+      if (this.roundTimer <= 25) {
+          urgencyScore += 40; // CRITICAL - must execute immediately
+      } else if (this.roundTimer <= 40) {
+          urgencyScore += 30; // Very urgent
+      } else if (this.roundTimer <= 60) {
+          urgencyScore += 15; // Starting to be urgent
+      }
+
+      // 2. PLAYER DISADVANTAGE (0-30 points)
+      if (tAlive < ctAlive) {
+          urgencyScore += Math.min(30, (ctAlive - tAlive) * 10);
+      }
+
+      // 3. POSITION STALL DETECTION (0-30 points)
+      const botsInMid = this.bots.filter(b =>
+          b.side === TeamSide.T &&
+          b.status === "ALIVE" &&
+          (b.currentZoneId.includes("mid") ||
+           b.currentZoneId.includes("catwalk") ||
+           b.currentZoneId === "top_mid")
+      ).length;
+
+      // If majority of team stuck in mid with time running
+      if (this.roundTimer < 80 && botsInMid >= Math.ceil(tAlive * 0.6)) {
+          urgencyScore += 20;
+      }
+
+      // Track progress
+      const avgProgress = this.calculateTeamProgress(TeamSide.T);
+      if (Math.abs(avgProgress - this.roundStateMetrics.tLastProgressed) < 3) {
+          this.roundStateMetrics.tStuckCounter++;
+
+          // Stuck for 5+ seconds (50 ticks)
+          if (this.roundStateMetrics.tStuckCounter > 50 && this.roundTimer < 70) {
+              urgencyScore += 25;
+          }
+      } else {
+          this.roundStateMetrics.tStuckCounter = 0;
+          this.roundStateMetrics.tLastProgressed = avgProgress;
+      }
+
+      // ===== DECISION MAKING =====
+
+      // DEFAULT TACTIC EVALUATION
+      if (tTactic === "DEFAULT") {
+          const criticalUrgency = 50;
+          const moderateUrgency = 25;
+
+          if (urgencyScore >= criticalUrgency) {
+              // EMERGENCY EXECUTE - pick weakest site
+              const newTactic = this.chooseOptimalExecuteSite();
+              this.tacticsManager.setTactic(TeamSide.T, newTactic);
+              this.tacticsManager.setStage(TeamSide.T, "EXECUTE");
+              this.tacticsManager.updateAssignments(this.bots, this.map);
+              this.events.unshift(`[TACTICS] 🚨 CRITICAL TIME PRESSURE! Emergency ${newTactic.replace("_", " ")}!`);
+              this.roundStateMetrics.lastTacticChange = this.tickCount;
+          }
+          else if (urgencyScore >= moderateUrgency || this.roundKills > 0) {
+              // Standard transition with some intelligence
+              const newTactic = this.chooseOptimalExecuteSite();
+              this.tacticsManager.setTactic(TeamSide.T, newTactic);
+              this.tacticsManager.updateAssignments(this.bots, this.map);
+              this.events.unshift(`[Tactics] ⏱️ Executing ${newTactic.replace("_", " ")} (Urgency: ${urgencyScore.toFixed(0)})`);
+              this.roundStateMetrics.lastTacticChange = this.tickCount;
+          }
+      }
+
+      // EXECUTE TACTIC - CHECK FOR STALL & ROTATION
+      else if ((tTactic === "EXECUTE_A" || tTactic === "EXECUTE_B") && this.roundTimer < 60) {
+          const targetSite = tTactic.includes("_A") ? this.map.data.bombSites.A : this.map.data.bombSites.B;
+
+          // Check progress toward site
+          const botsAtSite = this.bots.filter(b =>
+              b.side === TeamSide.T &&
+              b.status === "ALIVE" &&
+              b.currentZoneId === targetSite
+          ).length;
+
+          const botsNearSite = this.bots.filter(b =>
+              b.side === TeamSide.T &&
+              b.status === "ALIVE" &&
+              this.isApproachingTarget(b.currentZoneId, targetSite)
+          ).length;
+
+          // Nobody at or near site + time critical + not recently changed
+          const ticksSinceChange = this.tickCount - this.roundStateMetrics.lastTacticChange;
+
+          if (botsAtSite === 0 && botsNearSite < 2 && this.roundTimer < 40 && ticksSinceChange > 100) {
+              // Execution completely stalled - PIVOT
+              const newSite = tTactic.includes("_A") ? "B" : "A";
+              const newTactic = `EXECUTE_${newSite}` as Tactic;
+
+              this.tacticsManager.setTactic(TeamSide.T, newTactic);
+              this.tacticsManager.updateAssignments(this.bots, this.map);
+              this.events.unshift(`[TACTICS] 🔄 ${tTactic.split("_")[1]} COMPLETELY BLOCKED! Emergency rotate to ${newSite}!`);
+              this.roundStateMetrics.lastTacticChange = this.tickCount;
+              this.roundStateMetrics.tStuckCounter = 0;
+          }
+      }
+
+      // SPLIT TACTIC - EMERGENCY FALLBACK
+      else if (tTactic.includes("SPLIT") && this.roundTimer < 30) {
+          // If split hasn't executed by 30 seconds, force standard execute
+          const site = tTactic.includes("_A") ? "A" : "B";
+          const newTactic = `EXECUTE_${site}` as Tactic;
+
+          this.tacticsManager.setTactic(TeamSide.T, newTactic);
+          this.tacticsManager.setStage(TeamSide.T, "EXECUTE");
+          this.tacticsManager.updateAssignments(this.bots, this.map);
+          this.events.unshift(`[TACTICS] ⚠️ Split timing failed - forcing standard execute ${site}!`);
+      }
+  }
+
+  private calculateTeamProgress(side: TeamSide): number {
+      const bots = this.bots.filter(b => b.side === side && b.status === "ALIVE");
+      if (bots.length === 0) return 0;
+
+      const progressMap: Record<string, number> = {
+          // T Spawn & Initial
+          "t_spawn": 0,
+          "outside_tunnels": 10,
+          "outside_long": 15,
+
+          // Mid-map positioning
+          "upper_tunnels": 25,
+          "lower_tunnels": 30,
+          "mid_doors": 35,
+          "top_mid": 40,
+          "catwalk": 45,
+
+          // Approaching sites
+          "long_doors": 60,
+          "long_a": 75,
+          "a_short": 70,
+          "a_ramp": 80,
+          "b_doors": 55,
+          "b_window": 60,
+          "b_tunnels": 65,
+
+          // Sites
+          "a_site": 100,
+          "b_site": 100,
+
+          // CT Side
+          "ct_spawn": 0,
+          // ... add CT zones if needed
+      };
+
+      const totalProgress = bots.reduce((sum, bot) => {
+          return sum + (progressMap[bot.currentZoneId] || 30); // Default mid-value
+      }, 0);
+
+      return totalProgress / bots.length;
+  }
+
+  private chooseOptimalExecuteSite(): Tactic {
+      const ctBots = this.bots.filter(b => b.side === TeamSide.CT && b.status === "ALIVE");
+
+      if (ctBots.length === 0) {
+          // No CTs alive, pick randomly
+          return Math.random() > 0.5 ? "EXECUTE_A" : "EXECUTE_B";
+      }
+
+      // Count CTs near each site
+      let ctNearA = 0;
+      let ctNearB = 0;
+
+      ctBots.forEach(bot => {
+          if (this.isDefendingSite(bot.currentZoneId, "A")) {
+              ctNearA++;
+          } else if (this.isDefendingSite(bot.currentZoneId, "B")) {
+              ctNearB++;
+          } else {
+              // In mid or spawn - count as half for both
+              ctNearA += 0.5;
+              ctNearB += 0.5;
+          }
+      });
+
+      // Also factor in bomb position if dropped
+      let bombBias = 0;
+      if (this.bomb.status === BombStatus.IDLE && this.bomb.droppedLocation) {
+          const bombZone = this.bomb.droppedLocation;
+          if (this.isApproachingTarget(bombZone, this.map.data.bombSites.A)) {
+              bombBias = -1; // Favor A
+          } else if (this.isApproachingTarget(bombZone, this.map.data.bombSites.B)) {
+              bombBias = 1; // Favor B
+          }
+      }
+
+      const aScore = ctNearA + bombBias;
+      const bScore = ctNearB - bombBias;
+
+      // Attack the weaker site
+      if (aScore < bScore - 0.5) {
+          this.events.unshift(`[AI Analysis] Detected ${ctNearA.toFixed(1)} CTs on A vs ${ctNearB.toFixed(1)} on B - Executing A`);
+          return "EXECUTE_A";
+      } else if (bScore < aScore - 0.5) {
+          this.events.unshift(`[AI Analysis] Detected ${ctNearA.toFixed(1)} CTs on A vs ${ctNearB.toFixed(1)} on B - Executing B`);
+          return "EXECUTE_B";
+      } else {
+          // Even split, pick randomly
+          return Math.random() > 0.5 ? "EXECUTE_A" : "EXECUTE_B";
+      }
+  }
+
+  private isDefendingSite(zoneId: string, site: "A" | "B"): boolean {
+      const defensiveZones = {
+          A: [
+              "a_site", "a_ramp", "a_short", "long_a", "long_doors",
+              "catwalk", "top_mid" // Catwalk/Top can watch A
+          ],
+          B: [
+              "b_site", "b_doors", "b_window", "b_tunnels",
+              "mid_doors", "lower_tunnels" // Mid can watch B
+          ]
+      };
+
+      return defensiveZones[site].includes(zoneId);
+  }
+
+  private isApproachingTarget(currentZone: string, targetZone: string): boolean {
+      // Simple heuristic - check if zones share part of name or are connected
+      if (currentZone === targetZone) return true;
+
+      // Get connections to target
+      const path = Pathfinder.findPath(this.map, currentZone, targetZone, false);
+
+      // If path exists and is short (1-2 zones away), consider it approaching
+      return path !== null && path.length > 0 && path.length <= 3;
   }
 }

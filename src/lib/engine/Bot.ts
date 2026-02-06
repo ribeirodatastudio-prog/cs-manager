@@ -67,6 +67,10 @@ export class Bot {
 
   public pendingEvents: { event: GameEvent; processAt: number }[] = [];
 
+  // Stuck Detection
+  private lastZoneChangeTick: number = 0;
+  private lastZone: string = "";
+
   private eventManager: EventManager;
 
   get hp(): number {
@@ -201,7 +205,7 @@ export class Bot {
     return undefined;
   }
 
-  getEffectiveSpeed(baseSpeed: number): number {
+  getEffectiveSpeed(baseSpeed: number, roundTimer?: number): number {
       const weapon = this.getEquippedWeapon();
       const mobility = weapon ? weapon.mobility : 250;
       let speed = baseSpeed * (mobility / 250);
@@ -214,6 +218,22 @@ export class Bot {
       if (this.side === TeamSide.CT && (this.aiState === BotAIState.DEFUSING || this.aiState === BotAIState.ROTATING)) {
           this.isShiftWalking = false; // Never walk during retakes
           speed *= 1.20; // 20% faster rotation (increased from 15%)
+      }
+
+      // T Emergency Sprint
+      if (this.side === TeamSide.T && roundTimer !== undefined) {
+          if (roundTimer < 15) {
+              // EXTREME urgency - knife out sprint logic could be here, but for now boost speed
+              speed *= 1.4; // Massive speed boost
+              this.isShiftWalking = false;
+          } else if (roundTimer < 25) {
+              // High urgency
+              speed *= 1.25;
+              this.isShiftWalking = false;
+          } else if (roundTimer < 40) {
+              // Moderate urgency
+              speed *= 1.15;
+          }
       }
 
       return speed;
@@ -283,6 +303,20 @@ export class Bot {
 
     // Identify current tactic
     const tactic = tacticsManager.getTactic(this.side);
+
+    // Stuck Check
+    if (this.checkPathStuck(currentTick)) {
+         // Force repath
+         this.path = [];
+         if (this.goalZoneId) {
+             const prioritizeCover = this.aiState === BotAIState.ROTATING;
+             const newPath = Pathfinder.findPath(map, this.currentZoneId, this.goalZoneId, prioritizeCover);
+             if (newPath) {
+                 if (newPath[0] === this.currentZoneId) newPath.shift();
+                 this.path = newPath;
+             }
+         }
+    }
 
     // Stealth / Shift Walk Logic
     this.isShiftWalking = false;
@@ -596,118 +630,193 @@ export class Bot {
     }
   }
 
-  decideAction(map: GameMap, zoneStates: Record<string, { droppedWeapons?: DroppedWeapon[] }>): BotAction {
-    if (this.status === "DEAD") return { type: "IDLE" };
+  private checkPathStuck(currentTick: number): boolean {
+      // Track how long we've been in same zone
+      if (!this.lastZoneChangeTick) {
+          this.lastZoneChangeTick = currentTick;
+          this.lastZone = this.currentZoneId;
+          return false;
+      }
 
-    // Weapon Pickup Check
-    if (this.aiState !== BotAIState.PLANTING && this.aiState !== BotAIState.DEFUSING && this.combatCooldown <= 0) {
-        const dropped = zoneStates[this.currentZoneId]?.droppedWeapons || [];
-        if (dropped.length > 0) {
-             const inv = this.player.inventory;
-             // Determine current tier from inventory IDs
-             let currentType = WEAPONS["knife"].type; // Default
-             if (inv?.primaryWeapon && WEAPONS[inv.primaryWeapon]) {
-                 currentType = WEAPONS[inv.primaryWeapon].type;
-             } else if (inv?.secondaryWeapon && WEAPONS[inv.secondaryWeapon]) {
-                 currentType = WEAPONS[inv.secondaryWeapon].type;
-             }
+      if (this.currentZoneId !== this.lastZone) {
+          this.lastZoneChangeTick = currentTick;
+          this.lastZone = this.currentZoneId;
+          return false;
+      }
 
-             const currentTier = WeaponUtils.getWeaponTier(currentType);
+      // Stuck in same zone for 50+ ticks (5 seconds) while trying to move
+      const ticksStuck = currentTick - this.lastZoneChangeTick;
+      return ticksStuck > 50 && this.path.length > 0;
+  }
 
-             // Find best dropped weapon
-             let bestDrop: DroppedWeapon | null = null;
-             let bestTier = currentTier;
+  decideAction(
+      map: GameMap,
+      zoneStates: Record<string, { droppedWeapons?: DroppedWeapon[] }>,
+      roundTimer: number  // ADD THIS PARAMETER
+  ): BotAction {
+      if (this.status === "DEAD") return { type: "IDLE" };
 
-             dropped.forEach(d => {
-                 const weaponConst = WEAPONS[d.weaponId];
-                 if (weaponConst) {
-                     const tier = WeaponUtils.getWeaponTier(weaponConst.type);
-                     // Pickup if better tier (e.g. Pistol < Rifle)
-                     if (tier > bestTier) {
-                         bestTier = tier;
-                         bestDrop = d;
-                     }
-                 }
-             });
+      // ===== WEAPON PICKUP (unchanged) =====
+      if (this.aiState !== BotAIState.PLANTING && this.aiState !== BotAIState.DEFUSING && this.combatCooldown <= 0) {
+          const dropped = zoneStates[this.currentZoneId]?.droppedWeapons || [];
+          if (dropped.length > 0) {
+              const inv = this.player.inventory;
+              let currentType = WEAPONS["knife"].type;
+              if (inv?.primaryWeapon && WEAPONS[inv.primaryWeapon]) {
+                  currentType = WEAPONS[inv.primaryWeapon].type;
+              } else if (inv?.secondaryWeapon && WEAPONS[inv.secondaryWeapon]) {
+                  currentType = WEAPONS[inv.secondaryWeapon].type;
+              }
 
-             if (bestDrop) {
-                 return { type: "PICKUP_WEAPON" };
-             }
-        }
-    }
+              const currentTier = WeaponUtils.getWeaponTier(currentType);
+              let bestDrop: DroppedWeapon | null = null;
+              let bestTier = currentTier;
 
-    if (this.aiState === BotAIState.CHARGING_UTILITY) {
-        return { type: "CHARGE_UTILITY" };
-    }
+              dropped.forEach(d => {
+                  const weaponConst = WEAPONS[d.weaponId];
+                  if (weaponConst) {
+                      const tier = WeaponUtils.getWeaponTier(weaponConst.type);
+                      if (tier > bestTier) {
+                          bestTier = tier;
+                          bestDrop = d;
+                      }
+                  }
+              });
 
-    if (this.aiState === BotAIState.PLANTING && this.hasBomb) {
-         const sites = map.data.bombSites;
-         if (this.currentZoneId === sites.A || this.currentZoneId === sites.B) {
-             return { type: "PLANT" };
-         }
-    }
+              if (bestDrop) {
+                  return { type: "PICKUP_WEAPON" };
+              }
+          }
+      }
 
-    if (this.aiState === BotAIState.DEFUSING) {
-         if (this.goalZoneId && this.currentZoneId === this.goalZoneId) {
-             return { type: "DEFUSE" };
-         }
-    }
+      // ===== UTILITY CHARGING (unchanged) =====
+      if (this.aiState === BotAIState.CHARGING_UTILITY) {
+          return { type: "CHARGE_UTILITY" };
+      }
 
-    if (this.reactionTimer > 0) {
-        return { type: "IDLE" };
-    }
+      // ===== PLANTING (unchanged) =====
+      if (this.aiState === BotAIState.PLANTING && this.hasBomb) {
+          const sites = map.data.bombSites;
+          if (this.currentZoneId === sites.A || this.currentZoneId === sites.B) {
+              return { type: "PLANT" };
+          }
+      }
 
-    // Set Focus Zone
-    if (this.targetZoneId) {
-        this.focusZoneId = this.targetZoneId;
-    } else if (this.goalZoneId) {
-        // If holding, look at goal, or look at dangerous connection?
-        // For simplicity, look at goal if not at goal, or look at 'front' if at goal.
-        // If at goal, we need a default look direction.
-        // We can pick the connection with highest threat or default connection.
-        if (this.currentZoneId === this.goalZoneId) {
-             const zone = map.getZone(this.currentZoneId);
-             // Pick first connection that isn't where we came from?
-             // Or pick connection with highest threat.
-             let bestLook: string | null = zone?.connections[0]?.to || null;
-             let maxThreat = -1;
+      // ===== DEFUSING (unchanged) =====
+      if (this.aiState === BotAIState.DEFUSING) {
+          if (this.goalZoneId && this.currentZoneId === this.goalZoneId) {
+              return { type: "DEFUSE" };
+          }
+      }
 
-             zone?.connections.forEach(conn => {
-                 const threat = this.internalThreatMap[conn.to]?.level || 0;
-                 if (threat > maxThreat) {
-                     maxThreat = threat;
-                     bestLook = conn.to;
-                 }
-             });
-             this.focusZoneId = bestLook;
-        } else {
-            // Looking towards next step in path?
-            if (this.path.length > 0) this.focusZoneId = this.path[0];
-            else this.focusZoneId = this.goalZoneId;
-        }
-    }
+      // ===== REACTION DELAY (unchanged) =====
+      if (this.reactionTimer > 0) {
+          return { type: "IDLE" };
+      }
 
-    if (this.goalZoneId && this.currentZoneId === this.goalZoneId) {
-        return { type: "HOLD" };
-    }
+      // ===== FOCUS ZONE CALCULATION (unchanged) =====
+      if (this.targetZoneId) {
+          this.focusZoneId = this.targetZoneId;
+      } else if (this.goalZoneId) {
+          if (this.currentZoneId === this.goalZoneId) {
+              const zone = map.getZone(this.currentZoneId);
+              let bestLook: string | null = zone?.connections[0]?.to || null;
+              let maxThreat = -1;
 
-    let moveChance = 0.1 + (this.player.skills.mental.aggression / 200) * 0.8;
+              zone?.connections.forEach(conn => {
+                  const threat = this.internalThreatMap[conn.to]?.level || 0;
+                  if (threat > maxThreat) {
+                      maxThreat = threat;
+                      bestLook = conn.to;
+                  }
+              });
+              this.focusZoneId = bestLook;
+          } else {
+              if (this.path.length > 0) this.focusZoneId = this.path[0];
+              else this.focusZoneId = this.goalZoneId;
+          }
+      }
 
-    // Role Modifiers
-    if (this.roundRole === "Entry Fragger") moveChance += 0.2;
-    if (this.roundRole === "Lurker") moveChance -= 0.1;
+      // ===== AT GOAL - HOLD POSITION =====
+      if (this.goalZoneId && this.currentZoneId === this.goalZoneId) {
+          // ===== NEW: TIME PRESSURE OVERRIDE =====
+          if (this.side === TeamSide.T) {
+              const timeUrgent = roundTimer < 40;
+              const timeCritical = roundTimer < 25;
 
-    const isUrgent = this.aiState === BotAIState.SAVING || this.aiState === BotAIState.DEFUSING || this.aiState === BotAIState.ROTATING;
+              // If T at goal but not bomb carrier and time critical, push forward
+              if ((timeUrgent || timeCritical) && !this.hasBomb && this.path.length > 0) {
+                  // Don't just hold - keep pushing toward objective
+                  const sites = map.data.bombSites;
+                  const atSite = this.currentZoneId === sites.A || this.currentZoneId === sites.B;
 
-    if (this.targetZoneId) {
-      return { type: "MOVE", targetZoneId: this.targetZoneId };
-    }
+                  if (!atSite) {
+                      // Not at site yet, keep moving
+                      return { type: "MOVE", targetZoneId: this.path[0] };
+                  }
+              }
+          }
 
-    if ((isUrgent || Math.random() < moveChance) && this.path.length > 0) {
-      return { type: "MOVE", targetZoneId: this.path[0] };
-    } else {
-      return { type: "HOLD" };
-    }
+          return { type: "HOLD" };
+      }
+
+      // ===== MOVEMENT DECISION CALCULATION =====
+      let moveChance = 0.1 + (this.player.skills.mental.aggression / 200) * 0.8;
+
+      // ===== NEW: TIME PRESSURE MODIFIERS =====
+      const timeUrgent = roundTimer < 40;
+      const timeCritical = roundTimer < 25;
+      const timeExtreme = roundTimer < 15;
+
+      if (this.side === TeamSide.T) {
+          if (timeExtreme) {
+              // Less than 15 seconds - SPRINT NO MATTER WHAT
+              moveChance = 1.0;
+              this.isShiftWalking = false; // Never walk when time critical
+          } else if (timeCritical) {
+              // Less than 25 seconds - very high movement priority
+              moveChance = Math.min(1.0, moveChance + 0.5);
+              this.isShiftWalking = false;
+          } else if (timeUrgent) {
+              // Less than 40 seconds - increased movement
+              moveChance = Math.min(1.0, moveChance + 0.3);
+          }
+      }
+
+      // CT urgency when bomb planted
+      if (this.side === TeamSide.CT && this.aiState === BotAIState.ROTATING) {
+          if (timeCritical) {
+              moveChance = 1.0; // Sprint to defuse
+          } else if (timeUrgent) {
+              moveChance = Math.min(1.0, moveChance + 0.4);
+          }
+      }
+
+      // ===== ROLE MODIFIERS (unchanged but happens after time modifiers) =====
+      if (this.roundRole === "Entry Fragger") moveChance += 0.2;
+      if (this.roundRole === "Lurker") moveChance -= 0.1;
+
+      // Clamp to [0, 1]
+      moveChance = Math.max(0, Math.min(1, moveChance));
+
+      // ===== URGENCY CHECK (modified to include time) =====
+      const isUrgent =
+          this.aiState === BotAIState.SAVING ||
+          this.aiState === BotAIState.DEFUSING ||
+          this.aiState === BotAIState.ROTATING ||
+          timeUrgent ||  // ADD TIME URGENCY
+          timeCritical;  // ADD CRITICAL TIME
+
+      // ===== MOVEMENT EXECUTION =====
+      if (this.targetZoneId) {
+          return { type: "MOVE", targetZoneId: this.targetZoneId };
+      }
+
+      if ((isUrgent || Math.random() < moveChance) && this.path.length > 0) {
+          return { type: "MOVE", targetZoneId: this.path[0] };
+      } else {
+          return { type: "HOLD" };
+      }
   }
 
   takeDamage(amount: number) {
