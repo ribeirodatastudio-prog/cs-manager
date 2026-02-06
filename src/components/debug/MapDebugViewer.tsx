@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { NAV_MESH, transformGameToSVG } from "@/lib/utils/navMesh";
+import React, { useRef, useEffect } from "react";
+import { NAV_MESH } from "@/lib/utils/navMesh";
 import { MapData } from "@/lib/engine/types";
 
 interface MapDebugViewerProps {
@@ -7,96 +7,90 @@ interface MapDebugViewerProps {
 }
 
 export const MapDebugViewer: React.FC<MapDebugViewerProps> = ({ mapData }) => {
-  // Render Nav Mesh
-  const navMeshNodes = useMemo(() => {
-    const nodes: React.ReactNode[] = [];
-    const edges: React.ReactNode[] = [];
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    Object.entries(NAV_MESH).forEach(([id, node]) => {
-      const { x, y } = transformGameToSVG(node.pos[0], node.pos[1]);
-      const nodeId = parseInt(id);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-      // Render Node
-      nodes.push(
-        <circle
-          key={`node-${id}`}
-          cx={x}
-          cy={y}
-          r={1.5}
-          fill="rgba(0, 255, 255, 0.4)"
-        />
-      );
+    // Set canvas logical size to match our coordinate system (1000x1000)
+    canvas.width = 1000;
+    canvas.height = 1000;
 
-      // Render Edges
-      node.adj.forEach((neighborId) => {
-        if (nodeId < neighborId) {
-          const neighbor = NAV_MESH[neighborId.toString()];
-          if (neighbor) {
-            const { x: nx, y: ny } = transformGameToSVG(neighbor.pos[0], neighbor.pos[1]);
-            edges.push(
-              <line
-                key={`edge-${id}-${neighborId}`}
-                x1={x}
-                y1={y}
-                x2={nx}
-                y2={ny}
-                stroke="rgba(0, 255, 255, 0.2)"
-                strokeWidth="0.5"
-              />
-            );
+    const mapImage = new Image();
+    mapImage.src = "/dust2_2d.png";
+
+    // Handle image loading
+    mapImage.onload = () => {
+      // 1. Draw Map Image
+      // Stretch to fit the canvas, assuming the mesh bounds map to this area
+      ctx.drawImage(mapImage, 0, 0, canvas.width, canvas.height);
+
+      // 2. Draw Navigation Mesh
+      // Set styles for mesh
+      ctx.lineWidth = 1;
+
+      Object.entries(NAV_MESH).forEach(([id, node]) => {
+        // Use coordinates directly (they are pre-transformed to 0-1000 space)
+        const sx = node.pos[0];
+        const sy = node.pos[1];
+
+        // Draw Connections (Edges)
+        node.adj.forEach(adjId => {
+          const adjNode = NAV_MESH[adjId.toString()];
+          if (adjNode) {
+            const ex = adjNode.pos[0];
+            const ey = adjNode.pos[1];
+
+            ctx.strokeStyle = "rgba(0, 255, 255, 0.3)";
+            ctx.beginPath();
+            ctx.moveTo(sx, sy);
+            ctx.lineTo(ex, ey);
+            ctx.stroke();
           }
-        }
+        });
+
+        // Draw Node (Walkable Area Center)
+        ctx.fillStyle = "rgba(0, 255, 255, 0.6)";
+        ctx.beginPath();
+        ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+        ctx.fill();
       });
-    });
 
-    return (
-      <g className="nav-mesh-layer pointer-events-none">
-        {edges}
-        {nodes}
-      </g>
-    );
-  }, []);
+      // 3. Draw Logical Zones (for verification)
+      // These coordinates are already in SVG/Canvas space (0-1000)
+      if (mapData && mapData.zones) {
+        ctx.strokeStyle = "rgba(255, 50, 50, 0.8)";
+        ctx.fillStyle = "rgba(255, 50, 50, 0.8)";
+        ctx.font = "12px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
 
-  // Render Zones
-  const zoneNodes = useMemo(() => {
-    return mapData.zones.map((zone) => {
-      return (
-        <g key={zone.id}>
-          <circle
-            cx={zone.x}
-            cy={zone.y}
-            r={4}
-            fill="rgba(255, 50, 50, 0.8)"
-            stroke="white"
-            strokeWidth="1"
-          />
-          <text
-            x={zone.x}
-            y={zone.y - 6}
-            textAnchor="middle"
-            fill="white"
-            fontSize="10"
-            style={{ textShadow: "1px 1px 1px black" }}
-          >
-            {zone.name}
-          </text>
-        </g>
-      );
-    });
+        mapData.zones.forEach(zone => {
+          // Draw Zone Point
+          ctx.beginPath();
+          ctx.arc(zone.x, zone.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // Draw Zone Name
+          ctx.fillStyle = "white";
+          ctx.fillText(zone.name, zone.x, zone.y - 10);
+          ctx.fillStyle = "rgba(255, 50, 50, 0.8)"; // Reset fill
+        });
+      }
+    };
   }, [mapData]);
 
   return (
-    <div className="w-full h-full bg-zinc-900 border border-zinc-700 relative overflow-hidden flex items-center justify-center">
-      <svg viewBox="0 0 1000 1000" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
-        {/* Map Background */}
-        <image href="/dust2_2d.png" width="1000" height="1000" />
-
-        {/* Nav Mesh */}
-        {navMeshNodes}
-
-        {/* Zones */}
-        {zoneNodes}
-      </svg>
+    <div className="w-full h-full bg-zinc-900 border border-zinc-700 relative flex items-center justify-center overflow-hidden">
+      <canvas
+        ref={canvasRef}
+        className="max-w-full max-h-full object-contain"
+        style={{ aspectRatio: "1/1" }}
+      />
     </div>
   );
 };

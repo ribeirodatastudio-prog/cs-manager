@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { GameMap } from "@/lib/engine/GameMap";
 import { Bot } from "@/lib/engine/Bot";
 import { ZoneState } from "@/lib/engine/types";
-import { NAV_MESH, transformGameToSVG } from "@/lib/utils/navMesh";
+import { NAV_MESH } from "@/lib/utils/navMesh";
 
 interface MapVisualizerProps {
   map: GameMap;
@@ -21,7 +21,9 @@ export const MapVisualizer: React.FC<MapVisualizerProps> = ({ map, bots, zoneSta
     const edges: React.ReactNode[] = [];
 
     Object.entries(NAV_MESH).forEach(([id, node]) => {
-      const { x, y } = transformGameToSVG(node.pos[0], node.pos[1]);
+      // Note: NAV_MESH is now pre-transformed to SVG coordinates (0-1000)
+      const x = node.pos[0];
+      const y = node.pos[1];
       const nodeId = parseInt(id);
 
       // Render Node
@@ -43,7 +45,8 @@ export const MapVisualizer: React.FC<MapVisualizerProps> = ({ map, bots, zoneSta
         if (nodeId < neighborId) {
           const neighbor = NAV_MESH[neighborId.toString()];
           if (neighbor) {
-            const { x: nx, y: ny } = transformGameToSVG(neighbor.pos[0], neighbor.pos[1]);
+            const nx = neighbor.pos[0];
+            const ny = neighbor.pos[1];
             edges.push(
               <line
                 key={`edge-${id}-${neighborId}`}

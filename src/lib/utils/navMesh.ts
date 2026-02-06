@@ -10,32 +10,50 @@ export interface NavMesh {
   [key: string]: NavMeshNode;
 }
 
-// Cast the imported JSON to the NavMesh type
-export const NAV_MESH: NavMesh = navMeshData as unknown as NavMesh;
+// 1. Calculate Mesh Bounds from RAW Data
+// We cast to unknown first to bypass TS inference overlap check
+const rawData = navMeshData as unknown as Record<string, { pos: number[], adj: number[] }>;
+const rawPositions = Object.values(rawData).map(n => n.pos);
 
-// Transformation Constants for de_dust2
-const MAP_OFFSET_X = -2486;
-const MAP_OFFSET_Y = 3239;
-const MAP_SCALE = 4.4;
+const minX = Math.min(...rawPositions.map(p => p[0]));
+const maxX = Math.max(...rawPositions.map(p => p[0]));
+const minY = Math.min(...rawPositions.map(p => p[1]));
+const maxY = Math.max(...rawPositions.map(p => p[1]));
+
+export const MESH_BOUNDS = { minX, maxX, minY, maxY };
+
+// Target Screen/Canvas Dimensions
+const TARGET_SIZE = 1000;
+
+// Dynamic Scaling Factors
+const scaleX = TARGET_SIZE / (maxX - minX);
+const scaleY = TARGET_SIZE / (maxY - minY);
 
 /**
- * Transforms Source Engine Game Coordinates to 1000x1000 SVG Coordinates
- * for the visualizer.
- *
- * @param x Game X coordinate
- * @param y Game Y coordinate
- * @returns {x, y} SVG coordinates
+ * Transforms Source Engine Game Coordinates to 1000x1000 SVG Coordinates.
  */
 export const transformGameToSVG = (x: number, y: number): { x: number, y: number } => {
-  // 1. Convert Game Unit -> Original Radar Image Pixel
-  // Note: Y is inverted (Game Y Up vs Screen Y Down)
-  const radarX = (x - MAP_OFFSET_X) / MAP_SCALE;
-  const radarY = (MAP_OFFSET_Y - y) / MAP_SCALE;
+  const relativeX = x - minX;
+  const relativeY = y - minY;
 
-  // 2. Scale Radar Pixel -> 1000x1000 SVG Container
-  // The standard radar image is usually 1024x1024.
-  const svgX = (radarX / 1024) * 1000;
-  const svgY = (radarY / 1024) * 1000;
+  const svgX = relativeX * scaleX;
+  const svgY = relativeY * scaleY;
 
   return { x: svgX, y: svgY };
 };
+
+// 2. Create Transformed Mesh (In 0-1000 Coordinate Space)
+// This allows the rest of the engine (Pathfinder, Bots) to work in the visual coordinate space directly.
+export const NAV_MESH: NavMesh = {};
+
+Object.entries(rawData).forEach(([key, val]) => {
+  // Ensure we treat the number[] as [number, number] for the transform
+  const { x, y } = transformGameToSVG(val.pos[0], val.pos[1]);
+  NAV_MESH[key] = {
+    pos: [x, y],
+    adj: val.adj
+  };
+});
+
+// Helper
+export const getTransformScale = () => ({ scaleX, scaleY });

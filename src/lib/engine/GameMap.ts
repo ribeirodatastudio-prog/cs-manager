@@ -1,6 +1,9 @@
 import { MapData, Zone, Connection, Point } from "./types";
 import { Pathfinder } from "./Pathfinder";
-import { MAP_WIDTH, MAP_HEIGHT } from "./maps/dust2_collisions";
+
+// Defined by the standardized SVG/Canvas coordinate system (0-1000)
+const MAP_WIDTH = 1000;
+const MAP_HEIGHT = 1000;
 
 export class GameMap {
   private zones: Map<string, Zone>;
