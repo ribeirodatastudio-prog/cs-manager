@@ -21,7 +21,7 @@ export const MapVisualizer: React.FC<MapVisualizerProps> = ({ map, bots, zoneSta
     const edges: React.ReactNode[] = [];
 
     Object.entries(NAV_MESH).forEach(([id, node]) => {
-      // Note: NAV_MESH is now pre-transformed to SVG coordinates (0-1000)
+      // Note: NAV_MESH is now pre-transformed to SVG coordinates (0-1024)
       const x = node.pos[0];
       const y = node.pos[1];
       const nodeId = parseInt(id);
@@ -177,10 +177,10 @@ export const MapVisualizer: React.FC<MapVisualizerProps> = ({ map, bots, zoneSta
 
   return (
     <div className="w-full h-full bg-zinc-900 border border-zinc-700 relative overflow-hidden flex items-center justify-center">
-      <svg viewBox="0 0 1000 1000" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox="0 0 1024 1024" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
 
         {/* Map Background */}
-        <image href="/dust2_2d.png" width="1000" height="1000" />
+        <image href="/dust2_2d.png" width="1024" height="1024" />
 
         {/* Nav Mesh Layer */}
         {navMeshNodes}

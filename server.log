@@ -12,11 +12,8 @@ This information is used to shape Next.js' roadmap and prioritize features.
 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
 https://nextjs.org/telemetry
 
- ✓ Ready in 2.7s
- ○ Compiling / ...
- ✓ Compiled / in 16.3s (714 modules)
- GET / 200 in 19498ms
- ○ Compiling /settings ...
- ✓ Compiled /settings in 1527ms (709 modules)
- GET /settings 200 in 2090ms
- GET /settings 200 in 123ms
+ ✓ Ready in 1955ms
+ ○ Compiling /map-debug ...
+ ✓ Compiled /map-debug in 6.9s (599 modules)
+ GET /map-debug 200 in 7892ms
+ ✓ Compiled in 223ms (241 modules)

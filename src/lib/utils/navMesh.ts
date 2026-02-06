@@ -1,4 +1,5 @@
 import navMeshData from "@/data/de_dust2_web.json";
+import { DUST2_COORDINATES } from "./cs2Constants";
 
 // Type definition for the Nav Mesh structure
 export interface NavMeshNode {
@@ -13,36 +14,27 @@ export interface NavMesh {
 // 1. Calculate Mesh Bounds from RAW Data
 // We cast to unknown first to bypass TS inference overlap check
 const rawData = navMeshData as unknown as Record<string, { pos: number[], adj: number[] }>;
-const rawPositions = Object.values(rawData).map(n => n.pos);
 
-const minX = Math.min(...rawPositions.map(p => p[0]));
-const maxX = Math.max(...rawPositions.map(p => p[0]));
-const minY = Math.min(...rawPositions.map(p => p[1]));
-const maxY = Math.max(...rawPositions.map(p => p[1]));
-
-export const MESH_BOUNDS = { minX, maxX, minY, maxY };
-
-// Target Screen/Canvas Dimensions
-const TARGET_SIZE = 1000;
-
-// Dynamic Scaling Factors
-const scaleX = TARGET_SIZE / (maxX - minX);
-const scaleY = TARGET_SIZE / (maxY - minY);
-
-/**
- * Transforms Source Engine Game Coordinates to 1000x1000 SVG Coordinates.
- */
-export const transformGameToSVG = (x: number, y: number): { x: number, y: number } => {
-  const relativeX = x - minX;
-  const relativeY = y - minY;
-
-  const svgX = relativeX * scaleX;
-  const svgY = relativeY * scaleY;
-
-  return { x: svgX, y: svgY };
+// Use Hardcoded Bounds from CS2 Constants
+export const MESH_BOUNDS = {
+  minX: DUST2_COORDINATES.NAV_MIN_X,
+  maxX: DUST2_COORDINATES.NAV_MAX_X,
+  minY: DUST2_COORDINATES.NAV_MIN_Y,
+  maxY: DUST2_COORDINATES.NAV_MAX_Y
 };
 
-// 2. Create Transformed Mesh (In 0-1000 Coordinate Space)
+// Target Screen/Canvas Dimensions (from Constants)
+const TARGET_WIDTH = DUST2_COORDINATES.VISUAL_WIDTH;
+const TARGET_HEIGHT = DUST2_COORDINATES.VISUAL_HEIGHT;
+
+/**
+ * Transforms Source Engine Game Coordinates to Visual Coordinates (1024x1024).
+ */
+export const transformGameToSVG = (x: number, y: number): { x: number, y: number } => {
+  return DUST2_COORDINATES.navToVisual(x, y);
+};
+
+// 2. Create Transformed Mesh (In Visual Coordinate Space)
 // This allows the rest of the engine (Pathfinder, Bots) to work in the visual coordinate space directly.
 export const NAV_MESH: NavMesh = {};
 
@@ -55,5 +47,12 @@ Object.entries(rawData).forEach(([key, val]) => {
   };
 });
 
-// Helper
-export const getTransformScale = () => ({ scaleX, scaleY });
+// Helper - Derived from constants
+export const getTransformScale = () => {
+  const width = DUST2_COORDINATES.NAV_MAX_X - DUST2_COORDINATES.NAV_MIN_X;
+  const height = DUST2_COORDINATES.NAV_MAX_Y - DUST2_COORDINATES.NAV_MIN_Y;
+  return {
+    scaleX: DUST2_COORDINATES.VISUAL_WIDTH / width,
+    scaleY: DUST2_COORDINATES.VISUAL_HEIGHT / height
+  };
+};

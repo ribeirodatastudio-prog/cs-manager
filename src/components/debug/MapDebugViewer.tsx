@@ -15,9 +15,9 @@ export const MapDebugViewer: React.FC<MapDebugViewerProps> = ({ mapData }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas logical size to match our coordinate system (1000x1000)
-    canvas.width = 1000;
-    canvas.height = 1000;
+    // Set canvas logical size to match our coordinate system (1024x1024)
+    canvas.width = 1024;
+    canvas.height = 1024;
 
     const mapImage = new Image();
     mapImage.src = "/dust2_2d.png";
