@@ -248,20 +248,15 @@ export class MatchSimulator {
   }
 
   public applyStrategies(tStrategy: BuyStrategy, tTactic: Tactic, ctStrategy: BuyStrategy, ctTactic: Tactic, roleOverrides: Record<string, string>) {
-    // 1. Apply Role Overrides
-    this.bots.forEach(bot => {
-        if (roleOverrides[bot.id]) {
-            bot.roundRole = roleOverrides[bot.id];
-        } else {
-            bot.roundRole = bot.player.role; // Reset to default if not overridden
-        }
-    });
+    // 1. Pass Overrides to TacticsManager
+    this.tacticsManager.setRoleAssignments(roleOverrides);
 
     // 2. Set Tactics
     this.tacticsManager.setTactic(TeamSide.T, tTactic);
     this.tacticsManager.setTactic(TeamSide.CT, ctTactic);
 
     // Update Assignments based on new tactics and roles
+    // This will effectively set bot.roundRole based on the tactic definitions
     this.tacticsManager.updateAssignments(this.bots, this.map);
 
     // 3. Execute Team Buy Logic

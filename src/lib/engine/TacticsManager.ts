@@ -1,5 +1,6 @@
 import { Bot } from "./Bot";
 import { GameMap } from "./GameMap";
+import { TACTIC_ROLES } from "./tacticRoles";
 
 export enum TeamSide {
   T = "T",
@@ -33,6 +34,7 @@ interface BotAssignment {
 export class TacticsManager {
   private strategies: Record<TeamSide, TeamStrategy>;
   private assignments: Record<string, BotAssignment> = {}; // BotId -> Assignment
+  private roleAssignments: Record<string, string> = {}; // BotId -> RoleName (Specific)
 
   constructor() {
     this.strategies = {
@@ -44,7 +46,6 @@ export class TacticsManager {
   setTactic(side: TeamSide, tactic: Tactic) {
     this.strategies[side].tactic = tactic;
     this.strategies[side].stage = "SETUP"; // Reset stage on change
-    // Assignments must be re-evaluated externally or lazily
   }
 
   getTactic(side: TeamSide): Tactic {
@@ -63,278 +64,130 @@ export class TacticsManager {
       return this.assignments[botId]?.role;
   }
 
+  public setRoleAssignments(assignments: Record<string, string>) {
+      this.roleAssignments = assignments;
+  }
+
   /**
    * Initializes or updates assignments for the round based on current tactics.
-   * Should be called at round start or tactic change.
    */
   updateAssignments(bots: Bot[], map: GameMap) {
-      const tBots = bots.filter(b => b.side === TeamSide.T && b.status === "ALIVE");
-      const ctBots = bots.filter(b => b.side === TeamSide.CT && b.status === "ALIVE");
+      bots.forEach(bot => {
+          if (bot.status === "DEAD") return;
 
-      this.assignTSide(tBots, map);
-      this.assignCTSide(ctBots, map);
-  }
+          const side = bot.side;
+          const tactic = this.getTactic(side);
+          const roleName = this.roleAssignments[bot.id];
 
-  private assignTSide(bots: Bot[], map: GameMap) {
-      const tactic = this.strategies.T.tactic;
-      const sites = map.data.bombSites;
+          let targetZone = side === TeamSide.T ? "mid" : "ct_spawn"; // Fallback
+          let behaviorRole = "Rifler";
+          let splitGroup = null;
 
-      // Reset assignments for these bots
-      bots.forEach(b => {
-          this.assignments[b.id] = { targetZoneId: "mid" }; // Default fallback
+          if (roleName) {
+               const roleDef = TACTIC_ROLES[tactic]?.find(r => r.name === roleName);
+               if (roleDef) {
+                   behaviorRole = roleDef.behavior;
+
+                   // Resolve Target based on Role Name
+                   const resolution = this.resolveRoleTarget(roleName, tactic, map);
+                   targetZone = resolution.target;
+                   if (resolution.group) splitGroup = resolution.group;
+               }
+          }
+
+          // Update Bot State
+          bot.roundRole = behaviorRole;
+          bot.splitGroup = splitGroup;
+
+          // Store Assignment
+          this.assignments[bot.id] = {
+              targetZoneId: targetZone,
+              role: behaviorRole,
+              group: splitGroup || undefined
+          };
       });
-
-      if (tactic === "DEFAULT") {
-          // Default: 1 Entry, 2 Supports, 2 Lurkers/Anchors
-          // Sort criteria:
-          // Entry: Aggression + Reaction (Low)
-          const sortedForEntry = [...bots].sort((a,b) =>
-               (b.player.skills.mental.aggression + (500 - b.player.skills.physical.reactionTime)) -
-               (a.player.skills.mental.aggression + (500 - a.player.skills.physical.reactionTime))
-          );
-
-          const entry = sortedForEntry[0];
-          const remaining = sortedForEntry.slice(1);
-
-          // Sort remaining by Utility for Support
-          remaining.sort((a,b) => b.player.skills.technical.utility - a.player.skills.technical.utility);
-
-          const supports = remaining.slice(0, 2);
-          const lurkers = remaining.slice(2);
-
-          // Assign Zones (Spread: 2 A-side, 1 Mid, 2 B-side)
-          // Entry -> Top Mid (Center control)
-          // Supports -> A-Long / B-Tunnels
-          // Lurkers -> Catwalk / Outside Long
-
-          if (entry) {
-               this.assignments[entry.id] = { targetZoneId: "top_mid", role: "Entry Fragger" };
-               entry.roundRole = "Entry Fragger";
-          }
-
-          supports.forEach((b, i) => {
-               const zone = i === 0 ? "outside_tunnels" : "long_doors";
-               this.assignments[b.id] = { targetZoneId: zone, role: "Support" };
-               b.roundRole = "Support";
-          });
-
-          lurkers.forEach((b, i) => {
-               const zone = i === 0 ? "upper_tunnels" : "catwalk";
-               this.assignments[b.id] = { targetZoneId: zone, role: "Lurker" };
-               b.roundRole = "Lurker";
-          });
-      }
-      else if (tactic.includes("RUSH") || tactic.includes("EXECUTE") || tactic.includes("CONTACT")) {
-          // Rush A/B: 3 Entry Fraggers, 1 Support, 1 Lurker
-          const targetSite = tactic.includes("_A") ? sites.A : sites.B;
-
-          // Sort: Top 3 Aggressive -> Entry
-          const sortedForEntry = [...bots].sort((a,b) =>
-               (b.player.skills.mental.aggression) - (a.player.skills.mental.aggression)
-          );
-
-          const entries = sortedForEntry.slice(0, 3);
-          const remaining = sortedForEntry.slice(3);
-
-          // Support (High Utility)
-          remaining.sort((a,b) => b.player.skills.technical.utility - a.player.skills.technical.utility);
-          const support = remaining[0];
-          const lurker = remaining[1];
-
-          entries.forEach(b => {
-               this.assignments[b.id] = { targetZoneId: targetSite, role: "Entry Fragger" };
-               b.roundRole = "Entry Fragger";
-          });
-
-          if (support) {
-               this.assignments[support.id] = { targetZoneId: targetSite, role: "Support" };
-               support.roundRole = "Support";
-          }
-
-          if (lurker) {
-               this.assignments[lurker.id] = { targetZoneId: targetSite, role: "Lurker" };
-               lurker.roundRole = "Lurker";
-          }
-      }
-      else if (tactic === "SPLIT_A") {
-          // Group 1: Long (3), Group 2: Short (2)
-          // MapData strategies logic
-          const splitData = map.data.strategies?.split.A;
-          if (splitData) {
-              bots.forEach((b, i) => {
-                  const groupIdx = i < 3 ? 0 : 1; // 3 go main, 2 go other
-                  const group = splitData[groupIdx];
-                  this.assignments[b.id] = {
-                      targetZoneId: group.pincerPoint, // Initially go to pincer
-                      group: group.name
-                  };
-                  b.splitGroup = group.name;
-              });
-          } else {
-              // Fallback if no map data
-              bots.forEach(b => this.assignments[b.id] = { targetZoneId: sites.A });
-          }
-      }
-      else if (tactic === "SPLIT_B") {
-           const splitData = map.data.strategies?.split.B;
-           if (splitData) {
-              bots.forEach((b, i) => {
-                  const groupIdx = i < 3 ? 0 : 1;
-                  const group = splitData[groupIdx];
-                  this.assignments[b.id] = {
-                      targetZoneId: group.pincerPoint,
-                      group: group.name
-                  };
-                  b.splitGroup = group.name;
-              });
-           } else {
-              bots.forEach(b => this.assignments[b.id] = { targetZoneId: sites.B });
-           }
-      }
-
-      // (Redundant fallback logic removed as roles are now assigned in blocks above)
   }
 
-  private assignCTSide(bots: Bot[], map: GameMap) {
-      const tactic = this.strategies.CT.tactic;
+  private resolveRoleTarget(roleName: string, tactic: Tactic, map: GameMap): { target: string; group?: string } {
       const sites = map.data.bombSites;
 
-      if (bots.length === 0) return;
-
-      // Define standard support zones
-      const aSupport = ["a_ramp", "long_doors", "a_short"];
-      const bSupport = ["b_window", "b_doors"];
-      const midSupport = ["mid_doors", "ct_spawn"];
-
-      if (tactic === "STANDARD" || tactic === "RETAKE_SETUP") {
-          // Dynamic Allocation: 2-1-2 ratio
-          // If 5 bots: 2 A, 1 Mid, 2 B
-          // If 4 bots: 2 A, 2 B
-          // If 3 bots: 1 A, 1 Mid, 1 B
-          // If 2 bots: 1 A, 1 B
-          // If 1 bot: A (or Mid?)
-
-          let aCount = 0;
-          let bCount = 0;
-          let midCount = 0;
-
-          if (bots.length >= 5) { aCount = 2; midCount = 0; bCount = 3; }
-          else if (bots.length === 4) { aCount = 2; midCount = 0; bCount = 2; }
-          else if (bots.length === 3) { aCount = 1; midCount = 1; bCount = 1; }
-          else if (bots.length === 2) { aCount = 1; midCount = 0; bCount = 1; }
-          else { aCount = 1; } // Last survivor usually anchors? Or rotates?
-
-          // Sort bots by Positioning skill to assign Anchors
-          const sortedBots = [...bots].sort((a, b) => b.player.skills.mental.positioning - a.player.skills.mental.positioning);
-
-          const aGroup: Bot[] = [];
-          const bGroup: Bot[] = [];
-          const midGroup: Bot[] = [];
-
-          sortedBots.forEach((bot, i) => {
-              if (aGroup.length < aCount) aGroup.push(bot);
-              else if (bGroup.length < bCount) bGroup.push(bot);
-              else midGroup.push(bot);
-          });
-
-          // Assign A Group
-          if (aGroup.length > 0) {
-              // Best positioning -> Anchor (Site)
-              this.assignments[aGroup[0].id] = { targetZoneId: sites.A, role: "Anchor" };
-              aGroup[0].roundRole = "Anchor";
-              // Others -> Support
-              for (let i = 1; i < aGroup.length; i++) {
-                  // Distribute to different support zones
-                  const zone = aSupport[(i - 1) % aSupport.length];
-                  this.assignments[aGroup[i].id] = { targetZoneId: zone, role: "Support" };
-                  aGroup[i].roundRole = "Support";
-              }
-          }
-
-          // Assign B Group
-          if (bGroup.length > 0) {
-              this.assignments[bGroup[0].id] = { targetZoneId: sites.B, role: "Anchor" };
-              bGroup[0].roundRole = "Anchor";
-              for (let i = 1; i < bGroup.length; i++) {
-                  const zone = bSupport[(i - 1) % bSupport.length];
-                  this.assignments[bGroup[i].id] = { targetZoneId: zone, role: "Support" };
-                  bGroup[i].roundRole = "Support";
-              }
-          }
-
-          // Assign Mid Group
-          midGroup.forEach((bot, i) => {
-              const zone = midSupport[i % midSupport.length];
-              this.assignments[bot.id] = { targetZoneId: zone, role: "Support" };
-              bot.roundRole = "Support";
-          });
-
+      // --- CT TACTICS ---
+      if (tactic === "STANDARD") {
+          if (roleName === "Anchor A") return { target: sites.A };
+          if (roleName === "Support A / Rotator") return { target: "long_doors" }; // Or A Ramp
+          if (roleName === "Mid Player") return { target: "mid_doors" };
+          if (roleName === "Support B / Rotator") return { target: "b_doors" };
+          if (roleName === "Anchor B") return { target: sites.B };
       }
-      else if (tactic === "AGGRESSIVE_PUSH") {
-          const pushes = ["long_doors", "lower_tunnels", "top_mid", "catwalk", "outside_long"];
-          bots.forEach((b, i) => {
-              this.assignments[b.id] = { targetZoneId: pushes[i % pushes.length] };
-          });
+      if (tactic === "AGGRESSIVE_PUSH") {
+          // Push Top Mid / Catwalk
+          if (roleName.includes("Aggressor") || roleName.includes("Flasher")) return { target: "top_mid" };
+          if (roleName === "Passive Anchor 1") return { target: sites.A }; // Hold A
+          if (roleName === "Passive Rotator") return { target: "ct_spawn" };
       }
-      else if (tactic === "GAMBLE_STACK_A") {
-           // 4 A, 1 B (if full)
-           const bCount = bots.length > 1 ? 1 : 0;
-           const aCount = bots.length - bCount;
-
-           const sortedBots = [...bots].sort((a, b) => b.player.skills.mental.positioning - a.player.skills.mental.positioning);
-
-           // Anchor for B is critical if solo? Or sacrifice?
-           // Usually Gamble Stack puts 'weaker' player solo or 'star' player solo?
-           // Let's put best anchor on stack? Or best anchor solo?
-           // Put best anchor on the SOLO site to survive.
-
-           const soloBot = sortedBots[0];
-           const stackBots = sortedBots.slice(1);
-
-           if (bCount > 0) {
-               this.assignments[soloBot.id] = { targetZoneId: sites.B, role: "Anchor" };
-               soloBot.roundRole = "Anchor";
-           } else {
-               // All A
-               stackBots.push(soloBot); // Just move back
-           }
-
-           // Stack A
-           if (stackBots.length > 0) {
-               // 1 Anchor, rest Support/Aggressive
-               this.assignments[stackBots[0].id] = { targetZoneId: sites.A, role: "Anchor" };
-               stackBots[0].roundRole = "Anchor";
-               for (let i = 1; i < stackBots.length; i++) {
-                   const zone = aSupport[(i - 1) % aSupport.length];
-                   this.assignments[stackBots[i].id] = { targetZoneId: zone, role: "Support" };
-                   stackBots[i].roundRole = "Support";
-               }
-           }
+      if (tactic === "GAMBLE_STACK_A") {
+          if (roleName === "Solo Anchor B") return { target: sites.B };
+          return { target: sites.A };
       }
-      else if (tactic === "GAMBLE_STACK_B") {
-           const aCount = bots.length > 1 ? 1 : 0;
-           const sortedBots = [...bots].sort((a, b) => b.player.skills.mental.positioning - a.player.skills.mental.positioning);
-
-           const soloBot = sortedBots[0];
-           const stackBots = sortedBots.slice(1);
-
-           if (aCount > 0) {
-               this.assignments[soloBot.id] = { targetZoneId: sites.A, role: "Anchor" };
-               soloBot.roundRole = "Anchor";
-           } else {
-               stackBots.push(soloBot);
-           }
-
-           if (stackBots.length > 0) {
-               this.assignments[stackBots[0].id] = { targetZoneId: sites.B, role: "Anchor" };
-               stackBots[0].roundRole = "Anchor";
-               for (let i = 1; i < stackBots.length; i++) {
-                   const zone = bSupport[(i - 1) % bSupport.length];
-                   this.assignments[stackBots[i].id] = { targetZoneId: zone, role: "Support" };
-                   stackBots[i].roundRole = "Support";
-               }
-           }
+      if (tactic === "GAMBLE_STACK_B") {
+          if (roleName === "Solo Anchor A") return { target: sites.A };
+          return { target: sites.B };
       }
+      if (tactic === "RETAKE_SETUP") {
+          // Play passive / outside sites
+          if (roleName.includes("Retake Entry")) return { target: "ct_spawn" };
+          if (roleName === "Flank Watcher") return { target: "mid_doors" };
+          return { target: "ct_spawn" };
+      }
+
+      // --- T TACTICS ---
+      if (tactic === "DEFAULT") {
+          if (roleName.includes("Entry")) return { target: "top_mid" };
+          if (roleName === "Support") return { target: "outside_long" };
+          if (roleName === "Mid Controller") return { target: "mid_doors" };
+          if (roleName === "Lurker") return { target: "upper_tunnels" };
+          if (roleName.includes("IGL")) return { target: "outside_tunnels" };
+      }
+      if (tactic === "RUSH_A" || tactic === "EXECUTE_A") {
+          if (roleName.includes("Lurker")) return { target: "mid_doors" }; // Cut-off
+          return { target: sites.A };
+      }
+      if (tactic === "RUSH_B" || tactic === "EXECUTE_B") {
+          if (roleName.includes("Lurker")) return { target: "mid_doors" }; // Cut-off
+          return { target: sites.B };
+      }
+      if (tactic === "CONTACT_A") {
+          if (roleName === "Lurker") return { target: sites.B }; // Fake
+          return { target: sites.A };
+      }
+      if (tactic === "CONTACT_B") {
+          if (roleName === "Lurker") return { target: sites.A }; // Fake
+          return { target: sites.B };
+      }
+      if (tactic === "SPLIT_A") {
+          // Pincer Points
+          const splitData = map.data.strategies?.split.A;
+          const mainGroup = splitData ? splitData[0].pincerPoint : sites.A; // Long
+          const midGroup = splitData ? splitData[1].pincerPoint : "catwalk"; // Short
+
+          if (roleName === "Lurker") return { target: "ct_spawn" }; // Flank
+          if (roleName.includes("Main Group")) return { target: mainGroup, group: "Main" };
+          if (roleName.includes("Mid/Split")) return { target: midGroup, group: "Mid" };
+          return { target: mainGroup }; // Fallback
+      }
+      if (tactic === "SPLIT_B") {
+          const splitData = map.data.strategies?.split.B;
+          const mainGroup = splitData ? splitData[0].pincerPoint : sites.B; // Tunnels
+          const midGroup = splitData ? splitData[1].pincerPoint : "mid_doors"; // Mid
+
+          if (roleName === "Lurker") return { target: "ct_spawn" };
+          if (roleName.includes("Main Group")) return { target: mainGroup, group: "Main" };
+          if (roleName.includes("Mid/Split")) return { target: midGroup, group: "Mid" };
+          return { target: mainGroup };
+      }
+
+      // Default Fallback
+      return { target: tactic.includes("_A") ? sites.A : sites.B };
   }
 
   /**
@@ -345,11 +198,8 @@ export class TacticsManager {
     const strategy = this.strategies[side];
     const assignment = this.assignments[bot.id];
 
-    // If no assignment, try to re-assign or fallback
     if (!assignment) {
-        // Fallback
-        if (side === "T") return "mid";
-        return "ct_spawn";
+        return side === "T" ? "mid" : "ct_spawn";
     }
 
     // Dynamic Handling based on Phase
