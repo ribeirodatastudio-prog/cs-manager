@@ -39,8 +39,8 @@ export const MapVisualizer: React.FC<MapVisualizerProps> = ({ map, bots, zoneSta
   const connections: React.ReactNode[] = [];
 
   zones.forEach((zone) => {
-    zone.connections.forEach((targetId) => {
-      const target = map.getZone(targetId);
+    zone.connections.forEach((connection) => {
+      const target = map.getZone(connection.to);
       if (target) {
         const edgeId = [zone.id, target.id].sort().join("-");
         if (!drawnConnections.has(edgeId)) {

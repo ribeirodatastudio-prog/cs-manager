@@ -1,4 +1,4 @@
-import { MapData, Zone } from "./types";
+import { MapData, Zone, Connection } from "./types";
 
 export class GameMap {
   private zones: Map<string, Zone>;
@@ -21,8 +21,14 @@ export class GameMap {
     if (!zone) return [];
 
     return zone.connections
-      .map((connId) => this.getZone(connId))
+      .map((conn) => this.getZone(conn.to))
       .filter((z): z is Zone => z !== undefined);
+  }
+
+  getConnections(zoneId: string): Connection[] {
+      const zone = this.getZone(zoneId);
+      if (!zone) return [];
+      return zone.connections;
   }
 
   getAllZones(): Zone[] {

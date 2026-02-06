@@ -1,5 +1,7 @@
 import { MapData } from "../types";
 
+const c = (to: string, sightline: boolean = true) => ({ to, sightline });
+
 export const DUST2_MAP: MapData = {
   id: "dust2",
   name: "Dust II",
@@ -34,7 +36,7 @@ export const DUST2_MAP: MapData = {
       name: "T Spawn",
       x: 500,
       y: 50,
-      connections: ["top_mid", "outside_tunnels", "outside_long"],
+      connections: [c("top_mid"), c("outside_tunnels"), c("outside_long")],
       cover: 0.2,
     },
     {
@@ -42,7 +44,7 @@ export const DUST2_MAP: MapData = {
       name: "Outside Long",
       x: 800,
       y: 100,
-      connections: ["t_spawn", "long_doors"],
+      connections: [c("t_spawn"), c("long_doors")],
       cover: 0.3,
     },
     {
@@ -50,7 +52,7 @@ export const DUST2_MAP: MapData = {
       name: "Long Doors",
       x: 900,
       y: 200,
-      connections: ["outside_long", "long_a"],
+      connections: [c("outside_long"), c("long_a")],
       cover: 0.8, // Good choke point
     },
     {
@@ -58,7 +60,7 @@ export const DUST2_MAP: MapData = {
       name: "Long A",
       x: 900,
       y: 500,
-      connections: ["long_doors", "a_ramp"],
+      connections: [c("long_doors"), c("a_ramp")],
       cover: 0.2, // Open area
     },
     {
@@ -66,7 +68,7 @@ export const DUST2_MAP: MapData = {
       name: "A Ramp",
       x: 850,
       y: 700,
-      connections: ["long_a", "a_site"],
+      connections: [c("long_a"), c("a_site")],
       cover: 0.4,
     },
 
@@ -76,7 +78,7 @@ export const DUST2_MAP: MapData = {
       name: "A Site",
       x: 800,
       y: 800,
-      connections: ["a_ramp", "a_short", "ct_spawn"],
+      connections: [c("a_ramp"), c("a_short"), c("ct_spawn")],
       cover: 0.7, // Boxes and cover
     },
 
@@ -86,7 +88,7 @@ export const DUST2_MAP: MapData = {
       name: "A Short",
       x: 700,
       y: 700,
-      connections: ["a_site", "catwalk"],
+      connections: [c("a_site"), c("catwalk")],
       cover: 0.5,
     },
     {
@@ -94,7 +96,7 @@ export const DUST2_MAP: MapData = {
       name: "Catwalk",
       x: 600,
       y: 600,
-      connections: ["a_short", "mid", "lower_tunnels"], // Connects to lower tunnel stairs area
+      connections: [c("a_short"), c("mid"), c("lower_tunnels")],
       cover: 0.3,
     },
 
@@ -104,7 +106,7 @@ export const DUST2_MAP: MapData = {
       name: "Top Mid",
       x: 500,
       y: 200,
-      connections: ["t_spawn", "mid"],
+      connections: [c("t_spawn"), c("mid")],
       cover: 0.4,
     },
     {
@@ -112,7 +114,7 @@ export const DUST2_MAP: MapData = {
       name: "Mid",
       x: 500,
       y: 500,
-      connections: ["top_mid", "catwalk", "mid_doors", "lower_tunnels"],
+      connections: [c("top_mid"), c("catwalk"), c("mid_doors"), c("lower_tunnels")],
       cover: 0.1, // Suicide runs
     },
     {
@@ -120,7 +122,7 @@ export const DUST2_MAP: MapData = {
       name: "Mid Doors",
       x: 500,
       y: 700,
-      connections: ["mid", "ct_spawn", "b_window", "b_doors"], // Simplified connection to B
+      connections: [c("mid"), c("ct_spawn"), c("b_window"), c("b_doors")],
       cover: 0.9, // Door cover
     },
 
@@ -130,7 +132,7 @@ export const DUST2_MAP: MapData = {
       name: "Outside Tunnels",
       x: 200,
       y: 100,
-      connections: ["t_spawn", "upper_tunnels"],
+      connections: [c("t_spawn"), c("upper_tunnels")],
       cover: 0.3,
     },
     {
@@ -138,7 +140,7 @@ export const DUST2_MAP: MapData = {
       name: "Upper Tunnels",
       x: 150,
       y: 300,
-      connections: ["outside_tunnels", "b_tunnels", "lower_tunnels"],
+      connections: [c("outside_tunnels"), c("b_tunnels"), c("lower_tunnels")],
       cover: 0.8,
     },
     {
@@ -146,7 +148,7 @@ export const DUST2_MAP: MapData = {
       name: "Lower Tunnels",
       x: 350,
       y: 400,
-      connections: ["upper_tunnels", "mid", "catwalk"],
+      connections: [c("upper_tunnels"), c("mid"), c("catwalk")],
       cover: 0.6,
     },
     {
@@ -154,7 +156,7 @@ export const DUST2_MAP: MapData = {
       name: "B Tunnels",
       x: 150,
       y: 600,
-      connections: ["upper_tunnels", "b_site"],
+      connections: [c("upper_tunnels"), c("b_site")],
       cover: 0.7,
     },
     {
@@ -162,7 +164,7 @@ export const DUST2_MAP: MapData = {
       name: "B Site",
       x: 150,
       y: 800,
-      connections: ["b_tunnels", "b_window", "b_doors"],
+      connections: [c("b_tunnels"), c("b_window"), c("b_doors")],
       cover: 0.8,
     },
     {
@@ -170,15 +172,15 @@ export const DUST2_MAP: MapData = {
       name: "B Window",
       x: 300,
       y: 800,
-      connections: ["b_site", "mid_doors", "ct_spawn"],
+      connections: [c("b_site"), c("mid_doors"), c("ct_spawn")],
       cover: 0.6,
     },
     {
-      id: "b_doors", // Adding b_doors to connect site to mid/ct area
+      id: "b_doors",
       name: "B Doors",
       x: 200,
       y: 750,
-      connections: ["b_site", "mid_doors"],
+      connections: [c("b_site"), c("mid_doors")],
       cover: 0.5
     },
 
@@ -188,7 +190,7 @@ export const DUST2_MAP: MapData = {
       name: "CT Spawn",
       x: 500,
       y: 900,
-      connections: ["a_site", "mid_doors", "b_window"],
+      connections: [c("a_site"), c("mid_doors"), c("b_window")],
       cover: 0.5,
     },
   ],

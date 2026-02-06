@@ -1,7 +1,7 @@
 import { Bot, BotAIState } from "./Bot";
 import { GameMap } from "./GameMap";
 import { TacticsManager, TeamSide, Tactic } from "./TacticsManager";
-import { DuelEngine } from "./DuelEngine";
+import { DuelEngine, DuelResult, ParticipantResult } from "./DuelEngine";
 import { Player } from "@/types";
 import { DUST2_MAP } from "./maps/dust2";
 import { MatchState, MatchPhase, RoundEndReason, BuyStrategy, DroppedWeapon } from "./types";
@@ -11,6 +11,7 @@ import { ECONOMY, WEAPONS, WeaponType } from "./constants";
 import { WeaponUtils } from "./WeaponUtils";
 import { Bomb, BombStatus } from "./Bomb";
 import { EventManager } from "./EventManager";
+import { Weapon } from "@/types/Weapon";
 
 export interface PlayerStats {
   kills: number;
@@ -216,8 +217,6 @@ export class MatchSimulator {
 
     // Update Assignments (Default)
     this.tacticsManager.updateAssignments(this.bots, this.map);
-
-    // Note: Buy Logic is now deferred to applyStrategies
   }
 
   public applyStrategies(tStrategy: BuyStrategy, tTactic: Tactic, ctStrategy: BuyStrategy, ctTactic: Tactic, roleOverrides: Record<string, string>) {
@@ -403,7 +402,6 @@ export class MatchSimulator {
                        }
                    }
                }
-               // Smoke/HE Logic placeholders (Visual/Sound events usually)
            }
       }
 
@@ -480,7 +478,7 @@ export class MatchSimulator {
 
         // Handle instant move (fallback) or granular move
         if (distance === Infinity || distance <= 0) {
-           // Instant move logic (should respect capacity? Unlikely to happen in simulation but safe to skip for now)
+           // Instant move logic
            bot.currentZoneId = bot.targetZoneId!;
            bot.targetZoneId = null;
            bot.movementProgress = 0;
@@ -523,19 +521,20 @@ export class MatchSimulator {
                             const zone = this.map.getZone(targetId);
                             if (zone) {
                                  const validNeighbor = zone.connections.find(n => {
-                                     const count = (zoneOccupancy[n]?.T || 0) + (zoneOccupancy[n]?.CT || 0);
+                                     // n is a Connection object now
+                                     const count = (zoneOccupancy[n.to]?.T || 0) + (zoneOccupancy[n.to]?.CT || 0);
                                      return count < 4;
                                  });
 
                                  if (validNeighbor) {
-                                     const neighborName = this.map.getZone(validNeighbor)?.name;
+                                     const neighborName = this.map.getZone(validNeighbor.to)?.name;
                                      this.events.unshift(`[VIP] 🚨 ${victim.player.name} displaced to ${neighborName} to make room for carrier ${bot.player.name}`);
 
                                      if (zoneOccupancy[targetId]) zoneOccupancy[targetId][victim.side]--;
-                                     if (!zoneOccupancy[validNeighbor]) zoneOccupancy[validNeighbor] = {T:0, CT:0};
-                                     zoneOccupancy[validNeighbor][victim.side]++;
+                                     if (!zoneOccupancy[validNeighbor.to]) zoneOccupancy[validNeighbor.to] = {T:0, CT:0};
+                                     zoneOccupancy[validNeighbor.to][victim.side]++;
 
-                                     victim.currentZoneId = validNeighbor;
+                                     victim.currentZoneId = validNeighbor.to;
                                      victim.targetZoneId = null;
                                      victim.movementProgress = 0;
                                      victim.path = [];
@@ -549,19 +548,15 @@ export class MatchSimulator {
                        const zone = this.map.getZone(targetId);
                        if (zone) {
                            // Find a neighbor of the TARGET that is ALSO connected to CURRENT zone (valid move)
-                           // Or just find a neighbor of CURRENT zone?
-                           // User said "spill over into adjacent support positions". Support positions are usually adjacent to the target site.
-                           // But we must be able to walk there.
-                           // Try to find a neighbor of Target that is accessible from Current.
                            const validNeighbor = zone.connections.find(n => {
-                               const count = (zoneOccupancy[n]?.T || 0) + (zoneOccupancy[n]?.CT || 0);
-                               const dist = this.map.getDistance(bot.currentZoneId, n);
+                               const count = (zoneOccupancy[n.to]?.T || 0) + (zoneOccupancy[n.to]?.CT || 0);
+                               const dist = this.map.getDistance(bot.currentZoneId, n.to);
                                return count < 4 && dist !== Infinity;
                            });
 
                            if (validNeighbor) {
-                               this.events.unshift(`[Tick ${this.tickCount}] 🚧 ${bot.player.name} rerouting from crowded ${zone.name} to ${this.map.getZone(validNeighbor)?.name}`);
-                               bot.targetZoneId = validNeighbor;
+                               this.events.unshift(`[Tick ${this.tickCount}] 🚧 ${bot.player.name} rerouting from crowded ${zone.name} to ${this.map.getZone(validNeighbor.to)?.name}`);
+                               bot.targetZoneId = validNeighbor.to;
                                bot.movementProgress = 0; // Reset progress (Walking to neighbor)
                                return;
                            }
@@ -660,225 +655,299 @@ export class MatchSimulator {
       zoneOccupants[bot.currentZoneId].push(bot);
     });
 
-    const hasFired = new Set<string>(); // Track bots who have fired their weapon this tick
-    const livingBots = this.bots.filter(b => b.status === "ALIVE");
+    // 2. Determine Intent (Target Selection)
+    const engagements: { attacker: Bot; target: Bot; distance: number; isCrossZone: boolean }[] = [];
+    const activeBots = this.bots.filter(b => b.status === "ALIVE");
 
-    // Randomize turn order
-    const attackers = [...livingBots].sort(() => Math.random() - 0.5);
+    for (const bot of activeBots) {
+        // Eligibility Checks
+        if (bot.combatCooldown > 0 || bot.weaponSwapTimer > 0) continue;
+        if (bot.aiState === BotAIState.CHARGING_UTILITY) continue;
+        if (this.bomb.planterId === bot.id || this.bomb.defuserId === bot.id) continue;
 
-    attackers.forEach(attacker => {
-        if (attacker.status === "DEAD") return;
-        if (hasFired.has(attacker.id)) return; // Attacker already fired
+        // Find potential targets
+        const potentialTargets: { bot: Bot; distance: number; isCrossZone: boolean; score: number }[] = [];
 
-        // Skip if busy (planting/defusing/charging)
-        // Verify against bomb state
-        if (this.bomb.planterId === attacker.id) return;
-        if (this.bomb.defuserId === attacker.id) return;
-        if (attacker.aiState === BotAIState.CHARGING_UTILITY) return;
-        if (attacker.combatCooldown > 0) return;
-        if (attacker.weaponSwapTimer > 0) return; // Cannot fire while swapping
+        // Same Zone
+        const sameZoneEnemies = (zoneOccupants[bot.currentZoneId] || [])
+            .filter(e => e.side !== bot.side && e.status === "ALIVE");
 
-        // Find potential targets:
-        // 1. In same zone
-        // 2. In connected zones (Neighbors)
-        const currentZone = this.map.getZone(attacker.currentZoneId);
-        if (!currentZone) return;
-
-        const potentialTargets: { bot: Bot; distance: number; isCrossZone: boolean }[] = [];
-
-        // Same Zone Targets (Distance ~ 100)
-        const sameZoneEnemies = (zoneOccupants[attacker.currentZoneId] || [])
-            .filter(b => b.side !== attacker.side && b.status === "ALIVE");
-
-        sameZoneEnemies.forEach(enemy => {
-            potentialTargets.push({ bot: enemy, distance: 100, isCrossZone: false });
+        sameZoneEnemies.forEach(e => {
+            const dist = 100; // Close range
+            potentialTargets.push({
+                bot: e,
+                distance: dist,
+                isCrossZone: false,
+                score: this.scoreTarget(bot, e, dist, false)
+            });
         });
 
-        // Neighbor Zone Targets
-        currentZone.connections.forEach(connId => {
-            const enemiesInConn = (zoneOccupants[connId] || [])
-                .filter(b => b.side !== attacker.side && b.status === "ALIVE");
+        // Connected Zones (Sightline + Focus Check)
+        const canFightCrossZone =
+            bot.aiState === BotAIState.HOLDING_ANGLE ||
+            bot.aiState === BotAIState.WAITING_FOR_SPLIT ||
+            bot.aiState === BotAIState.DEFUSING ||
+            (bot.targetZoneId !== null); // Moving = Peeking
 
-            if (enemiesInConn.length > 0) {
-                 const dist = this.map.getDistance(attacker.currentZoneId, connId);
-                 enemiesInConn.forEach(enemy => {
-                     potentialTargets.push({ bot: enemy, distance: dist, isCrossZone: true });
-                 });
-            }
-        });
+        if (canFightCrossZone) {
+            const connections = this.map.getConnections(bot.currentZoneId);
+            connections.forEach(conn => {
+                if (!conn.sightline) return; // No LOS
 
-        if (potentialTargets.length === 0) return;
+                // Focus Check
+                if (bot.focusZoneId !== conn.to) return;
 
-        // Pick a target
-        // Prefer same zone? Or just random? Random for now.
-        const targetInfo = potentialTargets[Math.floor(Math.random() * potentialTargets.length)];
-        const target = targetInfo.bot;
+                const enemies = (zoneOccupants[conn.to] || [])
+                     .filter(e => e.side !== bot.side && e.status === "ALIVE");
 
-        // Check Engagement Queue / Firing Status
-        const targetBusy = hasFired.has(target.id);
-
-        // Mark Attacker as having fired
-        hasFired.add(attacker.id);
-
-        // If target is NOT busy, they return fire.
-        if (!targetBusy) {
-            hasFired.add(target.id);
-        } else {
-             // Target cannot return fire (One-way duel)
-             // We allow the duel, but target deals 0 damage / skips their turn in DuelEngine?
-             // Actually DuelEngine simulates both sides.
-             // We need to pass a flag to DuelEngine to disable target's attack?
-             // Or just handle it here?
-             // DuelEngine.calculateOutcome calls simulateEngagement for both.
-             // We can modify DuelEngine to accept 'targetCanFire' boolean?
-             // Or just log it and accept that DuelEngine might simulate a return fire that we ignore?
-             // The cleanest way is to add `targetCanFire` to calculateOutcome.
-             // But I can't modify DuelEngine signature easily without checking everywhere.
-             // Wait, I *can* modify DuelEngine.
-             // Let's modify DuelEngine signature in a moment.
-             // For now, let's assume I will.
+                if (enemies.length > 0) {
+                     const dist = this.map.getDistance(bot.currentZoneId, conn.to);
+                     enemies.forEach(e => {
+                         potentialTargets.push({
+                             bot: e,
+                             distance: dist,
+                             isCrossZone: true,
+                             score: this.scoreTarget(bot, e, dist, true)
+                         });
+                     });
+                }
+            });
         }
 
-        // Notify Enemy Spotted (Both ways)
-        // Only if not already spotted recently? Bot handles duplicates via timestamp logic usually, but here we spam it.
-        // Let's rely on EventManager to handle listeners.
-        this.eventManager.publish({
-            type: "ENEMY_SPOTTED",
-            zoneId: target.currentZoneId,
-            timestamp: this.tickCount,
-            enemyCount: 1, // At least 1
-            spottedBy: attacker.id
-        });
+        if (potentialTargets.length === 0) continue;
 
-        // Target also spots attacker
+        // Weighted Selection
+        potentialTargets.sort((a, b) => b.score - a.score);
+        const chosen = potentialTargets[0];
+
+        engagements.push({
+            attacker: bot,
+            target: chosen.bot,
+            distance: chosen.distance,
+            isCrossZone: chosen.isCrossZone
+        });
+    }
+
+    // 3. Resolve Engagements (Initiative Logic)
+    const spentBots = new Set<string>();
+
+    // Randomize processing order
+    engagements.sort(() => Math.random() - 0.5);
+
+    for (const eng of engagements) {
+         if (spentBots.has(eng.attacker.id)) continue; // Attacker already fought
+
+         const targetBusy = spentBots.has(eng.target.id);
+
+         // Initiative Calculation
+         const returnEng = engagements.find(e => e.attacker.id === eng.target.id && e.target.id === eng.attacker.id);
+
+         let targetCanFire = false;
+
+         if (!targetBusy) {
+             if (returnEng) {
+                 // Mutual engagement
+                 targetCanFire = true;
+                 spentBots.add(eng.target.id);
+             } else {
+                 // Initiative check
+                 const initScore = this.calculateInitiative(eng.attacker, eng.target, true); // Attacker is initiating
+                 if (initScore < 50) { // Threshold for surprise
+                      targetCanFire = true;
+                      spentBots.add(eng.target.id);
+                 }
+             }
+         }
+
+         spentBots.add(eng.attacker.id);
+
+         const result = DuelEngine.calculateOutcome(eng.attacker, eng.target, eng.distance, eng.isCrossZone, targetCanFire);
+
+         // Notify Enemy Spotted (Both ways)
         this.eventManager.publish({
             type: "ENEMY_SPOTTED",
-            zoneId: attacker.currentZoneId,
+            zoneId: eng.target.currentZoneId,
             timestamp: this.tickCount,
             enemyCount: 1,
-            spottedBy: target.id
+            spottedBy: eng.attacker.id
         });
+        if (targetCanFire) {
+             this.eventManager.publish({
+                type: "ENEMY_SPOTTED",
+                zoneId: eng.attacker.currentZoneId,
+                timestamp: this.tickCount,
+                enemyCount: 1,
+                spottedBy: eng.target.id
+            });
+        }
 
         // Interrupt logic
-        if (this.bomb.planterId === target.id) {
-            this.bomb.abortPlanting();
-            target.aiState = BotAIState.DEFAULT;
-        }
-        if (this.bomb.defuserId === target.id) {
-            this.bomb.abortDefusing();
-            target.aiState = BotAIState.DEFAULT;
-        }
-        if (target.aiState === BotAIState.CHARGING_UTILITY) {
-            target.aiState = BotAIState.DEFAULT;
-            target.isChargingUtility = false;
-            target.utilityChargeTimer = 0;
+        if (this.bomb.planterId === eng.target.id) { this.bomb.abortPlanting(); eng.target.aiState = BotAIState.DEFAULT; }
+        if (this.bomb.defuserId === eng.target.id) { this.bomb.abortDefusing(); eng.target.aiState = BotAIState.DEFAULT; }
+        if (eng.target.aiState === BotAIState.CHARGING_UTILITY) { eng.target.aiState = BotAIState.DEFAULT; eng.target.isChargingUtility = false; eng.target.utilityChargeTimer = 0; }
+
+        if (this.zoneStates[eng.attacker.currentZoneId]) {
+            this.zoneStates[eng.attacker.currentZoneId].noiseLevel += 50;
         }
 
-        // Shooting adds NOISE
-        if (this.zoneStates[attacker.currentZoneId]) {
-            this.zoneStates[attacker.currentZoneId].noiseLevel += 50;
-        }
+         this.applyDuelResult(result);
 
-        const probs = DuelEngine.getWinProbability(attacker, target, targetInfo.distance, 20);
-        this.stats[attacker.id].expectedKills += probs.initiatorWinRate;
+         // Location string for logging
+         const currentZone = this.map.getZone(eng.attacker.currentZoneId);
+        const locationStr = eng.isCrossZone
+            ? `${currentZone?.name} -> ${this.map.getZone(eng.target.currentZoneId)?.name}`
+            : currentZone?.name;
 
-        // Calculate Outcome
-        // If targetBusy is true, target cannot return fire.
-        const targetCannotFire = targetBusy || target.weaponSwapTimer > 0;
-        const result = DuelEngine.calculateOutcome(attacker, target, targetInfo.distance, targetInfo.isCrossZone, !targetCannotFire);
+        this.events.unshift(`[Tick ${this.tickCount}] ⚔️ ${eng.attacker.player.name} vs ${eng.target.player.name} (${locationStr})`);
+    }
+  }
 
-        const winner = result.winnerId === attacker.id ? attacker : target;
-        const loser = result.winnerId === attacker.id ? target : attacker;
+  // Helpers
+  private scoreTarget(attacker: Bot, target: Bot, distance: number, isCrossZone: boolean): number {
+      let s = 0;
+      if (!isCrossZone) s += 30; // Prefer close
+      s += Math.max(0, 400 - distance) * 0.1; // Distance factor
+      if (target.hasBomb) s += 25;
+      if (this.bomb.planterId === target.id) s += 40;
+      if (this.bomb.defuserId === target.id) s += 40;
+      if (target.hp < 40) s += 15;
 
-        loser.takeDamage(result.damage);
-        this.stats[winner.id].damageDealt += result.damage;
+      const aggression = attacker.player.skills.mental.aggression;
+      s *= 0.7 + (aggression / 150); // Aggression scaling
 
-        const locationStr = targetInfo.isCrossZone
-            ? `${currentZone.name} -> ${this.map.getZone(target.currentZoneId)?.name}`
-            : currentZone.name;
+      return s;
+  }
 
-        this.events.unshift(`[Tick ${this.tickCount}] ⚔️ ${attacker.player.name} vs ${target.player.name} (${locationStr})`);
+  private calculateInitiative(a: Bot, b: Bot, isPeekerA: boolean): number {
+      const ar = a.player.skills.physical.reactionTime;
+      const br = b.player.skills.physical.reactionTime;
+      const ap = a.player.skills.technical.crosshairPlacement;
+      const bp = b.player.skills.technical.crosshairPlacement;
 
-        if (result.publicLog && result.publicLog.length > 0) {
-            result.publicLog.forEach(log => this.events.unshift(`> ${log}`));
-        }
+      let aScore = ar + ap * 0.6;
+      const bScore = br + bp * 0.6;
 
-        if (loser.hp <= 0) {
-            const weapon = winner.getEquippedWeapon();
-            const weaponName = weapon ? weapon.name : "Unknown";
+      if (isPeekerA) aScore += 10;
 
-            // Drop Weapon Logic
-            const loserWeapon = loser.getEquippedWeapon();
-            if (loserWeapon && loser.player.inventory) {
-                const zone = this.map.getZone(loser.currentZoneId);
-                const dropId = `drop_${this.tickCount}_${loser.id}`;
-                const droppedWeapon: DroppedWeapon = {
-                    id: dropId,
-                    weaponId: loser.player.inventory.primaryWeapon || loser.player.inventory.secondaryWeapon || "", // Prioritize primary
-                    zoneId: loser.currentZoneId,
-                    x: (zone?.x || 500) + (Math.random() * 40 - 20),
-                    y: (zone?.y || 500) + (Math.random() * 40 - 20)
-                };
+      return aScore - bScore;
+  }
 
-                // If they have primary, drop it. If only secondary, drop it.
-                // Logic: getEquippedWeapon returns the active one.
-                // We want to drop the best weapon they have usually, or the one equipped?
-                // CS logic: You drop what you hold. But bots should hold best weapon.
-                // Let's drop the primary if it exists, otherwise secondary.
-                if (loser.player.inventory.primaryWeapon) {
-                    droppedWeapon.weaponId = loser.player.inventory.primaryWeapon;
-                    loser.player.inventory.primaryWeapon = undefined;
-                } else if (loser.player.inventory.secondaryWeapon) {
-                    droppedWeapon.weaponId = loser.player.inventory.secondaryWeapon;
-                    loser.player.inventory.secondaryWeapon = undefined; // Actually pistols drop too? Yes.
-                }
+  private applyDuelResult(result: DuelResult) {
+      const initiator = this.bots.find(b => b.id === result.initiator.id);
+      const target = this.bots.find(b => b.id === result.target.id);
+      if (!initiator || !target) return;
 
-                if (droppedWeapon.weaponId) {
-                    this.zoneStates[loser.currentZoneId].droppedWeapons.push(droppedWeapon);
-                    // this.events.unshift(`> 🔫 ${loser.player.name} dropped ${droppedWeapon.weaponId}`);
-                }
-            }
+      const events: {time: number, actor: Bot, victim: Bot, damage: number, result: ParticipantResult}[] = [];
 
-            // Kill Reward
-            let reward = 300;
-            if (weapon) {
-                reward = EconomySystem.getKillReward(weapon);
-            }
-            if (winner.player.inventory) {
-                winner.player.inventory.money = Math.min(ECONOMY.MAX_MONEY, winner.player.inventory.money + reward);
-            }
+      if (result.initiator.fired) {
+          events.push({
+              time: result.initiator.timeTaken,
+              actor: initiator,
+              victim: target,
+              damage: result.initiator.damage,
+              result: result.initiator
+          });
+      }
+      if (result.target.fired) {
+           events.push({
+              time: result.target.timeTaken,
+              actor: target,
+              victim: initiator,
+              damage: result.target.damage,
+              result: result.target
+           });
+      }
 
-            this.events.unshift(`💀 [${weaponName}] ${loser.player.name} eliminated by ${winner.player.name} (+$${reward})`);
-            this.stats[winner.id].kills++;
-            this.stats[winner.id].actualKills++;
-            this.stats[loser.id].deaths++;
-            this.roundKills++;
+      // Sort by time
+      events.sort((a, b) => a.time - b.time);
 
-            // Trigger Teammate Died Event
-            this.eventManager.publish({
-                type: "TEAMMATE_DIED",
-                zoneId: loser.currentZoneId,
-                timestamp: this.tickCount,
-                victimId: loser.id,
-                killerId: winner.id
-            });
+      for (const e of events) {
+          if (e.actor.status === "DEAD") continue; // Actor died before shooting
 
-            // Apply Combat Delay (Target Acquisition)
-            // Delay (ticks) = Math.max(2, 6 - (ReactionTime + Dexterity) / 50)
-            const rxn = winner.player.skills.physical.reactionTime;
-            const dex = winner.player.skills.physical.dexterity;
-            const delay = Math.max(2, Math.floor(6 - (rxn + dex) / 50));
-            winner.combatCooldown = delay;
+          if (e.damage > 0) {
+              e.victim.takeDamage(e.damage);
+              this.stats[e.actor.id].damageDealt += e.damage;
+              this.stats[e.actor.id].expectedKills += DuelEngine.getWinProbability(e.actor, e.victim, this.map.getDistance(e.actor.currentZoneId, e.victim.currentZoneId), 10).initiatorWinRate; // Approximation
 
-            if (this.bomb.carrierId === loser.id) {
-                loser.hasBomb = false;
-                this.bomb.drop(loser.currentZoneId);
-                this.events.unshift(`⚠️ Bomb dropped at ${this.map.getZone(loser.currentZoneId)?.name}!`);
-            }
-            if (this.bomb.defuserId === loser.id) this.bomb.abortDefusing();
-            if (this.bomb.planterId === loser.id) this.bomb.abortPlanting();
-        }
-    });
+              if (e.victim.hp <= 0 && e.victim.status === "ALIVE") {
+                   this.handleKill(e.actor, e.victim, e.result.isHeadshot, e.actor.getEquippedWeapon());
+              }
+          }
+      }
+
+      if (result.publicLog.length > 0) {
+           result.publicLog.forEach(l => this.events.unshift(`> ${l}`));
+      }
+  }
+
+  private handleKill(killer: Bot, victim: Bot, isHeadshot: boolean, weapon: Weapon | undefined) {
+      const weaponName = weapon ? weapon.name : "Unknown";
+
+      // Update Victim Status (takeDamage does it, but ensure consistency)
+      victim.status = "DEAD";
+      this.stats[killer.id].kills++;
+      this.stats[killer.id].actualKills++;
+      this.stats[victim.id].deaths++;
+      this.roundKills++;
+
+      // Drop Weapon
+      if (victim.player.inventory) {
+           const zone = this.map.getZone(victim.currentZoneId);
+           const dropId = `drop_${this.tickCount}_${victim.id}`;
+           const droppedWeapon: DroppedWeapon = {
+                id: dropId,
+                weaponId: victim.player.inventory.primaryWeapon || victim.player.inventory.secondaryWeapon || "",
+                zoneId: victim.currentZoneId,
+                x: (zone?.x || 500) + (Math.random() * 40 - 20),
+                y: (zone?.y || 500) + (Math.random() * 40 - 20)
+           };
+
+           if (victim.player.inventory.primaryWeapon) {
+                droppedWeapon.weaponId = victim.player.inventory.primaryWeapon;
+                victim.player.inventory.primaryWeapon = undefined;
+           } else if (victim.player.inventory.secondaryWeapon) {
+                droppedWeapon.weaponId = victim.player.inventory.secondaryWeapon;
+                victim.player.inventory.secondaryWeapon = undefined;
+           }
+
+           if (droppedWeapon.weaponId) {
+                this.zoneStates[victim.currentZoneId].droppedWeapons.push(droppedWeapon);
+           }
+      }
+
+      // Reward
+      let reward = 300;
+      if (weapon) {
+           reward = EconomySystem.getKillReward(weapon);
+      }
+      if (killer.player.inventory) {
+           killer.player.inventory.money = Math.min(ECONOMY.MAX_MONEY, killer.player.inventory.money + reward);
+      }
+
+      this.events.unshift(`💀 [${weaponName}] ${victim.player.name} eliminated by ${killer.player.name} (+$${reward})`);
+
+      // Teammate Died Event
+      this.eventManager.publish({
+           type: "TEAMMATE_DIED",
+           zoneId: victim.currentZoneId,
+           timestamp: this.tickCount,
+           victimId: victim.id,
+           killerId: killer.id
+      });
+
+      // Combat Delay
+      const rxn = killer.player.skills.physical.reactionTime;
+      const dex = killer.player.skills.physical.dexterity;
+      const delay = Math.max(2, Math.floor(6 - (rxn + dex) / 50));
+      killer.combatCooldown = delay;
+
+      if (this.bomb.carrierId === victim.id) {
+           victim.hasBomb = false;
+           this.bomb.drop(victim.currentZoneId);
+           this.events.unshift(`⚠️ Bomb dropped at ${this.map.getZone(victim.currentZoneId)?.name}!`);
+      }
+      if (this.bomb.defuserId === victim.id) this.bomb.abortDefusing();
+      if (this.bomb.planterId === victim.id) this.bomb.abortPlanting();
   }
 
   private checkWinConditions() {

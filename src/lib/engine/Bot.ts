@@ -259,7 +259,7 @@ export class Bot {
     if (tactic.includes("EXECUTE") && !this.isChargingUtility && this.aiState !== BotAIState.CHARGING_UTILITY && this.side === TeamSide.T) {
          if (this.goalZoneId && (this.goalZoneId === map.data.bombSites.A || this.goalZoneId === map.data.bombSites.B)) {
              const zone = map.getZone(this.currentZoneId);
-             if (zone && zone.connections.includes(this.goalZoneId)) {
+             if (zone && zone.connections.some(c => c.to === this.goalZoneId)) {
                  // At entry zone
                  // Check if we can/should throw utility
                  if (this.utilityCooldown <= 0) {
@@ -474,7 +474,8 @@ export class Bot {
                const siteZone = map.getZone(bomb.plantSite);
                if (siteZone) {
                     // Identify adjacent zones for spread
-                    const candidates = siteZone.connections;
+                    // candidates are string IDs from connections
+                    const candidates = siteZone.connections.map(c => c.to);
 
                     // Filter candidates to ensure uniqueness where possible
                     const takenGoals = allBots
@@ -617,14 +618,14 @@ export class Bot {
              const zone = map.getZone(this.currentZoneId);
              // Pick first connection that isn't where we came from?
              // Or pick connection with highest threat.
-             let bestLook = zone?.connections[0] || null;
+             let bestLook: string | null = zone?.connections[0]?.to || null;
              let maxThreat = -1;
 
              zone?.connections.forEach(conn => {
-                 const threat = this.internalThreatMap[conn]?.level || 0;
+                 const threat = this.internalThreatMap[conn.to]?.level || 0;
                  if (threat > maxThreat) {
                      maxThreat = threat;
-                     bestLook = conn;
+                     bestLook = conn.to;
                  }
              });
              this.focusZoneId = bestLook;
