@@ -7,6 +7,8 @@ import { WeaponManager } from "./WeaponManager";
 import { Weapon } from "@/types/Weapon";
 import { EventManager, GameEvent } from "./EventManager";
 import { DroppedWeapon, Point, ZoneState } from "./types";
+import { TacticalAI, AngleToClear } from "./TacticalAI";
+import { CS2_MOVEMENT_SPEEDS, TACTICAL_BEHAVIORS, TICK_DURATION } from "./cs2Constants";
 
 export type BotStatus = "ALIVE" | "DEAD";
 
@@ -63,6 +65,18 @@ export class Bot {
   public roundRole: string;
 
   public pendingEvents: { event: GameEvent; processAt: number }[] = [];
+
+  // Tactical state
+  public hasClearedAngles: boolean = false;
+  public currentAngleIndex: number = 0;
+  public anglesToClear: AngleToClear[] = [];
+  public holdPosition: Point | null = null;
+  public isHoldingAngle: boolean = false;
+  public holdDuration: number = 0;
+  public isWaitingForTeam: boolean = false;
+  public teammatesInZone: string[] = [];
+  public nextUtilityTarget: Point | null = null;
+  public utilityType: 'flash' | 'smoke' | 'he' | 'molotov' | null = null;
 
   private lastZoneChangeTick: number = 0;
   private lastZone: string = "";
@@ -179,13 +193,18 @@ export class Bot {
       const dy = target.y - this.pos.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
+      // Reached waypoint
       if (dist < 5) {
           this.path.shift();
           if (this.path.length === 0) return;
+          // Continue to next waypoint immediately in same frame?
+          // For now, return and let next tick handle it, or we could recurse slightly.
+          // Returning is safer for now.
           return;
       }
 
-      const baseSpeed = 250;
+      // Base speed from CS2 constants
+      const baseSpeed = 250; // Default fallback
       const speed = this.getEffectiveSpeed(baseSpeed);
       const moveDist = speed * dt;
 
@@ -195,7 +214,9 @@ export class Bot {
       let nextX = this.pos.x + ndx * moveDist;
       let nextY = this.pos.y + ndy * moveDist;
 
+      // Check walkability using updated map (which uses NavMesh)
       if (!map.isWalkable(nextX, nextY)) {
+          // Slide along wall
           if (map.isWalkable(nextX, this.pos.y)) {
               nextY = this.pos.y;
           }
@@ -203,6 +224,7 @@ export class Bot {
               nextX = this.pos.x;
           }
           else {
+              // Stuck
               nextX = this.pos.x;
               nextY = this.pos.y;
           }
@@ -219,11 +241,21 @@ export class Bot {
 
   getEffectiveSpeed(baseSpeed: number, roundTimer?: number): number {
       const weapon = this.getEquippedWeapon();
-      const mobility = weapon ? weapon.mobility : 250;
-      let speed = baseSpeed * (mobility / 250);
+      // Use weapon specific speed from CS2 constants if available via WeaponManager or fallback
+      // Actually cs2Constants has `CS2_MOVEMENT_SPEEDS`.
+      // But Weapon object has `mobility` property usually.
+
+      let mobility = 250;
+      if (weapon) {
+         mobility = weapon.mobility;
+      } else {
+         mobility = CS2_MOVEMENT_SPEEDS.KNIFE;
+      }
+
+      let speed = mobility; // Base speed is the weapon speed directly
 
       if (this.isShiftWalking) {
-          speed *= 0.52;
+          speed *= CS2_MOVEMENT_SPEEDS.WALK_SPEED_MULTIPLIER;
       }
 
       if (this.side === TeamSide.CT && (this.aiState === BotAIState.DEFUSING || this.aiState === BotAIState.ROTATING)) {
@@ -298,6 +330,7 @@ export class Bot {
          }
     }
 
+    // Default walking logic (overridden by tactical update in many cases)
     this.isShiftWalking = false;
     if (tactic.includes("CONTACT") && this.stealthMode) this.isShiftWalking = true;
     if (this.roundRole === "Lurker" && this.side === TeamSide.T) this.isShiftWalking = true;
@@ -372,5 +405,135 @@ export class Bot {
       this.hp = 0;
       this.status = "DEAD";
     }
+  }
+
+  updateTacticalBehavior(map: GameMap, allBots: Bot[], currentTick: number) {
+    if (this.status === "DEAD") return;
+
+    // Decrease hold duration
+    if (this.holdDuration > 0) {
+      this.holdDuration--;
+      if (this.holdDuration === 0) {
+        this.isHoldingAngle = false;
+      }
+    }
+
+    // Check if entering new zone
+    if (this.path.length > 0) {
+      const nextWaypoint = this.path[0];
+      const nextZone = map.getZoneAt(nextWaypoint);
+
+      if (nextZone && nextZone.id !== this.currentZoneId) {
+        // Entering new zone - get angles to clear
+        if (!this.hasClearedAngles) {
+          this.anglesToClear = TacticalAI.getAnglesToClear(
+            this.currentZoneId,
+            nextZone.id,
+            map,
+            this.side
+          );
+
+          if (this.anglesToClear.length > 0) {
+            this.currentAngleIndex = 0;
+            this.hasClearedAngles = false;
+            this.processClearingAngle(currentTick);
+          }
+        }
+      } else {
+        // Same zone or no zone - reset angle clearing
+        this.hasClearedAngles = false;
+        this.anglesToClear = [];
+        this.currentAngleIndex = 0;
+      }
+    }
+
+    // Check if should hold position
+    if (this.aiState === BotAIState.HOLDING_ANGLE && !this.isHoldingAngle) {
+      const holdPos = TacticalAI.getHoldPosition(
+        this.currentZoneId,
+        map,
+        this.side === TeamSide.CT ? 'defense' : 'offense'
+      );
+
+      if (holdPos) {
+        this.holdPosition = holdPos.position;
+        this.isHoldingAngle = true;
+        this.holdDuration = TACTICAL_BEHAVIORS.ANGLE_HOLD_DURATION;
+
+        // Path to hold position if not there
+        const dist = this.distanceTo(holdPos.position);
+        if (dist > 10) {
+          this.path = map.findPath(this.pos, holdPos.position);
+        }
+      }
+    }
+  }
+
+  private processClearingAngle(currentTick: number) {
+    if (this.currentAngleIndex >= this.anglesToClear.length) {
+      // All angles cleared
+      this.hasClearedAngles = true;
+      this.isShiftWalking = false;
+      return;
+    }
+
+    const angle = this.anglesToClear[this.currentAngleIndex];
+
+    // Slow down to clear angle
+    this.isShiftWalking = true;
+
+    // Calculate peek duration
+    const peekDuration = TacticalAI.calculatePeekDuration(this, angle.dangerLevel);
+    this.reactionTimer = peekDuration;
+
+    // Should we pre-fire?
+    if (TacticalAI.shouldPrefire(this, angle.position, angle.dangerLevel)) {
+      this.triggerPrefire(angle.position);
+    }
+
+    // Move to next angle
+    this.currentAngleIndex++;
+  }
+
+  private triggerPrefire(target: Point) {
+    // Implement pre-fire logic
+    // Just marking it for now, can be used by combat system if needed
+    // console.log(`Bot ${this.id} pre-firing at position (${target.x}, ${target.y})`);
+  }
+
+  private distanceTo(point: Point): number {
+    const dx = point.x - this.pos.x;
+    const dy = point.y - this.pos.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  shouldUseUtilityNow(map: GameMap, threatMap: Record<string, number>): boolean {
+    if (!this.goalZoneId) return false;
+
+    // Count enemies in target zone
+    const enemyCount = threatMap[this.goalZoneId] || 0;
+
+    // Check each utility type
+    const utilityTypes: Array<'flash' | 'smoke' | 'he' | 'molotov'> =
+      ['flash', 'smoke', 'he', 'molotov'];
+
+    for (const utilType of utilityTypes) {
+      if (TacticalAI.shouldUseUtility(this, this.goalZoneId, utilType, enemyCount)) {
+        // Get throw position
+        const throwPos = TacticalAI.getUtilityThrowPosition(
+          this.currentZoneId,
+          this.goalZoneId,
+          utilType as 'flash' | 'smoke' | 'molotov'
+        );
+
+        if (throwPos) {
+          this.nextUtilityTarget = throwPos;
+          this.utilityType = utilType;
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }

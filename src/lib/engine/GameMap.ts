@@ -1,5 +1,5 @@
 import { MapData, Zone, Connection, Point } from "./types";
-import { Pathfinder } from "./Pathfinder";
+import { navMeshManager } from "./NavMeshManager";
 
 // Defined by the standardized SVG/Canvas coordinate system (0-1000)
 const MAP_WIDTH = 1000;
@@ -15,6 +15,11 @@ export class GameMap {
     data.zones.forEach((zone) => {
       this.zones.set(zone.id, zone);
     });
+
+    // Ensure nav mesh starts loading if not already
+    if (!navMeshManager.isNavMeshLoaded()) {
+        navMeshManager.loadNavMesh().catch(err => console.error("NavMesh auto-load failed:", err));
+    }
   }
 
   getZone(id: string): Zone | undefined {
@@ -63,11 +68,11 @@ export class GameMap {
   // --- Pathfinding & Collision ---
 
   isWalkable(x: number, y: number): boolean {
-    return Pathfinder.isWalkable(x, y);
+    return navMeshManager.isWalkable({ x, y });
   }
 
   findPath(start: Point, end: Point): Point[] {
-    return Pathfinder.findPath(start, end);
+    return navMeshManager.findPath(start, end);
   }
 
   // Find nearest valid walkable point (if spawned in wall)

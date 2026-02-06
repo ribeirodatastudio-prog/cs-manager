@@ -9,6 +9,8 @@ import { MatchState, MatchPhase, RoundEndReason, BuyStrategy, DroppedWeapon, Zon
 import { EconomySystem } from "./EconomySystem";
 import { TeamEconomyManager } from "./TeamEconomyManager";
 import { ECONOMY, WEAPONS, WeaponType } from "./constants";
+import { DUST2_LOCATIONS, TICK_RATE, TICK_DURATION } from "./cs2Constants";
+import { navMeshManager } from "./NavMeshManager";
 import { WeaponUtils } from "./WeaponUtils";
 import { Bomb, BombStatus } from "./Bomb";
 import { EventManager } from "./EventManager";
@@ -62,13 +64,18 @@ export class MatchSimulator {
   private eventManager: EventManager;
 
   private speedMultiplier: number = 1.0;
-  private baseTickRate: number = 20;
-  private readonly TICKS_PER_SEC = 50;
+  private baseTickRate: number = 50; // 50ms = 20 ticks/sec
+  private readonly TICKS_PER_SEC = TICK_RATE; // 20
   private readonly ROUND_TIME = 115;
   private readonly FREEZE_TIME = 5;
 
   constructor(players: Player[], onUpdate: (state: SimulationState) => void) {
     this.map = new GameMap(DUST2_MAP);
+    // Ensure nav mesh is loading
+    if (!navMeshManager.isNavMeshLoaded()) {
+        navMeshManager.loadNavMesh().catch(e => console.error("Failed to load nav mesh", e));
+    }
+
     this.tacticsManager = new TacticsManager();
     this.tickCount = 0;
     this.isRunning = false;
@@ -95,9 +102,14 @@ export class MatchSimulator {
 
     this.bots = players.map((p, i) => {
       const side = i % 2 === 0 ? TeamSide.T : TeamSide.CT;
-      const spawn = this.map.getSpawnPoint(side);
-      const startPos = spawn ? { x: spawn.x, y: spawn.y } : { x: 500, y: 500 };
-      const startZone = spawn ? spawn.id : "ct_spawn"; // Fallback
+      const spawns = side === TeamSide.CT ? DUST2_LOCATIONS.SPAWNS.CT : DUST2_LOCATIONS.SPAWNS.T;
+      const spawnData = spawns[i % spawns.length];
+      const startPos = { x: spawnData.x, y: spawnData.y };
+
+      // Determine initial zone
+      const zone = this.map.getZoneAt(startPos);
+      const startZone = zone ? zone.id : (side === TeamSide.T ? "t_spawn" : "ct_spawn");
+
       return new Bot(p, side, startPos, startZone, this.eventManager);
     });
 
@@ -184,7 +196,7 @@ export class MatchSimulator {
         this.zoneStates[key].smokedUntilTick = 0;
     });
 
-    this.bots.forEach(bot => {
+    this.bots.forEach((bot, i) => {
       const wasDead = bot.status === "DEAD";
 
       bot.hp = 100;
@@ -196,13 +208,25 @@ export class MatchSimulator {
       bot.isShiftWalking = false;
       bot.isChargingUtility = false;
       bot.utilityChargeTimer = 0;
+      // Reset tactical state
+      bot.hasClearedAngles = false;
+      bot.currentAngleIndex = 0;
+      bot.anglesToClear = [];
+      bot.holdPosition = null;
+      bot.isHoldingAngle = false;
+      bot.holdDuration = 0;
+      bot.nextUtilityTarget = null;
+      bot.utilityType = null;
 
-      const spawn = this.map.getSpawnPoint(bot.side);
-      if (spawn) {
-          bot.pos = { x: spawn.x, y: spawn.y };
-          bot.prevPos = { x: spawn.x, y: spawn.y };
-          bot.currentZoneId = spawn.id;
-      }
+      const spawns = bot.side === TeamSide.CT ? DUST2_LOCATIONS.SPAWNS.CT : DUST2_LOCATIONS.SPAWNS.T;
+      // Use index i to cycle through spawns, or store individual spawn index
+      const spawnData = spawns[i % spawns.length];
+
+      bot.pos = { x: spawnData.x, y: spawnData.y };
+      bot.prevPos = { x: spawnData.x, y: spawnData.y };
+
+      const zone = this.map.getZoneAt(bot.pos);
+      bot.currentZoneId = zone ? zone.id : (bot.side === TeamSide.T ? "t_spawn" : "ct_spawn");
 
       if (wasDead) {
           if (bot.player.inventory) {
@@ -345,7 +369,8 @@ export class MatchSimulator {
     this.bots.forEach(bot => {
       if (bot.status === "DEAD") return;
 
-      // Update AI
+      // Update AI with Tactical Behavior
+      bot.updateTacticalBehavior(this.map, this.bots, this.tickCount);
       bot.updateGoal(this.map, this.bomb, this.tacticsManager, this.zoneStates, this.tickCount, this.bots);
       const action = bot.decideAction(this.map, this.zoneStates, this.roundTimer);
 
@@ -426,8 +451,8 @@ export class MatchSimulator {
           bot.path = [];
       }
 
-      const dt = 1 / this.TICKS_PER_SEC;
-      bot.move(dt, this.map);
+      // bot.move(dt, this.map) - Using TICK_DURATION constant
+      bot.move(TICK_DURATION, this.map);
     });
 
     this.resolveCombat();
