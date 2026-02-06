@@ -250,7 +250,7 @@ export class MatchSimulator {
     this.tacticsManager.updateAssignments(this.bots, this.map);
   }
 
-  public applyStrategies(tStrategy: BuyStrategy, tTactic: Tactic, ctStrategy: BuyStrategy, ctTactic: Tactic, roleOverrides: Record<string, string>) {
+  public applyStrategies(tStrategy: BuyStrategy, tTactic: Tactic, ctStrategy: BuyStrategy, ctTactic: Tactic, roleOverrides: Record<string, string>, buyOverrides: Record<string, BuyStrategy> = {}) {
     // 1. Pass Overrides to TacticsManager
     this.tacticsManager.setRoleAssignments(roleOverrides);
 
@@ -266,8 +266,8 @@ export class MatchSimulator {
     const tBots = this.bots.filter(b => b.side === TeamSide.T);
     const ctBots = this.bots.filter(b => b.side === TeamSide.CT);
 
-    TeamEconomyManager.executeTeamBuy(tBots, tStrategy, TeamSide.T);
-    TeamEconomyManager.executeTeamBuy(ctBots, ctStrategy, TeamSide.CT);
+    TeamEconomyManager.executeTeamBuy(tBots, tStrategy, TeamSide.T, buyOverrides);
+    TeamEconomyManager.executeTeamBuy(ctBots, ctStrategy, TeamSide.CT, buyOverrides);
 
     // 4. Start Freezetime
     this.matchState.phase = MatchPhase.FREEZETIME;

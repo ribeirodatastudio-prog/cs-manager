@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Bot } from '@/lib/engine/Bot';
 import { MatchState, BuyStrategy } from '@/lib/engine/types';
 import { TeamEconomyManager } from '@/lib/engine/TeamEconomyManager';
-import { TeamSide, ECONOMY } from '@/lib/engine/constants';
+import { TeamSide, WEAPONS } from '@/lib/engine/constants';
 import { Tactic } from '@/lib/engine/TacticsManager';
 import { TACTIC_ROLES } from '@/lib/engine/tacticRoles';
 
 interface SituationRoomProps {
   bots: Bot[];
   matchState: MatchState;
-  onConfirm: (tStrategy: BuyStrategy, tTactic: Tactic, ctStrategy: BuyStrategy, ctTactic: Tactic, roleOverrides: Record<string, string>) => void;
+  onConfirm: (tStrategy: BuyStrategy, tTactic: Tactic, ctStrategy: BuyStrategy, ctTactic: Tactic, roleOverrides: Record<string, string>, buyOverrides: Record<string, BuyStrategy>) => void;
 }
 
 const BUY_STRATEGIES: BuyStrategy[] = ["FULL", "FORCE", "HALF", "ECO", "BONUS", "HERO"];
@@ -18,15 +18,23 @@ const CT_TACTICS: Tactic[] = ["STANDARD", "AGGRESSIVE_PUSH", "GAMBLE_STACK_A", "
 
 export const SituationRoom: React.FC<SituationRoomProps> = ({ bots, matchState, onConfirm }) => {
   const [activeTab, setActiveTab] = useState<TeamSide>(TeamSide.T);
+
+  // Team Strategies
   const [tStrategy, setTStrategy] = useState<BuyStrategy>("FULL");
   const [ctStrategy, setCtStrategy] = useState<BuyStrategy>("FULL");
+
+  // Tactics
   const [tTactic, setTTactic] = useState<Tactic>("DEFAULT");
   const [ctTactic, setCtTactic] = useState<Tactic>("STANDARD");
 
-  // Mapping: Role Name -> Bot ID
-  // specific for each side to persist state when switching tabs
+  // Assignments: Role Name -> Bot ID
+  // We keep this structure to easily check which ROLES are filled.
   const [tAssignments, setTAssignments] = useState<Record<string, string>>({});
   const [ctAssignments, setCtAssignments] = useState<Record<string, string>>({});
+
+  // Buy Overrides: Bot ID -> Buy Strategy (or empty string for default)
+  const [tBuyOverrides, setTBuyOverrides] = useState<Record<string, BuyStrategy>>({});
+  const [ctBuyOverrides, setCtBuyOverrides] = useState<Record<string, BuyStrategy>>({});
 
   // Economy Stats State
   const [stats, setStats] = useState({
@@ -35,127 +43,110 @@ export const SituationRoom: React.FC<SituationRoomProps> = ({ bots, matchState, 
       minNextRound: 0
   });
 
-  const activeBots = bots.filter(b => b.side === activeTab && b.status === "ALIVE");
+  const activeBots = bots.filter(b => b.side === activeTab); // All bots are ALIVE in this phase
   const activeStrategy = activeTab === TeamSide.T ? tStrategy : ctStrategy;
   const setStrategy = activeTab === TeamSide.T ? setTStrategy : setCtStrategy;
   const activeTactic = activeTab === TeamSide.T ? tTactic : ctTactic;
   const setTactic = activeTab === TeamSide.T ? setTTactic : setCtTactic;
+
   const activeAssignments = activeTab === TeamSide.T ? tAssignments : ctAssignments;
   const setAssignments = activeTab === TeamSide.T ? setTAssignments : setCtAssignments;
+
+  const activeBuyOverrides = activeTab === TeamSide.T ? tBuyOverrides : ctBuyOverrides;
+  const setBuyOverrides = activeTab === TeamSide.T ? setTBuyOverrides : setCtBuyOverrides;
+
   const AVAILABLE_TACTICS = activeTab === TeamSide.T ? T_TACTICS : CT_TACTICS;
+  const currentRoles = TACTIC_ROLES[activeTactic] || [];
 
-  // Initialize Default Assignments (Random fill)
+  // Reset Assignments on Mount (User Requirement: Start Unassigned)
   useEffect(() => {
-     // Initial fill for T
-     const tBots = bots.filter(b => b.side === TeamSide.T && b.status === "ALIVE");
-     const tRoles = TACTIC_ROLES["DEFAULT"];
-     const initialT: Record<string, string> = {};
-     tRoles.forEach((r, i) => {
-         if (tBots[i]) initialT[r.name] = tBots[i].id;
-     });
-     setTAssignments(initialT);
+      setTAssignments({});
+      setCtAssignments({});
+      setTBuyOverrides({});
+      setCtBuyOverrides({});
+  }, []); // Only on mount
 
-     // Initial fill for CT
-     const ctBots = bots.filter(b => b.side === TeamSide.CT && b.status === "ALIVE");
-     const ctRoles = TACTIC_ROLES["STANDARD"];
-     const initialCt: Record<string, string> = {};
-     ctRoles.forEach((r, i) => {
-         if (ctBots[i]) initialCt[r.name] = ctBots[i].id;
-     });
-     setCtAssignments(initialCt);
-  }, [bots]); // Only on mount/bots change
-
-  // Handle Tactic Change (Smart Persistence)
+  // Handle Tactic Change -> Reset Assignments for that side
   const handleTacticChange = (newTactic: Tactic) => {
       setTactic(newTactic);
-
-      const newRoles = TACTIC_ROLES[newTactic];
-      const newAssignments: Record<string, string> = {};
-      const assignedBotIds = new Set<string>();
-
-      // 1. Persist by Exact Role Name Match
-      // Get current bot-to-role mapping
-      const currentBotToRole: Record<string, string> = {}; // BotID -> RoleName
-      Object.entries(activeAssignments).forEach(([role, botId]) => {
-          currentBotToRole[botId] = role;
-      });
-
-      // For each new role, see if we can find a bot that HAD this role
-      newRoles.forEach(role => {
-          // Find bot who had this role name
-          const previousBotId = Object.keys(currentBotToRole).find(bid => currentBotToRole[bid] === role.name);
-          if (previousBotId && !assignedBotIds.has(previousBotId)) {
-              newAssignments[role.name] = previousBotId;
-              assignedBotIds.add(previousBotId);
-          }
-      });
-
-      // 2. Persist by "Assignment Index" (Stability fallback)
-      // If we switched tactics, and roles are different, try to keep Bot A in Slot 1, Bot B in Slot 2...
-      // This prevents complete shuffle.
-      const unassignedRoles = newRoles.filter(r => !newAssignments[r.name]);
-      const unassignedBots = activeBots.filter(b => !assignedBotIds.has(b.id));
-
-      unassignedRoles.forEach((role, idx) => {
-           if (unassignedBots[idx]) {
-               newAssignments[role.name] = unassignedBots[idx].id;
-               assignedBotIds.add(unassignedBots[idx].id);
-           }
-      });
-
-      setAssignments(newAssignments);
+      // Clear assignments because roles have changed completely
+      setAssignments({});
   };
 
   // Calculate Economy when inputs change
   useEffect(() => {
-      // Create BotID -> RoleName map for economy calculation (role affects buy logic?)
-      // Currently Economy doesn't strictly depend on role except maybe AWP?
-      // But let's pass it anyway.
-      const overrides: Record<string, string> = {};
+      // 1. Resolve Roles for Calculation
+      const roleOverrides: Record<string, string> = {};
       Object.entries(activeAssignments).forEach(([roleName, botId]) => {
-          // We need to map the "Tactic Role Name" to the "Behavior" (Bot.roundRole)
-          // The Tactic Role Definition contains the behavior mapping.
           const roleDef = TACTIC_ROLES[activeTactic].find(r => r.name === roleName);
           if (roleDef) {
-              overrides[botId] = roleDef.behavior;
+              roleOverrides[botId] = roleDef.behavior;
           }
       });
 
-      const sideBots = bots.filter(b => b.side === activeTab);
-      // Update bots with temporary roles for calculation
-      sideBots.forEach(b => {
-          if (overrides[b.id]) b.roundRole = overrides[b.id];
+      // 2. Prepare Bots (clones with updated roles)
+      // We don't want to mutate actual bots yet
+      // TeamEconomyManager.calculateEconomyStats uses bots array but doesn't mutate it deep enough to persist?
+      // Actually it creates dummies. But we need to set the `roundRole` on the bot objects passed to it.
+      // Let's rely on the fact that we can pass overrides to calculateEconomyStats now!
+      // Wait, I didn't update calculateEconomyStats to take ROLE overrides, only BUY overrides.
+      // So I still need to temporarily set roundRole on the bots passed or update the Manager.
+      // Updating the bot objects locally is fine since they are re-rendered/re-simulated.
+
+      // Create shallow clones to avoid mutating props
+      const sideBots = bots.filter(b => b.side === activeTab).map(b => {
+          const clone = Object.assign(Object.create(Object.getPrototypeOf(b)), b);
+          if (roleOverrides[b.id]) clone.roundRole = roleOverrides[b.id];
+          return clone;
       });
 
       const lossBonus = matchState.lossBonus[activeTab];
-      const calculated = TeamEconomyManager.calculateEconomyStats(sideBots, activeTab, activeStrategy, lossBonus);
+
+      // Filter out empty overrides for calculation
+      const validBuyOverrides: Record<string, BuyStrategy> = {};
+      Object.entries(activeBuyOverrides).forEach(([bid, strat]) => {
+          if (strat) validBuyOverrides[bid] = strat;
+      });
+
+      const calculated = TeamEconomyManager.calculateEconomyStats(sideBots, activeTab, activeStrategy, lossBonus, validBuyOverrides);
       setStats(calculated);
 
-  }, [activeTab, tStrategy, ctStrategy, activeAssignments, bots, matchState, activeTactic]);
+  }, [activeTab, tStrategy, ctStrategy, activeAssignments, activeBuyOverrides, bots, matchState, activeTactic]);
 
-  const handleAssignmentChange = (roleName: string, botId: string) => {
+  const handleRoleSelect = (botId: string, roleName: string) => {
       setAssignments(prev => {
           const next = { ...prev };
 
-          // If this bot was assigned elsewhere, unassign them there
-          const existingRole = Object.keys(next).find(r => next[r] === botId);
-          if (existingRole) {
-              delete next[existingRole];
-          }
+          // If this bot had another role, remove it
+          const oldRole = Object.keys(next).find(r => next[r] === botId);
+          if (oldRole) delete next[oldRole];
 
-          if (botId === "") {
-              delete next[roleName];
+          // If this role was assigned to someone else, remove them (or swap? let's just steal it)
+          // User requirement: "Role should be removed from dropdown", implying uniqueness.
+          // But if I select it here, I am claiming it.
+          // If roleName is empty (unassign), just delete.
+
+          if (roleName === "") {
+               // Unassign
           } else {
-              next[roleName] = botId;
+               next[roleName] = botId;
           }
           return next;
       });
+  };
+
+  const handleBuyOverride = (botId: string, strategy: string) => {
+      setBuyOverrides(prev => ({
+          ...prev,
+          [botId]: strategy as BuyStrategy // or undefined/empty
+      }));
   };
 
   const validateAssignments = () => {
       const tRoles = TACTIC_ROLES[tTactic];
       const ctRoles = TACTIC_ROLES[ctTactic];
 
+      // Check if every REQUIRED role has an assignment
       const tValid = tRoles.every(r => tAssignments[r.name]);
       const ctValid = ctRoles.every(r => ctAssignments[r.name]);
 
@@ -163,22 +154,36 @@ export const SituationRoom: React.FC<SituationRoomProps> = ({ bots, matchState, 
   };
 
   const handleConfirm = () => {
-      // Build final overrides map: BotID -> Role Name
-      // We pass the SPECIFIC ROLE NAME (e.g. "Anchor A") to the system.
-      // TacticsManager will decode this to behavior/zone.
-      const overrides: Record<string, string> = {};
+      // Build final overrides
+      const roleOverrides: Record<string, string> = {};
+      Object.entries(tAssignments).forEach(([role, botId]) => roleOverrides[botId] = role);
+      Object.entries(ctAssignments).forEach(([role, botId]) => roleOverrides[botId] = role);
 
-      Object.entries(tAssignments).forEach(([role, botId]) => overrides[botId] = role);
-      Object.entries(ctAssignments).forEach(([role, botId]) => overrides[botId] = role);
+      // Merge Buy Overrides
+      const finalBuyOverrides: Record<string, BuyStrategy> = {};
+      Object.entries(tBuyOverrides).forEach(([bid, s]) => { if(s) finalBuyOverrides[bid] = s; });
+      Object.entries(ctBuyOverrides).forEach(([bid, s]) => { if(s) finalBuyOverrides[bid] = s; });
 
-      onConfirm(tStrategy, tTactic, ctStrategy, ctTactic, overrides);
+      onConfirm(tStrategy, tTactic, ctStrategy, ctTactic, roleOverrides, finalBuyOverrides);
   };
 
-  const currentRoles = TACTIC_ROLES[activeTactic] || [];
+  // Helper to render utility icons/text
+  const renderUtility = (grenades: string[]) => {
+      if (!grenades || grenades.length === 0) return <span className="text-gray-500">-</span>;
+      return (
+          <div className="flex gap-1">
+              {grenades.map((g, i) => (
+                  <div key={i} className="w-4 h-4 rounded bg-gray-600 border border-gray-500 flex items-center justify-center text-[10px] text-white" title={g}>
+                      {g[0].toUpperCase()}
+                  </div>
+              ))}
+          </div>
+      );
+  };
 
   return (
     <div className="fixed inset-0 z-[100] bg-gray-900/95 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-5xl bg-gray-800 border border-gray-700 rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
+      <div className="w-full max-w-6xl bg-gray-800 border border-gray-700 rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
 
         {/* Header */}
         <div className="bg-gray-900 p-4 border-b border-gray-700 flex justify-between items-center">
@@ -209,7 +214,7 @@ export const SituationRoom: React.FC<SituationRoomProps> = ({ bots, matchState, 
              <div className="col-span-3 space-y-6">
                  {/* Strategy Selector */}
                  <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
-                     <h3 className="text-sm font-semibold text-gray-300 mb-3 uppercase">Buy Strategy</h3>
+                     <h3 className="text-sm font-semibold text-gray-300 mb-3 uppercase">Team Buy Strategy</h3>
                      <div className="grid grid-cols-2 gap-2">
                          {BUY_STRATEGIES.map(strat => (
                              <button
@@ -261,71 +266,78 @@ export const SituationRoom: React.FC<SituationRoomProps> = ({ bots, matchState, 
                  </div>
              </div>
 
-             {/* Right: Role Assignments (9 Cols) */}
+             {/* Right: Player Assignments (9 Cols) */}
              <div className="col-span-9 bg-gray-700/30 rounded-lg border border-gray-600 overflow-hidden flex flex-col">
                  <div className="bg-gray-700 p-3 border-b border-gray-600">
-                    <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wide">Tactical Role Assignments</h3>
-                    <p className="text-xs text-gray-400 mt-1">Assign each active player to a specific tactical role required by the <strong>{activeTactic}</strong> protocol.</p>
+                    <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wide">Player Assignments</h3>
+                    <p className="text-xs text-gray-400 mt-1">Assign roles and strategies for each operative.</p>
                  </div>
 
                  <div className="overflow-auto flex-1">
                      <table className="w-full text-left">
                          <thead className="bg-gray-800 text-gray-400 text-xs uppercase sticky top-0">
                              <tr>
-                                 <th className="p-3 w-1/4">Role</th>
-                                 <th className="p-3 w-1/3">Description</th>
-                                 <th className="p-3 w-1/4">Assigned Agent</th>
-                                 <th className="p-3 w-1/6">Status</th>
+                                 <th className="p-3">Player Name</th>
+                                 <th className="p-3">Money</th>
+                                 <th className="p-3">Current Loadout</th>
+                                 <th className="p-3">Role Assignment</th>
+                                 <th className="p-3">Buy Strategy</th>
                              </tr>
                          </thead>
                          <tbody className="divide-y divide-gray-600">
-                             {currentRoles.map((roleDef, idx) => {
-                                 const assignedBotId = activeAssignments[roleDef.name];
-                                 const assignedBot = activeBots.find(b => b.id === assignedBotId);
+                             {activeBots.map((bot) => {
+                                 const assignedRole = Object.keys(activeAssignments).find(r => activeAssignments[r] === bot.id);
+                                 const currentWeaponId = bot.player.inventory?.primaryWeapon || bot.player.inventory?.secondaryWeapon;
+                                 const weaponName = currentWeaponId ? WEAPONS[currentWeaponId]?.name : "Knife";
 
                                  return (
-                                     <tr key={roleDef.name} className="hover:bg-gray-700/50">
-                                         <td className="p-3 align-middle">
-                                             <div className="font-bold text-white text-sm">{roleDef.name}</div>
-                                             <div className="text-xs text-gray-500 font-mono mt-0.5">{roleDef.behavior}</div>
+                                     <tr key={bot.id} className="hover:bg-gray-700/50">
+                                         <td className="p-3 align-middle font-bold text-white">
+                                             {bot.player.name}
                                          </td>
-                                         <td className="p-3 align-middle text-sm text-gray-300">
-                                             {roleDef.description}
+                                         <td className="p-3 align-middle font-mono text-green-400">
+                                             ${bot.player.inventory?.money}
+                                         </td>
+                                         <td className="p-3 align-middle">
+                                             <div className="text-sm text-gray-300">{weaponName}</div>
+                                             {renderUtility(bot.player.inventory?.grenades || [])}
                                          </td>
                                          <td className="p-3 align-middle">
                                              <select
-                                                value={assignedBotId || ""}
-                                                onChange={(e) => handleAssignmentChange(roleDef.name, e.target.value)}
-                                                className={`w-full text-sm rounded px-2 py-2 border focus:outline-none focus:border-blue-500 ${!assignedBotId ? 'border-red-500 bg-red-900/20 text-red-200' : 'bg-gray-800 border-gray-600 text-white'}`}
+                                                value={assignedRole || ""}
+                                                onChange={(e) => handleRoleSelect(bot.id, e.target.value)}
+                                                className={`w-full text-sm rounded px-2 py-2 border focus:outline-none focus:border-blue-500 ${!assignedRole ? 'border-yellow-600 bg-yellow-900/20 text-yellow-200' : 'bg-gray-800 border-gray-600 text-white'}`}
                                              >
-                                                 <option value="">-- Select Agent --</option>
-                                                 {activeBots.map(bot => {
-                                                     // Hide bots assigned to OTHER roles to prevent duplicates,
-                                                     // UNLESS it's the bot currently assigned to this role
-                                                     const isAssignedElsewhere = Object.entries(activeAssignments).some(([r, bid]) => bid === bot.id && r !== roleDef.name);
-                                                     if (isAssignedElsewhere) return null;
+                                                 <option value="">-- Unassigned --</option>
+                                                 {currentRoles.map(role => {
+                                                     // Only show if unassigned OR assigned to THIS bot
+                                                     const isTaken = activeAssignments[role.name] && activeAssignments[role.name] !== bot.id;
+                                                     if (isTaken) return null;
 
                                                      return (
-                                                         <option key={bot.id} value={bot.id}>
-                                                             {bot.player.name} (${bot.player.inventory?.money})
+                                                         <option key={role.name} value={role.name} title={role.description}>
+                                                             {role.name}
                                                          </option>
                                                      );
                                                  })}
-                                                 {assignedBot && (
-                                                     <option value={assignedBot.id}>{assignedBot.player.name} (${assignedBot.player.inventory?.money})</option>
-                                                 )}
                                              </select>
+                                             {assignedRole && (
+                                                <div className="text-[10px] text-gray-500 mt-1 truncate max-w-[200px]">
+                                                    {currentRoles.find(r => r.name === assignedRole)?.description}
+                                                </div>
+                                             )}
                                          </td>
                                          <td className="p-3 align-middle">
-                                             {assignedBot ? (
-                                                 <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-900 text-green-300">
-                                                     Ready
-                                                 </span>
-                                             ) : (
-                                                 <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-900 text-red-300">
-                                                     Required
-                                                 </span>
-                                             )}
+                                             <select
+                                                 value={activeBuyOverrides[bot.id] || ""}
+                                                 onChange={(e) => handleBuyOverride(bot.id, e.target.value)}
+                                                 className="bg-gray-800 border-gray-600 text-white text-sm rounded px-2 py-2 focus:outline-none focus:border-blue-500"
+                                             >
+                                                 <option value="">Team Default ({activeStrategy})</option>
+                                                 {BUY_STRATEGIES.map(s => (
+                                                     <option key={s} value={s}>{s}</option>
+                                                 ))}
+                                             </select>
                                          </td>
                                      </tr>
                                  );
@@ -341,7 +353,7 @@ export const SituationRoom: React.FC<SituationRoomProps> = ({ bots, matchState, 
              <div className="text-sm text-gray-400">
                  {validateAssignments()
                     ? <span className="text-green-500 flex items-center gap-2">✓ All roles assigned successfully</span>
-                    : <span className="text-red-500 flex items-center gap-2">⚠ Please assign all roles for both teams before confirming</span>
+                    : <span className="text-red-500 flex items-center gap-2">⚠ Please assign roles to all players for both teams</span>
                  }
              </div>
              <button

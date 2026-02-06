@@ -11,13 +11,20 @@ export class TeamEconomyManager {
    * Executes the team buy strategy.
    * Modifies the inventory of the bots directly.
    */
-  public static executeTeamBuy(bots: Bot[], strategy: BuyStrategy, side: TeamSide) {
+  public static executeTeamBuy(bots: Bot[], strategy: BuyStrategy, side: TeamSide, overrides: Record<string, BuyStrategy> = {}) {
     // 1. Process Individual Buys
     bots.forEach(bot => {
-        BuyLogic.processBuy(bot.player.inventory!, side, bot.roundRole, strategy);
+        const botStrategy = overrides[bot.id] || strategy;
+        BuyLogic.processBuy(bot.player.inventory!, side, bot.roundRole, botStrategy);
     });
 
     // 2. Handle Gifting (Only on FULL Buy)
+    // We only trigger gifting if the TEAM STRATEGY is FULL, or if majority are FULL?
+    // Let's stick to Team Strategy triggering the gifting phase, but maybe we should allow it if individuals are buying FULL?
+    // For now, simple logic: If the global intent is FULL, we gift.
+    // If a specific player is forcing/ecoing in a full buy, they won't donate (BuyLogic handles money check) or receive (BuyLogic might give them a bad gun).
+    // Actually, simulateGifting checks if receiver has bad gun (< Tier 3).
+    // If an ECO player has a pistol, they are a candidate for a drop. This is correct.
     if (strategy === "FULL") {
         // Map to inventory objects to reuse logic
         const inventories = bots.map(b => b.player.inventory!);
@@ -29,7 +36,7 @@ export class TeamEconomyManager {
    * Calculates the projected total bank and minimum next round cash
    * assuming the given strategy is executed and the round is LOST.
    */
-  public static calculateEconomyStats(bots: Bot[], side: TeamSide, strategy: BuyStrategy, currentLossBonusCount: number) {
+  public static calculateEconomyStats(bots: Bot[], side: TeamSide, strategy: BuyStrategy, currentLossBonusCount: number, overrides: Record<string, BuyStrategy> = {}) {
      let currentTotal = 0;
      let nextRoundMinTotal = 0;
 
@@ -41,8 +48,10 @@ export class TeamEconomyManager {
 
      // 2. Simulate Individual Buys
      dummies.forEach((inv, index) => {
+         const botId = bots[index].id;
          const role = bots[index].roundRole;
-         BuyLogic.processBuy(inv, side, role, strategy);
+         const botStrategy = overrides[botId] || strategy;
+         BuyLogic.processBuy(inv, side, role, botStrategy);
      });
 
      // 3. Simulate Gifting

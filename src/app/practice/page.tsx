@@ -127,9 +127,9 @@ export default function PracticePage() {
     else setCtTactic(tactic);
   };
 
-  const handleStrategyConfirm = (tBuy: BuyStrategy, tTactic: Tactic, ctBuy: BuyStrategy, ctTactic: Tactic, roleOverrides: Record<string, string>) => {
+  const handleStrategyConfirm = (tBuy: BuyStrategy, tTactic: Tactic, ctBuy: BuyStrategy, ctTactic: Tactic, roleOverrides: Record<string, string>, buyOverrides: Record<string, BuyStrategy>) => {
     if (simulatorRef.current) {
-      simulatorRef.current.applyStrategies(tBuy, tTactic, ctBuy, ctTactic, roleOverrides);
+      simulatorRef.current.applyStrategies(tBuy, tTactic, ctBuy, ctTactic, roleOverrides, buyOverrides);
       setTTactic(tTactic);
       setCtTactic(ctTactic);
     }
