@@ -137,7 +137,7 @@ export class Bot {
 
   getCommsDelayTicks(): number {
       const comms = this.player.skills.mental.communication;
-      return Math.round(Math.max(0, (120 - comms) / 20));
+      return Math.round(Math.max(0, (120 - comms) / 8));
   }
 
   private processPendingEvents(currentTick: number) {
@@ -242,7 +242,7 @@ export class Bot {
 
   makeNoise(): number {
       if (this.path.length > 0 && !this.isShiftWalking) {
-          return 10;
+          return 4;
       }
       return 0;
   }
@@ -252,7 +252,7 @@ export class Bot {
       for (const zoneId in this.internalThreatMap) {
           const entry = this.internalThreatMap[zoneId];
           const age = currentTick - entry.timestamp;
-          if (age > 100) {
+          if (age > 250) {
                delete this.internalThreatMap[zoneId];
           } else {
                totalThreat += entry.level;
@@ -347,7 +347,7 @@ export class Bot {
           return false;
       }
       const ticksStuck = currentTick - this.lastZoneChangeTick;
-      return ticksStuck > 100 && this.path.length > 0;
+      return ticksStuck > 250 && this.path.length > 0;
   }
 
   decideAction(map: GameMap, zoneStates: Record<string, ZoneState>, roundTimer: number): BotAction {

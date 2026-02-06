@@ -62,8 +62,8 @@ export class MatchSimulator {
   private eventManager: EventManager;
 
   private speedMultiplier: number = 1.0;
-  private baseTickRate: number = 50;
-  private readonly TICKS_PER_SEC = 20;
+  private baseTickRate: number = 20;
+  private readonly TICKS_PER_SEC = 50;
   private readonly ROUND_TIME = 115;
   private readonly FREEZE_TIME = 5;
 
@@ -300,13 +300,13 @@ export class MatchSimulator {
 
     this.bomb.tick();
     if (this.bomb.status === BombStatus.PLANTED) {
-         if (this.tickCount - this.bombPlantTick > (40 * this.TICKS_PER_SEC) + 10) {
+         if (this.tickCount - this.bombPlantTick > (40 * this.TICKS_PER_SEC) + 25) {
              this.bomb.status = BombStatus.DETONATED;
          }
     }
 
     Object.values(this.zoneStates).forEach(state => {
-        state.noiseLevel = Math.max(0, state.noiseLevel - 5);
+        state.noiseLevel = Math.max(0, state.noiseLevel - 2);
     });
 
     this.evaluateTacticTransition();
@@ -352,7 +352,7 @@ export class MatchSimulator {
       // Utility Logic
       if (bot.isChargingUtility && bot.utilityChargeTimer === 1) {
            const utilType = bot.activeUtility || "flashbang";
-           bot.utilityCooldown = 20;
+           bot.utilityCooldown = 50;
            bot.hasThrownEntryUtility = true;
            this.events.unshift(`[Tick ${this.tickCount}] 🧨 ${bot.player.name} threw ${utilType}`);
 
@@ -408,7 +408,7 @@ export class MatchSimulator {
                   }
 
                   this.zoneStates[bot.currentZoneId].droppedWeapons.splice(bestDropIndex, 1);
-                  bot.weaponSwapTimer = 5;
+                  bot.weaponSwapTimer = 13;
                   this.events.unshift(`[Tick ${this.tickCount}] 🎒 ${bot.player.name} picked up ${WEAPONS[newWeaponId].name}`);
               }
          }
@@ -476,7 +476,7 @@ export class MatchSimulator {
                   const noise = Math.min(1, Math.max(0, noiseLevel / 100));
                   const stealth = enemy.isShiftWalking ? 0.15 : 0;
 
-                  const pSpot = Math.max(0, Math.min(1, base + 0.55 * skill + 0.25 * noise - stealth));
+                  const pSpot = (Math.max(0, Math.min(1, base + 0.55 * skill + 0.25 * noise - stealth))) * 0.4;
 
                   if (Math.random() < pSpot) {
                       this.eventManager.publish({
@@ -541,8 +541,8 @@ export class MatchSimulator {
                 defenderHolding: chosen.bot.aiState === BotAIState.HOLDING_ANGLE,
                 attackerCover: attackerZone?.cover || 0,
                 defenderCover: targetZone?.cover || 0,
-                flashedAttacker: Math.min(1, bot.stunTimer / 20),
-                flashedDefender: Math.min(1, chosen.bot.stunTimer / 20),
+                flashedAttacker: Math.min(1, bot.stunTimer / 50),
+                flashedDefender: Math.min(1, chosen.bot.stunTimer / 50),
                 smoked: false,
                 isExpected
             }
@@ -573,7 +573,7 @@ export class MatchSimulator {
         const result = DuelEngine.calculateOutcome(eng.attacker, eng.target, eng.distance, eng.context.isCrossZone, targetCanFire, eng.context);
 
         this.applyDuelResult(result);
-        if (this.zoneStates[eng.attacker.currentZoneId]) this.zoneStates[eng.attacker.currentZoneId].noiseLevel += 50;
+        if (this.zoneStates[eng.attacker.currentZoneId]) this.zoneStates[eng.attacker.currentZoneId].noiseLevel += 20;
         this.events.unshift(`[Tick ${this.tickCount}] ⚔️ ${eng.attacker.player.name} vs ${eng.target.player.name}`);
     }
   }
