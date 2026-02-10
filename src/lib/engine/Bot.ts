@@ -78,6 +78,9 @@ export class Bot {
   public nextUtilityTarget: Point | null = null;
   public utilityType: 'flash' | 'smoke' | 'he' | 'molotov' | null = null;
 
+  public flashedBy: string | null = null;
+  public wasTraded: boolean = false;
+
   private lastZoneChangeTick: number = 0;
   private lastZone: string = "";
 

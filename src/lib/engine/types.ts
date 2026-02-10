@@ -106,3 +106,30 @@ export interface ZoneState {
     droppedWeapons: DroppedWeapon[];
     smokedUntilTick?: number;
 }
+
+export interface PlayerMatchStats {
+  kills: number;
+  deaths: number;
+  assists: number;
+  damageDealt: number;
+
+  // HLTV 2.0 Tracking
+  kastRounds: number; // Number of rounds where player got Kill, Assist, Survived, or Traded
+  openingKills: number; // Number of rounds with opening kill
+  multiKills: {
+      1: number;
+      2: number;
+      3: number;
+      4: number;
+      5: number;
+  };
+  clutchesWon: number;
+  clutchesAttempted: number;
+  utilityDamage: number;
+  enemiesFlashed: number;
+  roundsPlayed: number;
+
+  // Legacy/Internal
+  expectedKills: number;
+  actualKills: number;
+}

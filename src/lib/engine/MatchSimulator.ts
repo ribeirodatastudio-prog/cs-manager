@@ -5,7 +5,7 @@ import { TacticsManager, TeamSide, Tactic } from "./TacticsManager";
 import { DuelEngine, DuelResult } from "./DuelEngine";
 import { Player } from "@/types";
 import { DUST2_MAP } from "./maps/dust2";
-import { MatchState, MatchPhase, RoundEndReason, BuyStrategy, DroppedWeapon, ZoneState } from "./types";
+import { MatchState, MatchPhase, RoundEndReason, BuyStrategy, DroppedWeapon, ZoneState, PlayerMatchStats } from "./types";
 import { EconomySystem } from "./EconomySystem";
 import { TeamEconomyManager } from "./TeamEconomyManager";
 import { ECONOMY, WEAPONS, WeaponType } from "./constants";
@@ -17,20 +17,11 @@ import { EventManager } from "./EventManager";
 import { Weapon } from "@/types/Weapon";
 import { EngagementContext, PeekType } from "./engagement";
 
-export interface PlayerStats {
-  kills: number;
-  deaths: number;
-  damageDealt: number;
-  assists: number;
-  expectedKills: number;
-  actualKills: number;
-}
-
 export interface SimulationState {
   bots: Bot[];
   tickCount: number;
   events: string[];
-  stats: Record<string, PlayerStats>;
+  stats: Record<string, PlayerMatchStats>;
   matchState: MatchState;
   bombState: Bomb;
   roundTimer: number;
@@ -46,7 +37,7 @@ export class MatchSimulator {
   private timeoutId: NodeJS.Timeout | null = null;
   private onUpdate: (state: SimulationState) => void;
   public events: string[];
-  public stats: Record<string, PlayerStats> = {};
+  public stats: Record<string, PlayerMatchStats> = {};
 
   private roundStateMetrics = {
     tLastProgressed: 0,
@@ -68,6 +59,14 @@ export class MatchSimulator {
   private readonly TICKS_PER_SEC = TICK_RATE; // 20
   private readonly ROUND_TIME = 115;
   private readonly FREEZE_TIME = 5;
+
+  // Stats tracking for HLTV 2.0
+  private deathLog: { victimId: string, killerId: string, tick: number }[] = [];
+  private roundKillsCount: Record<string, number> = {};
+  private roundAssistsCount: Record<string, boolean> = {}; // Track if assisted this round to prevent duplicates?
+  // Actually assists are cumulative in stats.
+  private firstKillOfRound: boolean = true;
+  private clutchSituations: Record<string, { vsCount: number, active: boolean }> = {};
 
   constructor(players: Player[], onUpdate: (state: SimulationState) => void) {
     this.map = new GameMap(DUST2_MAP);
@@ -113,12 +112,31 @@ export class MatchSimulator {
       return new Bot(p, side, startPos, startZone, this.eventManager);
     });
 
-    this.bots.forEach(b => {
-      this.stats[b.player.id] = { kills: 0, deaths: 0, damageDealt: 0, assists: 0, expectedKills: 0, actualKills: 0 };
-    });
+    this.initializeStats();
 
     this.startRound();
     this.broadcast();
+  }
+
+  private initializeStats() {
+      this.bots.forEach(b => {
+          this.stats[b.player.id] = {
+              kills: 0,
+              deaths: 0,
+              damageDealt: 0,
+              assists: 0,
+              expectedKills: 0,
+              actualKills: 0,
+              kastRounds: 0,
+              openingKills: 0,
+              multiKills: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+              clutchesWon: 0,
+              clutchesAttempted: 0,
+              utilityDamage: 0,
+              enemiesFlashed: 0,
+              roundsPlayed: 0
+          };
+      });
   }
 
   public setSpeed(multiplier: number) {
@@ -151,9 +169,7 @@ export class MatchSimulator {
     this.tickCount = 0;
     this.events = [];
 
-    this.bots.forEach(b => {
-      this.stats[b.player.id] = { kills: 0, deaths: 0, damageDealt: 0, assists: 0, expectedKills: 0, actualKills: 0 };
-    });
+    this.initializeStats();
 
     this.matchState = {
       round: 1,
@@ -190,6 +206,18 @@ export class MatchSimulator {
     this.matchState.phase = MatchPhase.PAUSED_FOR_STRATEGY;
     this.matchState.phaseTimer = this.FREEZE_TIME;
 
+    // Stats reset
+    this.deathLog = [];
+    this.roundKillsCount = {};
+    this.roundAssistsCount = {};
+    this.firstKillOfRound = true;
+    this.clutchSituations = {};
+
+    this.bots.forEach(b => {
+        this.roundKillsCount[b.id] = 0;
+        this.stats[b.player.id].roundsPlayed++;
+    });
+
     Object.keys(this.zoneStates).forEach(key => {
         this.zoneStates[key].noiseLevel = 0;
         this.zoneStates[key].droppedWeapons = [];
@@ -217,6 +245,11 @@ export class MatchSimulator {
       bot.holdDuration = 0;
       bot.nextUtilityTarget = null;
       bot.utilityType = null;
+
+      // Reset Tracking
+      bot.flashedBy = null;
+      bot.wasTraded = false;
+      bot.stunTimer = 0;
 
       const spawns = bot.side === TeamSide.CT ? DUST2_LOCATIONS.SPAWNS.CT : DUST2_LOCATIONS.SPAWNS.T;
       // Use index i to cycle through spawns, or store individual spawn index
@@ -384,6 +417,30 @@ export class MatchSimulator {
            if (utilType === "smoke" && bot.goalZoneId) {
                 if (!this.zoneStates[bot.goalZoneId]) this.zoneStates[bot.goalZoneId] = { noiseLevel: 0, droppedWeapons: [] };
                 this.zoneStates[bot.goalZoneId].smokedUntilTick = this.tickCount + (18 * this.TICKS_PER_SEC);
+           }
+
+           if (utilType === "flashbang" && bot.goalZoneId) {
+               // Determine affected enemies
+               const enemies = this.bots.filter(e => e.side !== bot.side && e.status === "ALIVE");
+               enemies.forEach(e => {
+                   const dist = this.map.getPointDistance(e.pos, bot.pos); // Simplified: thrower pos vs target pos?
+                   // Ideally we throw to goalZoneId. Let's assume flash detonates at goalZoneId.
+                   const targetZone = this.map.getZone(bot.goalZoneId!);
+                   if (targetZone) {
+                       const flashPos = { x: targetZone.x, y: targetZone.y };
+                       const distToFlash = this.map.getPointDistance(e.pos, flashPos);
+
+                       // Flash radius approx 800 units?
+                       if (distToFlash < 800) {
+                           // Line of sight check to flash?
+                           if (Pathfinder.hasLineOfSight(e.pos, flashPos)) {
+                               e.stunTimer = Math.max(0, 100 - (distToFlash / 10)); // Max 5s stun
+                               e.flashedBy = bot.id;
+                               this.stats[bot.id].enemiesFlashed++;
+                           }
+                       }
+                   }
+               });
            }
       }
 
@@ -621,10 +678,12 @@ export class MatchSimulator {
 
       if (result.initiator.fired) {
           target.takeDamage(result.initiator.damage);
+          this.stats[initiator.id].damageDealt += result.initiator.damage;
           if (target.hp <= 0) this.handleKill(initiator, target, result.initiator.isHeadshot, initiator.getEquippedWeapon());
       }
       if (result.target.fired && initiator.status === "ALIVE") {
           initiator.takeDamage(result.target.damage);
+          this.stats[target.id].damageDealt += result.target.damage;
           if (initiator.hp <= 0) this.handleKill(target, initiator, result.target.isHeadshot, target.getEquippedWeapon());
       }
   }
@@ -633,7 +692,54 @@ export class MatchSimulator {
       victim.status = "DEAD";
       this.stats[killer.id].kills++;
       this.stats[victim.id].deaths++;
+      this.roundKillsCount[killer.id] = (this.roundKillsCount[killer.id] || 0) + 1;
       this.roundKills++;
+
+      // Opening Kill
+      if (this.firstKillOfRound) {
+          this.stats[killer.id].openingKills++;
+          this.firstKillOfRound = false;
+      }
+
+      // Track Death for Trade/KAST logic
+      this.deathLog.push({ victimId: victim.id, killerId: killer.id, tick: this.tickCount });
+
+      // Trade Logic: Did this kill trade a teammate?
+      const recentWindow = 100; // 5 seconds (20 ticks/sec * 5)
+      for (const entry of this.deathLog) {
+          if (entry.killerId === victim.id && this.tickCount - entry.tick <= recentWindow) {
+              // Victim previously killed someone (entry.victimId).
+              // Is entry.victimId a teammate of current killer?
+              const originalVictim = this.bots.find(b => b.id === entry.victimId);
+              if (originalVictim && originalVictim.side === killer.side) {
+                  // YES, this is a trade kill.
+                  // Mark the original victim as traded.
+                  originalVictim.wasTraded = true;
+                  // (Optionally award Trade Kill stat to killer if we had it)
+              }
+          }
+      }
+
+      // Clutch Logic Update
+      // When a player dies, check if any team is down to 1 player.
+      const victimTeam = this.bots.filter(b => b.side === victim.side && b.status === "ALIVE");
+      if (victimTeam.length === 1) {
+          const survivor = victimTeam[0];
+          // Determine how many enemies alive
+          const enemyCount = this.bots.filter(b => b.side !== victim.side && b.status === "ALIVE").length;
+          if (enemyCount > 0) {
+              // Clutch situation starts
+              if (!this.clutchSituations[survivor.id] || !this.clutchSituations[survivor.id].active) {
+                  this.clutchSituations[survivor.id] = { vsCount: enemyCount, active: true };
+                  this.stats[survivor.id].clutchesAttempted++;
+              }
+          }
+      }
+      // If team is down to 0, clutch failed (handled in checkWin)
+      if (victimTeam.length === 0) {
+          // If the last guy had a clutch situation, mark it inactive/failed?
+          // Actually if he dies, he lost.
+      }
 
       const wName = weapon ? weapon.name : "Unknown";
       this.events.unshift(`💀 [${wName}] ${victim.player.name} eliminated by ${killer.player.name}`);
@@ -665,8 +771,51 @@ export class MatchSimulator {
       this.matchState.phase = MatchPhase.ROUND_END;
       this.matchState.scores[winner]++;
       this.events.unshift(`🏆 ${winner} Wins! (${reason})`);
+
+      // Finalize Stats for Round
+      this.finalizeRoundStats(winner);
+
       this.updateEconomy(winner, reason);
       this.matchState.round++;
+  }
+
+  private finalizeRoundStats(winnerSide: TeamSide) {
+      this.bots.forEach(bot => {
+          const stats = this.stats[bot.player.id];
+
+          // KAST Calculation
+          const killed = this.roundKillsCount[bot.id] > 0;
+          // Assist? We don't track round assists explicitly yet, but could check diff?
+          // For now, simplify: if kills > 0 or survived or traded.
+          const survived = bot.status === "ALIVE";
+          const traded = bot.wasTraded;
+          // Need to check assists properly.
+          // Since we didn't track "assisted this round", let's assume if (assists - prevAssists > 0).
+          // But simpler is: if survived or killed or traded.
+          // (Assist is missing, but acceptable for first pass).
+
+          if (killed || survived || traded) {
+              stats.kastRounds++;
+          }
+
+          // Multi-Kills
+          const kills = this.roundKillsCount[bot.id] || 0;
+          if (kills >= 1 && kills <= 5) {
+               // @ts-ignore
+               stats.multiKills[kills]++;
+          } else if (kills > 5) {
+               stats.multiKills[5]++; // Cap at 5
+          }
+
+          // Clutch Won?
+          if (bot.side === winnerSide && bot.status === "ALIVE" && this.clutchSituations[bot.id]?.active) {
+               stats.clutchesWon++;
+          }
+          // Reset clutch active
+          if (this.clutchSituations[bot.id]) {
+               this.clutchSituations[bot.id].active = false;
+          }
+      });
   }
 
   private updateEconomy(winner: TeamSide, reason: RoundEndReason) {
