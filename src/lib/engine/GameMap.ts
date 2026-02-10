@@ -7,13 +7,24 @@ const MAP_HEIGHT = 1000;
 
 export class GameMap {
   private zones: Map<string, Zone>;
+  private neighbors: Map<string, Zone[]>;
   public readonly data: MapData;
 
   constructor(data: MapData) {
     this.data = data;
     this.zones = new Map();
+    this.neighbors = new Map();
+
     data.zones.forEach((zone) => {
       this.zones.set(zone.id, zone);
+    });
+
+    // Pre-calculate neighbor cache
+    this.zones.forEach((zone) => {
+      const neighbors = zone.connections
+        .map((conn) => this.getZone(conn.to))
+        .filter((z): z is Zone => z !== undefined);
+      this.neighbors.set(zone.id, neighbors);
     });
 
     // Ensure nav mesh starts loading if not already
@@ -28,12 +39,7 @@ export class GameMap {
 
   // Strategic Neighbors (from graph data)
   getNeighbors(zoneId: string): Zone[] {
-    const zone = this.getZone(zoneId);
-    if (!zone) return [];
-
-    return zone.connections
-      .map((conn) => this.getZone(conn.to))
-      .filter((z): z is Zone => z !== undefined);
+    return this.neighbors.get(zoneId) || [];
   }
 
   getConnections(zoneId: string): Connection[] {
