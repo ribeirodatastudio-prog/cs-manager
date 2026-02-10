@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Player } from "@/types";
-import { PlayerStats } from "@/lib/engine/MatchSimulator";
+import { PlayerMatchStats } from "@/lib/engine/types";
 import { DuelEngine } from "@/lib/engine/DuelEngine";
 import { Bot } from "@/lib/engine/Bot";
 import { TeamSide } from "@/lib/engine/constants";
 import { EventManager } from "@/lib/engine/EventManager";
 
 interface DuelStatsProps {
-  stats: Record<string, PlayerStats>;
+  stats: Record<string, PlayerMatchStats>;
   players: Player[];
 }
 

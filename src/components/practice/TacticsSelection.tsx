@@ -47,7 +47,6 @@ export const TacticsSelection: React.FC<TacticsSelectionProps> = ({
     const isT = side === TeamSide.T;
     const activeBorder = isT ? "border-yellow-500" : "border-blue-500";
     const activeBg = isT ? "bg-yellow-500/10" : "bg-blue-500/10";
-    const activeText = isT ? "text-yellow-500" : "text-blue-500";
 
     return (
       <button

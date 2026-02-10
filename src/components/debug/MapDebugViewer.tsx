@@ -32,7 +32,7 @@ export const MapDebugViewer: React.FC<MapDebugViewerProps> = ({ mapData }) => {
       // Set styles for mesh
       ctx.lineWidth = 1;
 
-      Object.entries(NAV_MESH).forEach(([_id, node]) => {
+      Object.entries(NAV_MESH).forEach(([, node]) => {
         // Use coordinates directly (they are pre-transformed to 0-1000 space)
         const sx = node.pos[0];
         const sy = node.pos[1];

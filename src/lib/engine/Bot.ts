@@ -410,7 +410,7 @@ export class Bot {
     }
   }
 
-  updateTacticalBehavior(map: GameMap, _allBots: Bot[], currentTick: number) {
+  updateTacticalBehavior(map: GameMap, currentTick: number) {
     if (this.status === "DEAD") return;
 
     // Decrease hold duration
@@ -439,7 +439,7 @@ export class Bot {
           if (this.anglesToClear.length > 0) {
             this.currentAngleIndex = 0;
             this.hasClearedAngles = false;
-            this.processClearingAngle(currentTick);
+            this.processClearingAngle();
           }
         }
       } else {
@@ -472,7 +472,7 @@ export class Bot {
     }
   }
 
-  private processClearingAngle(_currentTick: number) {
+  private processClearingAngle() {
     if (this.currentAngleIndex >= this.anglesToClear.length) {
       // All angles cleared
       this.hasClearedAngles = true;
@@ -491,14 +491,14 @@ export class Bot {
 
     // Should we pre-fire?
     if (TacticalAI.shouldPrefire(this, angle.position, angle.dangerLevel)) {
-      this.triggerPrefire(angle.position);
+      this.triggerPrefire();
     }
 
     // Move to next angle
     this.currentAngleIndex++;
   }
 
-  private triggerPrefire(_target: Point) {
+  private triggerPrefire() {
     // Implement pre-fire logic
     // Just marking it for now, can be used by combat system if needed
     // console.log(`Bot ${this.id} pre-firing at position (${target.x}, ${target.y})`);
