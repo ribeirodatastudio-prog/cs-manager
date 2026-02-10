@@ -68,6 +68,65 @@ export class MatchSimulator {
   private readonly ROUND_TIME = 115;
   private readonly FREEZE_TIME = 5;
 
+  /**
+   * Simulate a match between two teams (Instant Result)
+   */
+  public static simulate(
+    team1: { id: string },
+    team2: { id: string },
+    options: { matchFormat: string; maps: string[] }
+  ): {
+    team1Score: number;
+    team2Score: number;
+    winnerId: string;
+    mapResults: { map: string; winner: string; score: string }[]
+  } {
+    // Simple simulation logic based on random chance (placeholder)
+    // In a real implementation, this would use team ratings/players
+
+    let t1Score = 0;
+    let t2Score = 0;
+    const mapResults: { map: string; winner: string; score: string }[] = [];
+
+    const targetWins = options.matchFormat === 'bo1' ? 1 :
+                       options.matchFormat === 'bo2' ? 2 : // Note: BO2 usually means 2 maps played, draw possible
+                       options.matchFormat === 'bo3' ? 2 :
+                       options.matchFormat === 'bo5' ? 3 : 1;
+
+    // Simulate maps until someone wins the series (or BO2 matches played)
+    const maxMaps = options.matchFormat === 'bo2' ? 2 : (targetWins * 2 - 1);
+
+    for (let i = 0; i < maxMaps; i++) {
+        // Stop if a team has already clinched the series (except BO2)
+        if (options.matchFormat !== 'bo2') {
+            if (t1Score === targetWins || t2Score === targetWins) break;
+        }
+
+        // Random winner for each map (50/50 for now)
+        // TODO: Use team strength/ratings
+        const t1Win = Math.random() > 0.5;
+
+        if (t1Win) t1Score++;
+        else t2Score++;
+
+        mapResults.push({
+            map: options.maps[i] || 'dust2',
+            winner: t1Win ? team1.id : team2.id,
+            score: t1Win ? "13-10" : "10-13" // Mock score
+        });
+    }
+
+    let winnerId = t1Score > t2Score ? team1.id : team2.id;
+    if (t1Score === t2Score) winnerId = "DRAW"; // BO2
+
+    return {
+        team1Score: t1Score,
+        team2Score: t2Score,
+        winnerId,
+        mapResults
+    };
+  }
+
   constructor(players: Player[], onUpdate: (state: SimulationState) => void) {
     this.map = new GameMap(DUST2_MAP);
     // Ensure nav mesh is loading
