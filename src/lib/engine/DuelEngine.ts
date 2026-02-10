@@ -48,17 +48,17 @@ export class DuelEngine {
    * Calculates the outcome of a duel between an initiator (Attacker) and a target (Defender).
    * Returns a structured exchange with results for both participants.
    */
-  public static calculateOutcome(initiator: Bot, target: Bot, distance: number, isCrossZone: boolean = false, targetCanFire: boolean = true, context?: EngagementContext): DuelResult {
+  public static calculateOutcome(initiator: Bot, target: Bot, distance: number, isCrossZone: boolean = false, targetCanFire: boolean = true, context?: EngagementContext, debug: boolean = false): DuelResult {
     // Simulate Initiator
     const initiatorCover = context ? context.attackerCover : 0;
     const targetCover = context ? context.defenderCover : 0;
 
-    const initiatorResult = this.simulateEngagement(initiator, target, distance, true, isCrossZone, context, targetCover);
+    const initiatorResult = this.simulateEngagement(initiator, target, distance, true, isCrossZone, context, targetCover, debug);
 
     // Simulate Target
     let targetResult: CombatSimulationResult;
     if (targetCanFire) {
-         targetResult = this.simulateEngagement(target, initiator, distance, false, isCrossZone, context, initiatorCover);
+         targetResult = this.simulateEngagement(target, initiator, distance, false, isCrossZone, context, initiatorCover, debug);
     } else {
          targetResult = {
              success: false,
@@ -66,7 +66,7 @@ export class DuelEngine {
              bulletsFired: 0,
              isHeadshot: false,
              damageDealt: 0,
-             log: ["Target cannot return fire (Busy/Engaged)"],
+             log: debug ? ["Target cannot return fire (Busy/Engaged)"] : [],
              publicLog: []
          };
     }
@@ -134,7 +134,7 @@ export class DuelEngine {
     };
   }
 
-  private static simulateEngagement(shooter: Bot, target: Bot, distance: number, isInitiator: boolean, isCrossZone: boolean, context?: EngagementContext, targetCover: number = 0): CombatSimulationResult {
+  private static simulateEngagement(shooter: Bot, target: Bot, distance: number, isInitiator: boolean, isCrossZone: boolean, context?: EngagementContext, targetCover: number = 0, debug: boolean = false): CombatSimulationResult {
     const log: string[] = [];
     const publicLog: string[] = [];
     const tech = shooter.player.skills.technical;
@@ -144,11 +144,11 @@ export class DuelEngine {
 
     const weapon = shooter.getEquippedWeapon();
     if (!weapon) {
-         log.push(`${shooter.player.name} has no weapon! Miss.`);
+         if (debug) log.push(`${shooter.player.name} has no weapon! Miss.`);
          return { success: false, timeToKill: Infinity, bulletsFired: 0, isHeadshot: false, damageDealt: 0, log, publicLog };
     }
 
-    log.push(`Simulating ${shooter.player.name} vs ${target.player.name} (Dist: ${distance.toFixed(1)}) with ${weapon.name}`);
+    if (debug) log.push(`Simulating ${shooter.player.name} vs ${target.player.name} (Dist: ${distance.toFixed(1)}) with ${weapon.name}`);
 
     // Modifiers
     let precision = tech.firstBulletPrecision;
@@ -156,14 +156,14 @@ export class DuelEngine {
     // Entry Frag Fix: Use bot state flag set by simulator
     if (shooter.isEntryFragger) {
         precision *= this.ENTRY_FRAG_ACCURACY_PENALTY;
-        log.push(`Entry Frag Penalty applied (-${(1 - this.ENTRY_FRAG_ACCURACY_PENALTY)*100}% Precision)`);
+        if (debug) log.push(`Entry Frag Penalty applied (-${(1 - this.ENTRY_FRAG_ACCURACY_PENALTY)*100}% Precision)`);
     }
 
     // Engagement Context Modifiers (Accuracy)
     if (context && isInitiator) {
         if (context.peekType === "JIGGLE") {
             precision *= 0.75;
-            log.push("Jiggle Peek: Accuracy reduced.");
+            if (debug) log.push("Jiggle Peek: Accuracy reduced.");
         } else if (context.peekType === "WIDE") {
             precision *= 0.95;
         } else if (context.peekType === "SWING") {
@@ -175,7 +175,7 @@ export class DuelEngine {
     const reaction = physical.reactionTime;
     const stunPenalty = shooter.stunTimer > 0 ? 150 : 0; // ms delay
     if (shooter.stunTimer > 0) {
-        log.push("Stunned! +150ms Reaction Delay.");
+        if (debug) log.push("Stunned! +150ms Reaction Delay.");
     }
 
     // Difficulty Fix: Clamp difficulty
@@ -184,7 +184,7 @@ export class DuelEngine {
 
     if (targetCover > 0) {
         rawDifficulty += targetCover * 35;
-        log.push(`Target Cover (${(targetCover*100).toFixed(0)}%): Difficulty +${(targetCover*35).toFixed(0)}`);
+        if (debug) log.push(`Target Cover (${(targetCover*100).toFixed(0)}%): Difficulty +${(targetCover*35).toFixed(0)}`);
     }
 
     const difficulty = Math.max(20, Math.min(180, rawDifficulty));
@@ -197,14 +197,14 @@ export class DuelEngine {
         if (isInitiator) {
              if (context.defenderHolding && context.peekType !== "HOLD") {
                  timeToHit += 40;
-                 log.push("Peeking into Holder: +40ms");
+                 if (debug) log.push("Peeking into Holder: +40ms");
              }
              if (context.peekType === "JIGGLE") timeToHit -= 10;
              if (context.peekType === "SWING") timeToHit -= 15;
         } else {
              if (context.defenderHolding && context.peekType !== "HOLD") {
                  timeToHit -= 75; // Increased from 25ms
-                 log.push("Holding Angle: -75ms");
+                 if (debug) log.push("Holding Angle: -75ms");
              }
         }
     }
@@ -214,9 +214,9 @@ export class DuelEngine {
       const isExpected = context ? context.isExpected : false;
       if (!isExpected) {
         timeToHit -= this.ENTRY_FRAG_TIME_REDUCTION;
-        log.push(`Entry Fragging tempo bonus applied (-${this.ENTRY_FRAG_TIME_REDUCTION}ms).`);
+        if (debug) log.push(`Entry Fragging tempo bonus applied (-${this.ENTRY_FRAG_TIME_REDUCTION}ms).`);
       } else {
-        log.push(`Entry Fragging bonus NULLIFIED (Defender expected attack).`);
+        if (debug) log.push(`Entry Fragging bonus NULLIFIED (Defender expected attack).`);
       }
     }
 
@@ -230,14 +230,14 @@ export class DuelEngine {
 
     if (distance > weapon.accurateRange) {
         standingInaccuracy *= 2;
-        log.push(`Range Penalty: Inaccuracy doubled to ${standingInaccuracy.toFixed(2)}`);
+        if (debug) log.push(`Range Penalty: Inaccuracy doubled to ${standingInaccuracy.toFixed(2)}`);
     }
 
     if (isCrossZone && !weapon.name.includes("(scoped)")) {
          const rangeRatio = distance / Math.max(1, weapon.accurateRange);
          const penaltyMultiplier = 1 + (rangeRatio * 0.8);
          standingInaccuracy *= penaltyMultiplier;
-         log.push(`Cross-Zone Penalty: Inaccuracy x${penaltyMultiplier.toFixed(2)}`);
+         if (debug) log.push(`Cross-Zone Penalty: Inaccuracy x${penaltyMultiplier.toFixed(2)}`);
     }
 
     const weaponPenalty = standingInaccuracy / 100;
@@ -246,15 +246,17 @@ export class DuelEngine {
     let successProb = (baseChance * (1 - weaponPenalty)) - (difficulty / 500);
     successProb = Math.max(0.01, Math.min(0.99, successProb));
 
-    log.push(`Tap Prob: ${(successProb * 100).toFixed(1)}%`);
+    if (debug) log.push(`Tap Prob: ${(successProb * 100).toFixed(1)}%`);
 
     if (Math.random() < successProb) {
         const hitGroup = determineHitGroup(shooter, distance, targetCover);
         const dmgResult = calculateDamage(weapon, hitGroup, target, distance);
 
-        const hitMsg = `${shooter.player.name} hit ${target.player.name} in ${hitGroup} with ${weapon.name} for ${dmgResult.damage} damage.`;
-        log.push(hitMsg);
-        publicLog.push(hitMsg);
+        if (debug) {
+            const hitMsg = `${shooter.player.name} hit ${target.player.name} in ${hitGroup} with ${weapon.name} for ${dmgResult.damage} damage.`;
+            log.push(hitMsg);
+            publicLog.push(hitMsg);
+        }
 
         return {
             success: true,
@@ -267,7 +269,7 @@ export class DuelEngine {
         };
     }
 
-    log.push("Tap Missed. Spraying...");
+    if (debug) log.push("Tap Missed. Spraying...");
 
     const sprayBullets = Math.max(3, Math.floor(5 + (200 - mental.composure) / 10));
     const rpmDelay = (60 / weapon.rpm) * 1000;
@@ -289,9 +291,11 @@ export class DuelEngine {
             const hitGroup = determineHitGroup(shooter, distance, targetCover);
             const dmgResult = calculateDamage(weapon, hitGroup, target, distance);
 
-            const hitMsg = `${shooter.player.name} hit ${target.player.name} in ${hitGroup} with ${weapon.name} for ${dmgResult.damage} damage.`;
-            log.push(hitMsg);
-            publicLog.push(hitMsg);
+            if (debug) {
+                const hitMsg = `${shooter.player.name} hit ${target.player.name} in ${hitGroup} with ${weapon.name} for ${dmgResult.damage} damage.`;
+                log.push(hitMsg);
+                publicLog.push(hitMsg);
+            }
 
             return {
                 success: true,
@@ -305,7 +309,7 @@ export class DuelEngine {
         }
     }
 
-    log.push("Spray Missed.");
+    if (debug) log.push("Spray Missed.");
     return {
         success: false,
         timeToKill: Infinity,
