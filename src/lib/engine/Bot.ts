@@ -10,6 +10,7 @@ import { Point, ZoneState } from "./types";
 import { TacticalAI, AngleToClear } from "./TacticalAI";
 import { CS2_MOVEMENT_SPEEDS, TACTICAL_BEHAVIORS } from "./cs2Constants";
 import { BotVisionSystem, VisibleEntity } from "./BotVisionSystem";
+import { enhancedNavMeshManager, NavNode } from "./EnhancedNavMeshManager";
 
 export type BotStatus = "ALIVE" | "DEAD";
 
@@ -81,6 +82,9 @@ export class Bot {
 
   public visibleEnemies: VisibleEntity[] = [];
   public lastVisionUpdate: number = 0;
+
+  // Navigation Cache
+  private currentNavNode: NavNode | null = null;
 
   private lastZoneChangeTick: number = 0;
   private lastZone: string = "";
@@ -189,7 +193,12 @@ export class Bot {
     if (this.status === "DEAD") return;
 
     // Update vision every few ticks for performance
-    if (currentTick - this.lastVisionUpdate < 3) return;
+    // Use interleaved scheduling based on bot ID to distribute load
+    const updateInterval = 3;
+    const idOffset = parseInt(this.id.replace(/\D/g, '') || '0');
+
+    // Only update if it's our turn
+    if ((currentTick + idOffset) % updateInterval !== 0) return;
 
     this.visibleEnemies = BotVisionSystem.getVisibleEntities(
       this,
@@ -235,16 +244,44 @@ export class Bot {
       let nextX = this.pos.x + ndx * moveDist;
       let nextY = this.pos.y + ndy * moveDist;
 
-      // Check walkability using updated map (which uses NavMesh)
-      if (!map.isWalkable(nextX, nextY)) {
+      // Optimistic check using cached node
+      let isWalkable = false;
+      if (this.currentNavNode) {
+          const dx = this.currentNavNode.pos[0] - nextX;
+          const dy = this.currentNavNode.pos[1] - nextY;
+          // Threshold 30
+          if (dx * dx + dy * dy <= 900) {
+              isWalkable = true;
+          }
+      }
+
+      // If optimistic check failed, do full check
+      if (!isWalkable) {
+          if (map.isWalkable(nextX, nextY)) {
+              isWalkable = true;
+              // Update cache
+              this.currentNavNode = enhancedNavMeshManager.getClosestNode({x: nextX, y: nextY});
+          }
+      }
+
+      if (!isWalkable) {
           // Slide along wall
+          let canSlideX = false;
+          let canSlideY = false;
+
           if (map.isWalkable(nextX, this.pos.y)) {
               nextY = this.pos.y;
-          }
-          else if (map.isWalkable(this.pos.x, nextY)) {
+              canSlideX = true;
+              // Update cache for slide position
+              this.currentNavNode = enhancedNavMeshManager.getClosestNode({x: nextX, y: nextY});
+          } else if (map.isWalkable(this.pos.x, nextY)) {
               nextX = this.pos.x;
+              canSlideY = true;
+              // Update cache for slide position
+              this.currentNavNode = enhancedNavMeshManager.getClosestNode({x: nextX, y: nextY});
           }
-          else {
+
+          if (!canSlideX && !canSlideY) {
               // Stuck - request new path
               this.path = [];
               return;

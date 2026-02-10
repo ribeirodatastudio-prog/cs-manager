@@ -38,6 +38,10 @@ export class EnhancedNavMeshManager {
   private readonly VISION_RAY_STEPS = 15; // Accuracy of vision checks
   private readonly MAX_VISION_DISTANCE = 3000; // Maximum sight distance
 
+  // Spatial Partitioning
+  private readonly GRID_CELL_SIZE = 500;
+  private spatialGrid: Map<string, NavNode[]> = new Map();
+
   private constructor() {}
 
   static getInstance(): EnhancedNavMeshManager {
@@ -78,6 +82,9 @@ export class EnhancedNavMeshManager {
       const visionCache = new Map<string, Set<string>>();
       const distanceMaps = new Map<string, Map<string, number>>();
 
+      // Reset spatial grid
+      this.spatialGrid.clear();
+
       // Build basic navmesh
       for (const [id, nodeData] of Object.entries(data)) {
         let pos: [number, number] = nodeData.pos;
@@ -95,6 +102,13 @@ export class EnhancedNavMeshManager {
         };
 
         nodes.set(id, node);
+
+        // Add to spatial grid
+        const cellKey = this.getCellKey(pos[0], pos[1]);
+        if (!this.spatialGrid.has(cellKey)) {
+            this.spatialGrid.set(cellKey, []);
+        }
+        this.spatialGrid.get(cellKey)!.push(node);
 
         const adjSet = new Set<string>();
         nodeData.adj.forEach(adjId => adjSet.add(adjId.toString()));
@@ -269,6 +283,37 @@ export class EnhancedNavMeshManager {
   }
 
   /**
+   * Get spatial grid cell key
+   */
+  private getCellKey(x: number, y: number): string {
+      const cx = Math.floor(x / this.GRID_CELL_SIZE);
+      const cy = Math.floor(y / this.GRID_CELL_SIZE);
+      return `${cx}_${cy}`;
+  }
+
+  /**
+   * Get candidates from spatial grid (3x3 area)
+   */
+  private getGridCandidates(x: number, y: number): NavNode[] {
+      const cx = Math.floor(x / this.GRID_CELL_SIZE);
+      const cy = Math.floor(y / this.GRID_CELL_SIZE);
+      const candidates: NavNode[] = [];
+
+      for (let dx = -1; dx <= 1; dx++) {
+          for (let dy = -1; dy <= 1; dy++) {
+              const key = `${cx + dx}_${cy + dy}`;
+              const cellNodes = this.spatialGrid.get(key);
+              if (cellNodes) {
+                  for (const node of cellNodes) {
+                      candidates.push(node);
+                  }
+              }
+          }
+      }
+      return candidates;
+  }
+
+  /**
    * Get the closest navigation node to a point
    */
   getClosestNode(point: Point): NavNode | null {
@@ -277,7 +322,16 @@ export class EnhancedNavMeshManager {
     let closestNode: NavNode | null = null;
     let minDistance = Infinity;
 
-    for (const node of this.navMesh.nodes.values()) {
+    // Use spatial grid optimization
+    const candidates = this.getGridCandidates(point.x, point.y);
+
+    // If no candidates found in immediate vicinity (e.g. far off map), fallback to all nodes?
+    // Or just return null? If the map is bounded, candidates should be found if point is reasonable.
+    // If point is way outside, maybe we want the closest edge node?
+    // Let's fallback to all nodes if candidates is empty, just to be safe.
+    const nodesToCheck = candidates.length > 0 ? candidates : this.navMesh.nodes.values();
+
+    for (const node of nodesToCheck) {
       const dx = node.pos[0] - point.x;
       const dy = node.pos[1] - point.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
@@ -597,14 +651,28 @@ export class EnhancedNavMeshManager {
     const nodes: NavNode[] = [];
     const radiusSq = radius * radius;
 
-    for (const node of this.navMesh.nodes.values()) {
-      const dx = node.pos[0] - center.x;
-      const dy = node.pos[1] - center.y;
-      const distSq = dx * dx + dy * dy;
+    // Determine which grid cells to check
+    const minX = Math.floor((center.x - radius) / this.GRID_CELL_SIZE);
+    const maxX = Math.floor((center.x + radius) / this.GRID_CELL_SIZE);
+    const minY = Math.floor((center.y - radius) / this.GRID_CELL_SIZE);
+    const maxY = Math.floor((center.y + radius) / this.GRID_CELL_SIZE);
 
-      if (distSq <= radiusSq) {
-        nodes.push(node);
-      }
+    for (let cx = minX; cx <= maxX; cx++) {
+        for (let cy = minY; cy <= maxY; cy++) {
+             const key = `${cx}_${cy}`;
+             const cellNodes = this.spatialGrid.get(key);
+             if (cellNodes) {
+                 for (const node of cellNodes) {
+                     const dx = node.pos[0] - center.x;
+                     const dy = node.pos[1] - center.y;
+                     const distSq = dx * dx + dy * dy;
+
+                     if (distSq <= radiusSq) {
+                         nodes.push(node);
+                     }
+                 }
+             }
+        }
     }
 
     return nodes;
