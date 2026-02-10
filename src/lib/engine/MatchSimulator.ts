@@ -257,6 +257,14 @@ export class MatchSimulator {
         this.events.unshift(`[Round ${this.matchState.round}] 💣 ${carrier.player.name} has the bomb.`);
     }
 
+    // Precompute distances to bomb sites for performance
+    const sites = this.map.data.bombSites;
+    const siteA = this.map.getZone(sites.A);
+    const siteB = this.map.getZone(sites.B);
+    if (siteA && siteB) {
+        this.map.precomputePathDistances([{x: siteA.x, y: siteA.y}, {x: siteB.x, y: siteB.y}]);
+    }
+
     this.tacticsManager.updateAssignments(this.bots, this.map);
   }
 

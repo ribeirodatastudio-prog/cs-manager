@@ -21,6 +21,8 @@ export interface NavMesh {
   adjacencyMap: Map<string, Set<string>>;
   // Vision cache for performance
   visionCache: Map<string, Set<string>>;
+  // Distance cache: TargetNodeID -> Map<SourceNodeID, distance>
+  distanceMaps: Map<string, Map<string, number>>;
 }
 
 /**
@@ -74,6 +76,7 @@ export class EnhancedNavMeshManager {
       const nodes = new Map<string, NavNode>();
       const adjacencyMap = new Map<string, Set<string>>();
       const visionCache = new Map<string, Set<string>>();
+      const distanceMaps = new Map<string, Map<string, number>>();
 
       // Build basic navmesh
       for (const [id, nodeData] of Object.entries(data)) {
@@ -98,7 +101,7 @@ export class EnhancedNavMeshManager {
         adjacencyMap.set(id, adjSet);
       }
 
-      this.navMesh = { nodes, adjacencyMap, visionCache };
+      this.navMesh = { nodes, adjacencyMap, visionCache, distanceMaps };
 
       // Enhance with vision and tactical data
       this.identifyChokepoints();
@@ -353,6 +356,110 @@ export class EnhancedNavMeshManager {
     }
 
     return visible;
+  }
+
+  /**
+   * Pre-compute distances from a target node to all other nodes using Dijkstra
+   * This allows O(1) distance lookups to this target
+   */
+  computeDistanceMap(targetNodeId: string): void {
+    if (!this.navMesh) return;
+    const targetNode = this.navMesh.nodes.get(targetNodeId);
+    if (!targetNode) return;
+
+    if (this.navMesh.distanceMaps.has(targetNodeId)) return; // Already computed
+
+    const distances = new Map<string, number>();
+    const nodes = this.navMesh.nodes;
+
+    // Initialize distances
+    for (const id of nodes.keys()) {
+      distances.set(id, Infinity);
+    }
+    distances.set(targetNodeId, 0);
+
+    // Dijkstra's Algorithm
+    const unvisited = new Set<string>(nodes.keys());
+
+    while (unvisited.size > 0) {
+      // Find unvisited node with smallest distance
+      // Optimization: For 2200 nodes, a linear scan is O(N), total O(N^2).
+      // 2200^2 = ~4.8M ops, which is fast enough for pre-computation (approx 10-50ms)
+      let current: string | null = null;
+      let minDist = Infinity;
+
+      for (const id of unvisited) {
+        const d = distances.get(id) ?? Infinity;
+        if (d < minDist) {
+          minDist = d;
+          current = id;
+        }
+      }
+
+      if (!current || minDist === Infinity) break; // Remaining nodes are unreachable
+
+      unvisited.delete(current);
+      const currentNode = nodes.get(current)!;
+
+      // Update neighbors
+      const neighbors = this.navMesh.adjacencyMap.get(current);
+      if (neighbors) {
+        for (const neighborId of neighbors) {
+          if (!unvisited.has(neighborId)) continue;
+
+          const neighbor = nodes.get(neighborId)!;
+          const dist = this.distance(currentNode, neighbor);
+          const alt = minDist + dist;
+
+          if (alt < (distances.get(neighborId) ?? Infinity)) {
+            distances.set(neighborId, alt);
+          }
+        }
+      }
+    }
+
+    this.navMesh.distanceMaps.set(targetNodeId, distances);
+    console.log(`Pre-computed distances to node ${targetNodeId}`);
+  }
+
+  /**
+   * Get efficient path distance between two points
+   * Uses cached Dijkstra maps if available, otherwise falls back to A*
+   */
+  getPathDistance(start: Point, end: Point): number {
+    if (!this.navMesh) return Infinity;
+
+    const startNode = this.getClosestNode(start);
+    const endNode = this.getClosestNode(end);
+
+    if (!startNode || !endNode) return Infinity;
+    if (startNode.id === endNode.id) {
+       // Return linear distance if on same node (approx)
+       return Math.sqrt(Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2));
+    }
+
+    // Check if we have pre-computed distances to the end node
+    const distanceMap = this.navMesh.distanceMaps.get(endNode.id);
+    if (distanceMap) {
+      const dist = distanceMap.get(startNode.id);
+      if (dist !== undefined && dist !== Infinity) {
+        return dist;
+      }
+    }
+
+    // Fallback to finding path and calculating length
+    const path = this.findPath(start, end);
+    if (path.length === 0) return Infinity;
+
+    let totalDist = 0;
+    for (let i = 0; i < path.length - 1; i++) {
+        const p1 = path[i];
+        const p2 = path[i+1];
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        totalDist += Math.sqrt(dx*dx + dy*dy);
+    }
+    return totalDist;
   }
 
   /**
