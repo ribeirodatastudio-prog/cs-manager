@@ -68,3 +68,20 @@ export interface PlayerInventory {
   hasDefuseKit: boolean; // Renamed from hasKit
   grenades: string[]; // Renamed from utilities
 }
+
+/**
+ * Match stats used for HLTV Rating calculation
+ */
+export interface MatchStats {
+  kills: number;
+  deaths: number;
+  assists: number;
+  kast: number; // Kill, Assist, Survived, Traded % (0-100)
+  adr: number; // Average Damage per Round
+  impactRating: number; // Opening kills, multi-kills impact (0-2+)
+  clutchesWon: number;
+  clutchesAttempted: number;
+  utilityDamage: number;
+  enemiesFlashed: number;
+  roundsPlayed: number;
+}
