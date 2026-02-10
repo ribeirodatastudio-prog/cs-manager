@@ -361,10 +361,10 @@ export class BotVisionSystem {
 
       const zone = map.getZoneAt(enemy.position);
       if (zone && bot.internalThreatMap) {
-        bot.internalThreatMap[zone.id] = {
+        bot.internalThreatMap.set(zone.id, {
           level: 100,
           timestamp: currentTick
-        };
+        });
       }
     }
   }

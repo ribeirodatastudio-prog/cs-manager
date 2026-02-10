@@ -49,7 +49,7 @@ export class Bot {
   public aiState: BotAIState = BotAIState.DEFAULT;
   public goalZoneId: string | null = null;
   public reactionTimer: number = 0;
-  public internalThreatMap: Record<string, { level: number; timestamp: number }> = {};
+  public internalThreatMap: Map<string, { level: number; timestamp: number }> = new Map();
   public focusZoneId: string | null = null;
 
   public isShiftWalking: boolean = false;
@@ -132,7 +132,7 @@ export class Bot {
       if (this.status === "DEAD") return;
       if (event.type === "ENEMY_SPOTTED") {
           if (event.spottedBy === this.id) {
-              this.internalThreatMap[event.zoneId] = { level: 100, timestamp: event.timestamp };
+              this.internalThreatMap.set(event.zoneId, { level: 100, timestamp: event.timestamp });
           } else {
               const p = this.getCommsReliability();
               if (Math.random() < p) {
@@ -144,7 +144,7 @@ export class Bot {
               }
           }
       } else if (event.type === "TEAMMATE_DIED") {
-          this.internalThreatMap[event.zoneId] = { level: 100, timestamp: event.timestamp };
+          this.internalThreatMap.set(event.zoneId, { level: 100, timestamp: event.timestamp });
       }
   }
 
@@ -164,7 +164,7 @@ export class Bot {
           if (currentTick >= item.processAt) {
               const event = item.event;
               if (event.type === "ENEMY_SPOTTED") {
-                   this.internalThreatMap[event.zoneId] = { level: 80, timestamp: event.timestamp };
+                   this.internalThreatMap.set(event.zoneId, { level: 80, timestamp: event.timestamp });
               }
           } else {
               remaining.push(item);
@@ -302,11 +302,10 @@ export class Bot {
 
   private calculateGlobalThreat(map: GameMap, currentTick: number): number {
       let totalThreat = 0;
-      for (const zoneId in this.internalThreatMap) {
-          const entry = this.internalThreatMap[zoneId];
+      for (const [zoneId, entry] of this.internalThreatMap.entries()) {
           const age = currentTick - entry.timestamp;
           if (age > 250) {
-               delete this.internalThreatMap[zoneId];
+               this.internalThreatMap.delete(zoneId);
           } else {
                totalThreat += entry.level;
           }
@@ -336,6 +335,11 @@ export class Bot {
              this.aiState = BotAIState.CHARGING_UTILITY;
              return;
         }
+    }
+
+    // Cleanup internal threat map periodically
+    if (currentTick % 20 === 0) {
+        this.calculateGlobalThreat(map, currentTick);
     }
 
     const tactic = tacticsManager.getTactic(this.side);
