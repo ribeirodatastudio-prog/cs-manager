@@ -1,16 +1,15 @@
 import { Bot, BotAIState } from "./Bot";
 import { GameMap } from "./GameMap";
-import { Pathfinder } from "./Pathfinder";
 import { TacticsManager, TeamSide, Tactic } from "./TacticsManager";
 import { DuelEngine, DuelResult } from "./DuelEngine";
 import { Player } from "@/types";
 import { DUST2_MAP } from "./maps/dust2";
-import { MatchState, MatchPhase, RoundEndReason, BuyStrategy, DroppedWeapon, ZoneState } from "./types";
-import { EconomySystem } from "./EconomySystem";
+import { MatchState, MatchPhase, RoundEndReason, BuyStrategy, ZoneState } from "./types";
 import { TeamEconomyManager } from "./TeamEconomyManager";
 import { ECONOMY, WEAPONS, WeaponType } from "./constants";
 import { DUST2_LOCATIONS, TICK_RATE, TICK_DURATION } from "./cs2Constants";
-import { navMeshManager } from "./NavMeshManager";
+import { enhancedNavMeshManager } from "./EnhancedNavMeshManager";
+import { BotVisionSystem } from "./BotVisionSystem";
 import { WeaponUtils } from "./WeaponUtils";
 import { Bomb, BombStatus } from "./Bomb";
 import { EventManager } from "./EventManager";
@@ -72,8 +71,8 @@ export class MatchSimulator {
   constructor(players: Player[], onUpdate: (state: SimulationState) => void) {
     this.map = new GameMap(DUST2_MAP);
     // Ensure nav mesh is loading
-    if (!navMeshManager.isNavMeshLoaded()) {
-        navMeshManager.loadNavMesh().catch(e => console.error("Failed to load nav mesh", e));
+    if (!enhancedNavMeshManager.isNavMeshLoaded()) {
+        enhancedNavMeshManager.loadNavMesh().catch(e => console.error("Failed to load nav mesh", e));
     }
 
     this.tacticsManager = new TacticsManager();
@@ -369,6 +368,9 @@ export class MatchSimulator {
     this.bots.forEach(bot => {
       if (bot.status === "DEAD") return;
 
+      // Update vision
+      bot.updateVision(this.bots, this.tickCount, this.map);
+
       // Update AI with Tactical Behavior
       bot.updateTacticalBehavior(this.map, this.bots, this.tickCount);
       bot.updateGoal(this.map, this.bomb, this.tacticsManager, this.zoneStates, this.tickCount, this.bots);
@@ -480,38 +482,41 @@ export class MatchSimulator {
       const activeBots = this.bots.filter(b => b.status === "ALIVE");
 
       activeBots.forEach(bot => {
-          const enemies = activeBots.filter(e => e.side !== bot.side);
-          enemies.forEach(enemy => {
-              let isVisible = false;
+          // Iterate over visible enemies detected by BotVisionSystem
+          bot.visibleEnemies.forEach(enemyVis => {
+              const enemy = this.bots.find(b => b.id === enemyVis.id);
+              if (!enemy || enemy.status === "DEAD") return;
 
-              // Raycast Vision Check
-              if (Pathfinder.hasLineOfSight(bot.pos, enemy.pos)) {
-                  const currentSmoked = (this.zoneStates[bot.currentZoneId]?.smokedUntilTick || 0) > this.tickCount;
-                  const targetSmoked = (this.zoneStates[enemy.currentZoneId]?.smokedUntilTick || 0) > this.tickCount;
+              // Check for smoke
+              const currentSmoked = (this.zoneStates[bot.currentZoneId]?.smokedUntilTick || 0) > this.tickCount;
+              const targetSmoked = (this.zoneStates[enemy.currentZoneId]?.smokedUntilTick || 0) > this.tickCount;
 
-                  if (!currentSmoked && !targetSmoked) {
-                      isVisible = true;
-                  }
-              }
+              if (currentSmoked || targetSmoked) return;
 
-              if (isVisible) {
-                  const base = 0.20;
-                  const skill = (bot.player.skills.mental.gameSense + bot.player.skills.mental.positioning) / 400;
-                  const noiseLevel = this.zoneStates[enemy.currentZoneId]?.noiseLevel || 0;
-                  const noise = Math.min(1, Math.max(0, noiseLevel / 100));
-                  const stealth = enemy.isShiftWalking ? 0.15 : 0;
+              // BotVisionSystem already confirmed LOS and FOV.
+              // We just need to decide if we broadcast the spot.
+              // Since we "see" them, we should probably spot them with high probability if we haven't recently.
 
-                  const pSpot = (Math.max(0, Math.min(1, base + 0.55 * skill + 0.25 * noise - stealth))) * 0.4;
+              // Note: Bot.updateVision updates internal threat map automatically.
+              // Here we just handle team communication.
 
-                  if (Math.random() < pSpot) {
-                      this.eventManager.publish({
-                          type: "ENEMY_SPOTTED",
-                          zoneId: enemy.currentZoneId,
-                          timestamp: this.tickCount,
-                          enemyCount: 1,
-                          spottedBy: bot.id
-                      });
-                  }
+              const base = 0.20;
+              const skill = (bot.player.skills.mental.gameSense + bot.player.skills.mental.positioning) / 400;
+              const noiseLevel = this.zoneStates[enemy.currentZoneId]?.noiseLevel || 0;
+              const noise = Math.min(1, Math.max(0, noiseLevel / 100));
+              const stealth = enemy.isShiftWalking ? 0.15 : 0;
+
+              // Increased spotting chance because they are literally visible in FOV
+              const pSpot = (Math.max(0, Math.min(1, base + 0.55 * skill + 0.25 * noise - stealth))) * 0.8;
+
+              if (Math.random() < pSpot) {
+                  this.eventManager.publish({
+                      type: "ENEMY_SPOTTED",
+                      zoneId: enemy.currentZoneId,
+                      timestamp: this.tickCount,
+                      enemyCount: 1,
+                      spottedBy: bot.id
+                  });
               }
           });
       });
@@ -526,17 +531,19 @@ export class MatchSimulator {
         if (bot.combatCooldown > 0 || bot.weaponSwapTimer > 0) continue;
         if (this.bomb.planterId === bot.id || this.bomb.defuserId === bot.id) continue;
 
-        const enemies = activeBots.filter(e => e.side !== bot.side);
-        const visibleEnemies = enemies.filter(e => {
-            if (!Pathfinder.hasLineOfSight(bot.pos, e.pos)) return false;
-            const s1 = (this.zoneStates[bot.currentZoneId]?.smokedUntilTick || 0) > this.tickCount;
-            const s2 = (this.zoneStates[e.currentZoneId]?.smokedUntilTick || 0) > this.tickCount;
-            return !s1 && !s2;
+        // Use cached visible enemies
+        const validTargets = bot.visibleEnemies.map(v => this.bots.find(b => b.id === v.id)).filter((b): b is Bot => !!b && b.status === "ALIVE" && b.side !== bot.side);
+
+        // Filter by smoke again (double check)
+        const visibleTargets = validTargets.filter(e => {
+             const s1 = (this.zoneStates[bot.currentZoneId]?.smokedUntilTick || 0) > this.tickCount;
+             const s2 = (this.zoneStates[e.currentZoneId]?.smokedUntilTick || 0) > this.tickCount;
+             return !s1 && !s2;
         });
 
-        if (visibleEnemies.length === 0) continue;
+        if (visibleTargets.length === 0) continue;
 
-        const scored = visibleEnemies.map(e => ({
+        const scored = visibleTargets.map(e => ({
             bot: e,
             distance: this.map.getPointDistance(bot.pos, e.pos),
             score: this.scoreTarget(bot, e)

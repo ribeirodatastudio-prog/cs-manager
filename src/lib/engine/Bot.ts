@@ -6,9 +6,10 @@ import { Bomb, BombStatus } from "./Bomb";
 import { WeaponManager } from "./WeaponManager";
 import { Weapon } from "@/types/Weapon";
 import { EventManager, GameEvent } from "./EventManager";
-import { DroppedWeapon, Point, ZoneState } from "./types";
+import { Point, ZoneState } from "./types";
 import { TacticalAI, AngleToClear } from "./TacticalAI";
-import { CS2_MOVEMENT_SPEEDS, TACTICAL_BEHAVIORS, TICK_DURATION } from "./cs2Constants";
+import { CS2_MOVEMENT_SPEEDS, TACTICAL_BEHAVIORS } from "./cs2Constants";
+import { BotVisionSystem, VisibleEntity } from "./BotVisionSystem";
 
 export type BotStatus = "ALIVE" | "DEAD";
 
@@ -77,6 +78,9 @@ export class Bot {
   public teammatesInZone: string[] = [];
   public nextUtilityTarget: Point | null = null;
   public utilityType: 'flash' | 'smoke' | 'he' | 'molotov' | null = null;
+
+  public visibleEnemies: VisibleEntity[] = [];
+  public lastVisionUpdate: number = 0;
 
   private lastZoneChangeTick: number = 0;
   private lastZone: string = "";
@@ -181,6 +185,23 @@ export class Bot {
     return undefined;
   }
 
+  updateVision(allBots: Bot[], currentTick: number, map: GameMap) {
+    if (this.status === "DEAD") return;
+
+    // Update vision every few ticks for performance
+    if (currentTick - this.lastVisionUpdate < 3) return;
+
+    this.visibleEnemies = BotVisionSystem.getVisibleEntities(
+      this,
+      allBots
+    );
+
+    // Update intelligence based on what we see
+    BotVisionSystem.updateIntelligence(this, this.visibleEnemies, currentTick, map);
+
+    this.lastVisionUpdate = currentTick;
+  }
+
   move(dt: number, map: GameMap) {
       if (this.status === "DEAD") return;
 
@@ -224,9 +245,9 @@ export class Bot {
               nextX = this.pos.x;
           }
           else {
-              // Stuck
-              nextX = this.pos.x;
-              nextY = this.pos.y;
+              // Stuck - request new path
+              this.path = [];
+              return;
           }
       }
 
@@ -469,6 +490,7 @@ export class Bot {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private processClearingAngle(currentTick: number) {
     if (this.currentAngleIndex >= this.anglesToClear.length) {
       // All angles cleared
@@ -495,6 +517,7 @@ export class Bot {
     this.currentAngleIndex++;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private triggerPrefire(target: Point) {
     // Implement pre-fire logic
     // Just marking it for now, can be used by combat system if needed

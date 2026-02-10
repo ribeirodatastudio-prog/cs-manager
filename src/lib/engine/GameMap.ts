@@ -1,5 +1,5 @@
 import { MapData, Zone, Connection, Point } from "./types";
-import { navMeshManager } from "./NavMeshManager";
+import { enhancedNavMeshManager } from "./EnhancedNavMeshManager";
 
 // Defined by the standardized SVG/Canvas coordinate system (0-1000)
 const MAP_WIDTH = 1000;
@@ -17,8 +17,8 @@ export class GameMap {
     });
 
     // Ensure nav mesh starts loading if not already
-    if (!navMeshManager.isNavMeshLoaded()) {
-        navMeshManager.loadNavMesh().catch(err => console.error("NavMesh auto-load failed:", err));
+    if (!enhancedNavMeshManager.isNavMeshLoaded()) {
+        enhancedNavMeshManager.loadNavMesh().catch(err => console.error("NavMesh auto-load failed:", err));
     }
   }
 
@@ -68,11 +68,15 @@ export class GameMap {
   // --- Pathfinding & Collision ---
 
   isWalkable(x: number, y: number): boolean {
-    return navMeshManager.isWalkable({ x, y });
+    return enhancedNavMeshManager.isWalkable({ x, y });
   }
 
   findPath(start: Point, end: Point): Point[] {
-    return navMeshManager.findPath(start, end);
+    return enhancedNavMeshManager.findPath(start, end);
+  }
+
+  hasLineOfSight(start: Point, end: Point): boolean {
+    return enhancedNavMeshManager.hasLineOfSight(start, end);
   }
 
   // Find nearest valid walkable point (if spawned in wall)

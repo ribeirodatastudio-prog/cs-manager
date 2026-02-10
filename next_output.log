@@ -1,0 +1,26 @@
+
+> temp-app@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.5.12
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.7s
+ ○ Compiling / ...
+ ✓ Compiled / in 6.3s (714 modules)
+ HEAD / 200 in 7172ms
+ ○ Compiling /map-debug ...
+ ✓ Compiled /map-debug in 1449ms (717 modules)
+ GET /map-debug 200 in 1934ms
+ GET /map-debug 200 in 98ms
+ GET /map-debug 200 in 170ms
+ ✓ Compiled in 630ms (628 modules)
+ GET /map-debug 200 in 485ms
+ ✓ Compiled in 528ms (628 modules)
+ GET /map-debug 200 in 361ms
+ ✓ Compiled in 730ms (628 modules)
+ GET /map-debug 200 in 373ms
+ ✓ Compiled in 220ms (286 modules)
+ ✓ Compiled in 136ms (286 modules)
