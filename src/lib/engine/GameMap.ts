@@ -81,6 +81,23 @@ export class GameMap {
     return enhancedNavMeshManager.findPath(start, end);
   }
 
+  // Optimized walking distance using cached data if available
+  getPathDistance(start: Point, end: Point): number {
+    return enhancedNavMeshManager.getPathDistance(start, end);
+  }
+
+  // Pre-calculate distances to specific target points
+  precomputePathDistances(targets: Point[]): void {
+    if (!enhancedNavMeshManager.isNavMeshLoaded()) return;
+
+    targets.forEach(target => {
+        const node = enhancedNavMeshManager.getClosestNode(target);
+        if (node) {
+            enhancedNavMeshManager.computeDistanceMap(node.id);
+        }
+    });
+  }
+
   hasLineOfSight(start: Point, end: Point): boolean {
     return enhancedNavMeshManager.hasLineOfSight(start, end);
   }
